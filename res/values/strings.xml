@@ -26,5 +26,8 @@
     <!-- This is a complex string containing style runs. -->
     <string name="main_label">Hello2<u>th<ignore>e</ignore>re</u>, <i>you</i> <b>Activity</b>!</string>
     <string name="set_preferences">Preferences</string>
+    <string name="start">Start</string>
+    <string name="native_service_started">Native Service Started</string>
+    <string name="native_service_label">Native Service</string>
 </resources>
 

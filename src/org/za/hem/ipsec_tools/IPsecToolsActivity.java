@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import android.app.Activity;
+import android.content.ServiceConnection;
+import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +18,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.content.Context;
 
 
 /*
@@ -75,10 +78,34 @@ public class IPsecToolsActivity extends Activity {
                     }
             });
             }
+            Button startBtn = (Button) findViewById(R.id.start_button);
+            if (startBtn != null)
+            {
+            startBtn.setOnClickListener(new OnClickListener() {
+                    public void onClick(View v) {
+                    	// TODO start service
+                    	output("Starting VPN...");
+                    	doBindService();
+                    }
+            });
+            }
     		output(ls(new String[]{mBinDir.getAbsolutePath()}));
     }
     
-    private String ls(String[] parameters) {
+	void doBindService() {
+		ServiceConnection mConnection = null;
+		boolean mIsBound;
+		
+	    // Establish a connection with the service.  We use an explicit
+	    // class name because we want a specific service implementation that
+	    // we know will be running in our own process (and thus won't be
+	    // supporting component replacement by other applications).
+	    bindService(new Intent(IPsecToolsActivity.this, 
+	            NativeService.class), mConnection, Context.BIND_AUTO_CREATE);
+	    mIsBound = true;
+	}
+
+	private String ls(String[] parameters) {
     	return system("/system/bin/ls", parameters);
     }
     

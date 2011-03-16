@@ -22,6 +22,7 @@
         	android:name=".Preferences"
         	android:label="@string/set_preferences">
 		</activity>
+		<service android:name=".NativeService"></service>
     </application>
 
 

@@ -22,15 +22,26 @@
      a row, here set to be vertical (so the first is at the top) -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent" android:layout_height="fill_parent"
-    android:orientation="vertical">
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:gravity="center">
 
 	<TextView android:id="@+id/output"
    		android:layout_width="fill_parent" 
 		android:layout_height="wrap_content" />
 
-    <Button android:id="@+id/pref_button" style="@style/ActionButton"
-            android:text="@string/set_preferences" />
+    	<LinearLayout
+    		android:layout_width="fill_parent"
+    		android:layout_height="fill_parent"
+    		android:orientation="vertical"
+    		android:gravity="center">
+    		<Button android:id="@+id/pref_button" style="@style/ActionButton"
+            	android:text="@string/set_preferences" />
+    		<Button android:id="@+id/start_button" style="@style/ActionButton"
+            	android:text="@string/start"
+            	android:layout_width="fill_parent" />
+		</LinearLayout>
 </LinearLayout>
 
 
