@@ -29,5 +29,8 @@
     <string name="start">Start</string>
     <string name="native_service_started">Native Service Started</string>
     <string name="native_service_label">Native Service</string>
+    <string name="native_service_connected">Native Service Connected</string>
+    <string name="native_service_disconnected">Native Service Disconnected</string>
+    <string name="stop">Stop</string>
 </resources>
 

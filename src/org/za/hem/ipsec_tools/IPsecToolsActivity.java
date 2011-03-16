@@ -19,6 +19,9 @@ import android.widget.TextView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.content.Context;
+import android.os.IBinder;
+import android.os.Binder;
+import android.content.ComponentName;;
 
 
 /*
@@ -40,6 +43,8 @@ public class IPsecToolsActivity extends Activity {
 	private File mBinDir;
 	private TextView outputView;
 	private Handler handler = new Handler();
+	private boolean mIsBound;
+	private NativeService mBoundService;
 	
 	/*
 	public String getLocalIpAddress() {
@@ -68,8 +73,6 @@ public class IPsecToolsActivity extends Activity {
             putBinary("setkey.sh");
             outputView = (TextView)findViewById(R.id.output);
             Button prefBtn = (Button) findViewById(R.id.pref_button);
-            if (prefBtn != null)
-            {
             prefBtn.setOnClickListener(new OnClickListener() {
                     public void onClick(View v) {
                             Intent settingsActivity = new Intent(getBaseContext(),
@@ -77,10 +80,7 @@ public class IPsecToolsActivity extends Activity {
                             startActivity(settingsActivity);
                     }
             });
-            }
             Button startBtn = (Button) findViewById(R.id.start_button);
-            if (startBtn != null)
-            {
             startBtn.setOnClickListener(new OnClickListener() {
                     public void onClick(View v) {
                     	// TODO start service
@@ -88,13 +88,44 @@ public class IPsecToolsActivity extends Activity {
                     	doBindService();
                     }
             });
-            }
+            Button stopBtn = (Button) findViewById(R.id.stop_button);
+            stopBtn.setOnClickListener(new OnClickListener() {
+                    public void onClick(View v) {
+                    	// TODO start service
+                    	output("Stopping VPN...");
+                    	doUnbindService();
+                    }
+            });
     		output(ls(new String[]{mBinDir.getAbsolutePath()}));
     }
     
+	private ServiceConnection mConnection = new ServiceConnection() {
+	    public void onServiceConnected(ComponentName className, IBinder service) {
+	        // This is called when the connection with the service has been
+	        // established, giving us the service object we can use to
+	        // interact with the service.  Because we have bound to a explicit
+	        // service that we know is running in our own process, we can
+	        // cast its IBinder to a concrete class and directly access it.
+	        mBoundService = ((NativeService.NativeBinder)service).getService();
+	        output("Connected");
+	        // Tell the user about this for our demo.
+//	        Toast.makeText(Binding.this, R.string.native_service_connected,
+	//                Toast.LENGTH_SHORT).show();
+	    }
+
+	    public void onServiceDisconnected(ComponentName className) {
+	        // This is called when the connection with the service has been
+	        // unexpectedly disconnected -- that is, its process crashed.
+	        // Because it is running in our same process, we should never
+	        // see this happen.
+	        mBoundService = null;
+	        output("Disconnected");
+	  //      Toast.makeText(Binding.this, R.string.native_service_disconnected,
+	    //            Toast.LENGTH_SHORT).show();
+	    }
+	};
+	
 	void doBindService() {
-		ServiceConnection mConnection = null;
-		boolean mIsBound;
 		
 	    // Establish a connection with the service.  We use an explicit
 	    // class name because we want a specific service implementation that
@@ -104,7 +135,15 @@ public class IPsecToolsActivity extends Activity {
 	            NativeService.class), mConnection, Context.BIND_AUTO_CREATE);
 	    mIsBound = true;
 	}
-
+	
+	void doUnbindService() {
+	    if (mIsBound) {
+	        // Detach our existing connection.
+	        unbindService(mConnection);
+	        mIsBound = false;
+	    }
+	}
+	
 	private String ls(String[] parameters) {
     	return system("/system/bin/ls", parameters);
     }

@@ -41,6 +41,9 @@
     		<Button android:id="@+id/start_button" style="@style/ActionButton"
             	android:text="@string/start"
             	android:layout_width="fill_parent" />
+    		<Button android:id="@+id/stop_button" style="@style/ActionButton"
+            	android:text="@string/stop"
+            	android:layout_width="fill_parent" />
 		</LinearLayout>
 </LinearLayout>
 

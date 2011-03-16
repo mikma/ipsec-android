@@ -31,11 +31,31 @@ public class NativeService extends Service {
 	}
     
 	@Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        //Log.i("LocalService", "Received start id " + startId + ": " + intent);
+        // We want this service to continue running until it is explicitly
+        // stopped, so return sticky.
+        return START_STICKY;
+    }
+	
+	@Override
+    public void onDestroy() {
+        // Cancel the persistent notification.
+        mNM.cancel(NOTIFICATION);
+
+        // Tell the user we stopped.
+        //Toast.makeText(this, R.string.native_service_stopped, Toast.LENGTH_SHORT).show();
+    }
+	
+	@Override
 	public IBinder onBind(Intent arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		return mBinder;
 	}
 	
+	// This is the object that receives interactions from clients.  See
+    // RemoteService for a more complete example.
+    private final IBinder mBinder = new NativeBinder();
+    
 	private void showNotification() {
         // In this sample, we'll use the same text for the ticker and the expanded notification
         CharSequence text = getText(R.string.native_service_started);
