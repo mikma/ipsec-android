@@ -34,7 +34,7 @@ import android.view.View.OnClickListener;
  */
 
 public class IPsecToolsActivity extends Activity {
-	private File filesDir;
+	private File mBinDir;
 	private TextView outputView;
 	private Handler handler = new Handler();
 	
@@ -60,7 +60,7 @@ public class IPsecToolsActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.ipsec_tools_activity);
-            filesDir = getDir("bin", MODE_PRIVATE);
+            mBinDir = getDir("bin", MODE_PRIVATE);
             putBinary("setkey");
             putBinary("setkey.sh");
             outputView = (TextView)findViewById(R.id.output);
@@ -75,14 +75,19 @@ public class IPsecToolsActivity extends Activity {
                     }
             });
             }
-    		output(execute("/system/bin/ls " + new File(filesDir, "lib").getAbsolutePath()));
+    		output(ls(new String[]{mBinDir.getAbsolutePath()}));
     }
     
-    /*
+    private String ls(String[] parameters) {
+    	return system("/system/bin/ls", parameters);
+    }
+    
+    /**
+     * Copy binary file from assets into bin directory.
      */
     private void putBinary(String fileName) {
     	try {
-    		File file = new File(filesDir, fileName);
+    		File file = new File(mBinDir, fileName);
     		InputStream input = getAssets().open(fileName);
     		int read;
     		byte[] buffer = new byte[4096];
@@ -93,13 +98,28 @@ public class IPsecToolsActivity extends Activity {
     		}
     		input.close();
     		output.close();
-    		execute("/system/bin/chmod 711 " + file.getAbsolutePath());
+    		chmod(file, 711);
     	} catch (IOException e) {
     		throw new RuntimeException(e);
     	}
     }
     
-    private String execute(String cmd) {
+    /**
+     * Set file mode
+     * @param file File to modify
+     * @param mode New file mode
+     */
+    private void chmod(File file, int mode) {
+		system("/system/bin/chmod " + mode + " " + file.getAbsolutePath());
+    }
+
+
+    /**
+     * Run system command wait for and return result
+     * @param cmd System command to run
+     * @return stdout
+     */
+    private String system(String cmd) {
     	try {
     		// Executes the command.
     		Process process = Runtime.getRuntime().exec(cmd);
@@ -126,6 +146,19 @@ public class IPsecToolsActivity extends Activity {
     	} catch (InterruptedException e) {
     		throw new RuntimeException(e);
     	}
+    }
+    
+    private String system(String prog, String[] parameters)
+    {
+    	StringBuffer buf = new StringBuffer(4096);
+    	
+    	buf.append(prog);
+    	for ( String str : parameters ) {
+    		buf.append(' ');
+    		buf.append(str);
+    	}
+    	
+    	return system(buf.toString());
     }
     
     private void output(final String str) {
