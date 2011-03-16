@@ -25,13 +25,12 @@
     android:layout_width="fill_parent" android:layout_height="fill_parent"
     android:orientation="vertical">
 
-    <!-- First view is a text editor.  We want it to use all available
-         horizontal space, and stretch to fill whatever vertical space
-         is available to it.  Note the use of the "id" attribute, which
-         allows us to find this object from the Java code. -->
+	<TextView android:id="@+id/output"
+   		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" />
+
     <Button android:id="@+id/pref_button" style="@style/ActionButton"
             android:text="@string/set_preferences" />
-    
 </LinearLayout>
 
 
