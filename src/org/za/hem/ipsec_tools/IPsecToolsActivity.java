@@ -93,6 +93,8 @@ public class IPsecToolsActivity extends Activity {
                     public void onClick(View v) {
                     	// TODO start service
                     	output("Stopping VPN...");
+                    	stopService(new Intent(IPsecToolsActivity.this, 
+                    			NativeService.class));
                     	doUnbindService();
                     }
             });
@@ -131,6 +133,8 @@ public class IPsecToolsActivity extends Activity {
 	    // class name because we want a specific service implementation that
 	    // we know will be running in our own process (and thus won't be
 	    // supporting component replacement by other applications).
+		ComponentName nativeService = startService(new Intent(IPsecToolsActivity.this, 
+	            NativeService.class));
 	    bindService(new Intent(IPsecToolsActivity.this, 
 	            NativeService.class), mConnection, Context.BIND_AUTO_CREATE);
 	    mIsBound = true;
