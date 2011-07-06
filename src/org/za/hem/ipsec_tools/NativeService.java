@@ -1,5 +1,8 @@
 package org.za.hem.ipsec_tools;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -11,19 +14,25 @@ import android.util.Log;
 
 
 public class NativeService extends Service {
+	final public static String ACTION_NOTIFICATION = "org.za.hem.ipsec_tools.NOTIFICATION";
+	
 	private NotificationManager mNM;
 	
 	// Unique Identification Number for the Notification.
     // We use it on Notification start, and to cancel it.
     private int NOTIFICATION = R.string.native_service_started;
-    
-	public class NativeBinder extends Binder {
+
+    public class NativeBinder extends Binder {
         NativeService getService() {
             return NativeService.this;
         }
     }
 
-	@Override
+	// This is the object that receives interactions from clients.  See
+    // RemoteService for a more complete example.
+    private final IBinder mBinder = new NativeBinder();
+    
+   	@Override
     public void onCreate() {
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
@@ -34,6 +43,17 @@ public class NativeService extends Service {
 	@Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("LocalService", "Received start id " + startId + ": " + intent);
+        
+        if (intent.getAction() == null ) {
+        	new Thread(new Runnable() {
+        		public void run() {
+        			foo();
+        		}
+        	}).start();
+        } else if (intent.getAction().equals(ACTION_NOTIFICATION)) {
+        	Log.i("LocalService", "Notification");
+        }
+        
         // We want this service to continue running until it is explicitly
         // stopped, so return sticky.
         return START_STICKY;
@@ -41,6 +61,13 @@ public class NativeService extends Service {
 	
 	@Override
     public void onDestroy() {
+		Intent broadcastIntent = new Intent();
+		broadcastIntent.setAction("org.za.hem.ipsec_tools.DESTROYED");
+		//broadcastIntent.setData(Uri.parse("context://"+cer.getKey)));
+		//broadcastIntent.putExtra("reading",cer);
+		//broadcastIntent.addCategory("nl.vu.contextframework.CONTEXT");
+		sendBroadcast(broadcastIntent);
+		
         Log.i("LocalService", "Destroyed");
 
         // Cancel the persistent notification.
@@ -55,10 +82,6 @@ public class NativeService extends Service {
 		return mBinder;
 	}
 	
-	// This is the object that receives interactions from clients.  See
-    // RemoteService for a more complete example.
-    private final IBinder mBinder = new NativeBinder();
-    
 	private void showNotification() {
         // In this sample, we'll use the same text for the ticker and the expanded notification
         CharSequence text = getText(R.string.native_service_started);
@@ -66,10 +89,15 @@ public class NativeService extends Service {
         // Set the icon, scrolling text and timestamp
         Notification notification = new Notification(R.drawable.icon, text,
                 System.currentTimeMillis());
-
+        notification.flags |= Notification.FLAG_ONGOING_EVENT; 
+        	
+        //Intent intent = new Intent(this, NativeService.class);
+        //intent.setAction(ACTION_NOTIFICATION);
+        Intent intent = new Intent(this, IPsecToolsActivity.class);
+        
         // The PendingIntent to launch our activity if the user selects this notification
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, IPsecToolsActivity.class), 0);
+        PendingIntent contentIntent = PendingIntent.getService(this, 0,
+                intent, 0);
 
         // Set the info for the views that show in the notification panel.
         notification.setLatestEventInfo(this, getText(R.string.native_service_label),
@@ -77,5 +105,25 @@ public class NativeService extends Service {
 
         // Send the notification.
         mNM.notify(NOTIFICATION, notification);
+    }
+
+    private void foo() {
+		NativeCommand command = new NativeCommand(NativeService.this);
+
+		/*
+		Process process = new ProcessBuilder()
+    		.command("/system/bin/ping", "android.com")
+    		.redirectErrorStream(true)
+    		.start();
+    	try {
+    		InputStream in = process.getInputStream();
+    		OutputStream out = process.getOutputStream();
+
+    		readStream(in);
+    	}
+    	finally {
+    		process.destroy();
+    	}
+    	*/
     }
 }

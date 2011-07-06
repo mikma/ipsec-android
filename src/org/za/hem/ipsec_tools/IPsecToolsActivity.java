@@ -1,26 +1,20 @@
 package org.za.hem.ipsec_tools;
 
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.app.Service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.Button;
 import android.widget.TextView;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.content.Context;
 import android.os.IBinder;
-import android.os.Binder;
 import android.content.ComponentName;;
 
 
@@ -40,10 +34,23 @@ import android.content.ComponentName;;
  */
 
 public class IPsecToolsActivity extends Activity {
+	final private String binaries[] = {
+			"libcrypto.so",
+			"libipsec.so",
+			"libracoonlib.so",
+			"libssl.so",
+			"openssl",
+			"racoon",
+			"racoonctl",
+			"racoon.sh",
+			"setkey",
+			"setkey.sh"
+ 	};
 	private TextView outputView;
 	private Handler handler = new Handler();
 	private boolean mIsBound;
 	private NativeService mBoundService;
+	private NativeCommand mNative;
 	
 	/*
 	public String getLocalIpAddress() {
@@ -65,11 +72,13 @@ public class IPsecToolsActivity extends Activity {
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
+    	Log.i("IPsecToolsActivity", "onCreate:" + this);
             super.onCreate(savedInstanceState);
+            mNative = new NativeCommand(this);
             setContentView(R.layout.ipsec_tools_activity);
-            mBinDir = getDir("bin", MODE_PRIVATE);
-            putBinary("setkey");
-            putBinary("setkey.sh");
+            for (int i=0; i < binaries.length; i++) {
+            	mNative.putBinary(binaries[i]);
+            }
             outputView = (TextView)findViewById(R.id.output);
             Button prefBtn = (Button) findViewById(R.id.pref_button);
             prefBtn.setOnClickListener(new OnClickListener() {
@@ -92,13 +101,52 @@ public class IPsecToolsActivity extends Activity {
                     public void onClick(View v) {
                     	// TODO start service
                     	output("Stopping VPN...");
-                    	stopService(new Intent(IPsecToolsActivity.this, 
-                    			NativeService.class));
                     	doUnbindService();
                     }
             });
-    		output(ls(new String[]{mBinDir.getAbsolutePath()}));
     }
+    
+    protected void onStart()
+    {
+    	Log.i("IPsecToolsActivity", "onStart:" + this);
+    	super.onStart();
+    }
+    
+    protected void onResume()
+    {
+    	Log.i("IPsecToolsActivity", "onResume:" + this);
+    	super.onResume();
+    	registerReceiver(mReceiver, new IntentFilter("org.za.hem.ipsec_tools.DESTROYED"));
+    	doBindService();    	
+    }
+    
+    protected void onPause()
+    {
+    	Log.i("IPsecToolsActivity", "onPause:" + this);
+    	super.onPause();
+    	doUnbindService();
+    	unregisterReceiver(mReceiver);
+    }
+
+    protected void onStop()
+    {
+    	Log.i("IPsecToolsActivity", "onStop:" + this);
+    	super.onStop();
+    }
+    
+    protected void onDestroy()
+    {
+    	Log.i("IPsecToolsActivity", "onDestroy:" + this);
+    	super.onDestroy();
+    }
+    
+    
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+    	public void onReceive(Context context, Intent intent) {
+    		//output("Receive destroyed");
+            Log.i("LocalIPSecToolsActivity", "received destroyed");
+    	}  	
+    };
     
 	private ServiceConnection mConnection = new ServiceConnection() {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
@@ -127,13 +175,12 @@ public class IPsecToolsActivity extends Activity {
 	};
 	
 	void doBindService() {
-		
-	    // Establish a connection with the service.  We use an explicit
+		// Establish a connection with the service.  We use an explicit
 	    // class name because we want a specific service implementation that
 	    // we know will be running in our own process (and thus won't be
 	    // supporting component replacement by other applications).
-		ComponentName nativeService = startService(new Intent(IPsecToolsActivity.this, 
-	            NativeService.class));
+		//ComponentName nativeService = startService(new Intent(IPsecToolsActivity.this, 
+	    //        NativeService.class));
 	    bindService(new Intent(IPsecToolsActivity.this, 
 	            NativeService.class), mConnection, Context.BIND_AUTO_CREATE);
 	    mIsBound = true;
@@ -143,14 +190,12 @@ public class IPsecToolsActivity extends Activity {
 	    if (mIsBound) {
 	        // Detach our existing connection.
 	        unbindService(mConnection);
+        	//stopService(new Intent(IPsecToolsActivity.this, 
+        	//		NativeService.class));
 	        mIsBound = false;
 	    }
 	}
 	
-	private String ls(String[] parameters) {
-    	return system("/system/bin/ls", parameters);
-    }
-    
     private void output(final String str) {
     	Runnable proc = new Runnable() {
 			public void run() {

@@ -7,17 +7,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import android.content.Context;
 
 public class NativeCommand {
 	private File mBinDir;
+	private Context mContext;
+	
+	public NativeCommand(Context context) {
+		mContext = context;
+	    mBinDir = context.getDir("bin", Context.MODE_PRIVATE);
+	}
 
+	
 	/**
      * Copy binary file from assets into bin directory.
      */
-    private void putBinary(String fileName) {
+    public void putBinary(String fileName) {
     	try {
     		File file = new File(mBinDir, fileName);
-    		InputStream input = getAssets().open(fileName);
+    		InputStream input = mContext.getAssets().open(fileName);
     		int read;
     		byte[] buffer = new byte[4096];
     		OutputStream output = new FileOutputStream(file);
@@ -89,5 +97,8 @@ public class NativeCommand {
     	
     	return system(buf.toString());
     }
-    
-}
+
+    public String ls(String[] parameters) {
+    	return system("/system/bin/ls", parameters);
+    }
+ }
