@@ -1,2 +1,8 @@
+assets/*.so
+assets/openssl
+assets/racoon
+assets/racoonctl
+assets/setkey
 bin/
+external/tarballs/
 gen/
