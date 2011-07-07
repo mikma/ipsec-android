@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -197,11 +198,9 @@ public class IPsecToolsActivity extends Activity {
 	}
 	
     private void output(final String str) {
-    	Runnable proc = new Runnable() {
-			public void run() {
-				outputView.setText(str);
-			}
-    	};
-    	handler.post(proc);
+    	int duration = Toast.LENGTH_SHORT;
+
+    	Toast toast = Toast.makeText(this, str, duration);
+    	toast.show();
     } 
 }
