@@ -1,23 +1,34 @@
 package org.za.hem.ipsec_tools;
 
-
 import android.app.Activity;
+import android.app.ListActivity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.os.IBinder;
+import android.preference.Preference;
+import android.preference.PreferenceActivity;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.content.Context;
-import android.os.IBinder;
-import android.content.ComponentName;;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import java.util.List;
+import java.util.Vector;
+
+import com.lamerman.FileDialog;
 
 /*
  * Register
@@ -34,7 +45,7 @@ import android.content.ComponentName;;
  *
  */
 
-public class IPsecToolsActivity extends Activity {
+public class IPsecToolsActivity extends PreferenceActivity {
 	final private String binaries[] = {
 			"libcrypto.so",
 			"libipsec.so",
@@ -47,11 +58,11 @@ public class IPsecToolsActivity extends Activity {
 			"setkey",
 			"setkey.sh"
  	};
-	private TextView outputView;
 	private Handler handler = new Handler();
 	private boolean mIsBound;
 	private NativeService mBoundService;
 	private NativeCommand mNative;
+	private static final String ADD_PREFERENCE = "addPref";
 	
 	/*
 	public String getLocalIpAddress() {
@@ -73,19 +84,41 @@ public class IPsecToolsActivity extends Activity {
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
+    	super.onCreate(savedInstanceState);
+		final Activity activity = this;
+
+		addPreferencesFromResource(R.xml.preferences);
+
+        mNative = new NativeCommand(this);
+        for (int i=0; i < binaries.length; i++) {
+        	mNative.putBinary(binaries[i]);
+        }
+
+		Preference addPref = findPreference(ADD_PREFERENCE);
+		addPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			public boolean onPreferenceClick(Preference preference) {
+                Intent settingsActivity = new Intent(getBaseContext(),
+                        PeerPreferences.class);
+                // FIXME
+                settingsActivity.putExtra(PeerPreferences.EXTRA_ID,
+                		17);
+                startActivity(settingsActivity);
+				return true;
+			}
+		});
+
+/*    	
     	Log.i("IPsecToolsActivity", "onCreate:" + this);
-            super.onCreate(savedInstanceState);
-            mNative = new NativeCommand(this);
             setContentView(R.layout.ipsec_tools_activity);
-            for (int i=0; i < binaries.length; i++) {
-            	mNative.putBinary(binaries[i]);
-            }
-            outputView = (TextView)findViewById(R.id.output);
+
             Button prefBtn = (Button) findViewById(R.id.pref_button);
             prefBtn.setOnClickListener(new OnClickListener() {
                     public void onClick(View v) {
                             Intent settingsActivity = new Intent(getBaseContext(),
-                                            Preferences.class);
+                                            PeerPreferences.class);
+                            // FIXME
+        					settingsActivity.putExtra(PeerPreferences.EXTRA_ID,
+        							17);
                             startActivity(settingsActivity);
                     }
             });
@@ -105,6 +138,7 @@ public class IPsecToolsActivity extends Activity {
                     	doUnbindService();
                     }
             });
+            */
     }
     
     protected void onStart()

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+        <PreferenceCategory
+                android:title="IPsec VPN Peer">
+		        <EditTextPreference
+                		android:title="Name"
+                		android:key="namePref" />
+                <CheckBoxPreference
+                        android:title="Checkbox Preference"
+                        android:defaultValue="false"
+                        android:summary="This preference can be true or false"
+                        android:key="checkboxPref" />
+                <Preference
+                        android:title="Peer ID"
+                        android:key="idPref" />
+ 				<Preference
+        		        android:title="Template file"
+                		android:key="templatePref" />
+        </PreferenceCategory>
+</PreferenceScreen>

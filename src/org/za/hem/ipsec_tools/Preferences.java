@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -23,6 +24,9 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 		addPreferencesFromResource(R.xml.preferences);
           
 		mEditTextPreference = (EditTextPreference)getPreferenceScreen().findPreference("editTextPref");
+		
+		PreferenceCategory mPeers = (PreferenceCategory)getPreferenceScreen().findPreference("peers");
+		mPeers.addPreference(new IPsecPreference(this));
                                               
 		// Get the custom preference
 		Preference customPref = (Preference) findPreference("customPref");

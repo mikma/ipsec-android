@@ -1,58 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+		<Preference
+        	android:title="Add IPsec VPN"
+            android:key="addPref" />
         <PreferenceCategory
-                android:title="First Category">
-                <CheckBoxPreference
-                        android:title="Checkbox Preference"
-                        android:defaultValue="false"
-                        android:summary="This preference can be true or false"
-                        android:key="checkboxPref" />
-                <ListPreference
-                        android:title="List Preference"
-                        android:summary="This preference allows to select an item in a array"
-                        android:key="listPref"
-                        android:defaultValue="digiGreen"
-                        android:entries="@array/listArray"
-                        android:entryValues="@array/listValues" />
-        </PreferenceCategory>
-        <PreferenceCategory
-                android:title="Second Category">
-        <EditTextPreference
-                android:title="Name"
-                android:key="namePref" />
-        <EditTextPreference
-                android:title="Remote Address"
-                android:key="remotePref" />
-        <EditTextPreference
-                android:title="Rekeying Interval"
-                android:key="intervalPref"
-                android:inputType="number"/>
-		<CheckBoxPreference
-                android:title="Initiate Rekeying"
-                android:defaultValue="true"
-                android:key="initiatePref" />
-        <EditTextPreference
-                android:name="EditText Preference"
-                android:title="Edit This Text"
-                android:key="editTextPref" />
-        <RingtonePreference
-                android:name="Ringtone Preference"
-                android:summary="Select a ringtone"
-                android:title="Ringtones"
-                android:key="ringtonePref" />
-        <PreferenceScreen
-                android:key="SecondPrefScreen"
-                android:title="Second PreferenceScreen"
-                android:summary="This is a second PreferenceScreen">
-                <EditTextPreference
-                        android:name="An other EditText Preference"
-                        android:summary="This is a preference in the second PreferenceScreen"
-                        android:title="Edit text"
-                        android:key="SecondEditTextPref" />
-        </PreferenceScreen>
-        <Preference
-                android:title="Custom Preference"
-                android:summary="This works almost like a button"
-                android:key="customPref" />
+                android:title="IPsec VPNs"
+                android:key="peersPref" >
         </PreferenceCategory>
 </PreferenceScreen>
