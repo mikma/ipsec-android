@@ -8,13 +8,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceActivity;
+import android.preference.PreferenceGroup;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -25,8 +32,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.lamerman.FileDialog;
 
@@ -63,6 +78,8 @@ public class IPsecToolsActivity extends PreferenceActivity {
 	private NativeService mBoundService;
 	private NativeCommand mNative;
 	private static final String ADD_PREFERENCE = "addPref";
+	private static final String PEERS_PREFERENCE = "peersPref";
+	private Map<Integer, Preference> peers;
 	
 	/*
 	public String getLocalIpAddress() {
@@ -107,7 +124,29 @@ public class IPsecToolsActivity extends PreferenceActivity {
 			}
 		});
 
-/*    	
+    	// For each id, update name
+		PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
+    	peersPref.removeAll();
+        SharedPreferences sharedPreferences =
+        	getPreferenceScreen().getSharedPreferences();
+        String peersStr = sharedPreferences.getString(PEERS_PREFERENCE, "");
+    	Log.i("IPsecToolsActivity", "Peers: " + peersStr);
+        
+        peers = new HashMap<Integer, Preference>();
+        StringTokenizer st = new StringTokenizer(peersStr);
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            Integer id = new Integer(token);
+        	Log.i("IPsecToolsActivity", "Add pref: " + id);
+        	Preference peerPref = new Preference(this);
+        	peerPref.setSummary(R.string.connect_peer);
+        	peersPref.addPreference(peerPref);
+            peers.put(id, peerPref); 
+        }
+
+    	
+
+    	/*    	
     	Log.i("IPsecToolsActivity", "onCreate:" + this);
             setContentView(R.layout.ipsec_tools_activity);
 
@@ -152,16 +191,57 @@ public class IPsecToolsActivity extends PreferenceActivity {
     	Log.i("IPsecToolsActivity", "onResume:" + this);
     	super.onResume();
     	registerReceiver(mReceiver, new IntentFilter("org.za.hem.ipsec_tools.DESTROYED"));
-    	doBindService();    	
+        registerForContextMenu(getListView());
+    	//doBindService();    	
+
+    	Set<Integer> keys = peers.keySet();
+    	Iterator<Integer> iter = keys.iterator();
+    	while (iter.hasNext()) {
+    		Integer key = iter.next();
+    		int id = key;
+    		
+    		SharedPreferences peerPreferences =
+    			getSharedPreferences(
+    					PeerPreferences.getSharedPreferencesName(this, id),
+    					Activity.MODE_PRIVATE);
+    		String name = peerPreferences.getString(PeerPreferences.NAME_PREFERENCE, "");
+    	
+    		peers.get(key).setTitle("Name:" + name);
+    	}
+        
+        // Set up a listener whenever a key changes
+    	// TODO register all peer listeners
+        //sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
     
     protected void onPause()
     {
     	Log.i("IPsecToolsActivity", "onPause:" + this);
     	super.onPause();
-    	doUnbindService();
+    	//doUnbindService();
     	unregisterReceiver(mReceiver);
+		unregisterForContextMenu(getListView());
+
+    	// Unregister the listener whenever a key changes
+    	// TODO unregister all peer listeners
+    	//getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);    
     }
+    
+	public void onCreateContextMenu (ContextMenu menu, View v,
+			ContextMenu.ContextMenuInfo menuInfo) {
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
+		ListView list = (ListView)v;
+		Preference pref = (Preference)list.getItemAtPosition(info.position);
+		String key = pref.getKey();
+
+		//if (key.startsWith("peer_")) {  				
+			Logger.getLogger(IPsecToolsActivity.class.getName()).log(
+					Level.WARNING, "onCreateContextMenu " + info.id + " " + info.position + " " + pref);
+		
+			MenuInflater inflater = getMenuInflater();
+			inflater.inflate(R.menu.peer_menu, menu);
+		//}
+	}
 
     protected void onStop()
     {

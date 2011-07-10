@@ -32,5 +32,9 @@
     <string name="native_service_connected">Native Service Connected</string>
     <string name="native_service_disconnected">Native Service Disconnected</string>
     <string name="stop">Stop</string>
+    <string name="connect_peer">Connect to peer</string>
+    <string name="disconnect_peer">Disconnect peer</string>
+    <string name="edit_peer">Edit peer</string>
+    <string name="delete_peer">Delete peer</string>
 </resources>
 

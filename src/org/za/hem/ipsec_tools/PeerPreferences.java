@@ -32,8 +32,9 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	public static final String PEER_ID = "PEER_ID";
 	public static final String EXTRA_ID = "org.za.hem.ipsec_tools.ID";
 	
-	private static final String TEMPLATE_PREFERENCE = "templatePref";
-	private static final String ID_PREFERENCE = "idPref";
+	static final String TEMPLATE_PREFERENCE = "templatePref";
+	static final String ID_PREFERENCE = "idPref";
+	static final String NAME_PREFERENCE = "namePref";
 	private static final String SDCARD_ROOT = "/sdcard";
 	
 	// FIXME
@@ -53,7 +54,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		}
 		
 		PreferenceManager manager = getPreferenceManager();
-		manager.setSharedPreferencesName(getSharedPreferencesName());
+		manager.setSharedPreferencesName(getSharedPreferencesName(this, mID));
 		addPreferencesFromResource(R.xml.peer_preferences);
 
 		// Get the template preference
@@ -61,7 +62,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		
 		// FIXME remove
 		SharedPreferences idPreference = getSharedPreferences(
-				getSharedPreferencesName(), Activity.MODE_PRIVATE);
+				getSharedPreferencesName(this, mID), Activity.MODE_PRIVATE);
 		SharedPreferences.Editor editor = idPreference.edit();
 		editor.putInt(ID_PREFERENCE, mID);
 		editor.commit();
@@ -90,7 +91,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 			String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
 
 			SharedPreferences templatePreference = getSharedPreferences(
-					getSharedPreferencesName(), Activity.MODE_PRIVATE);
+					getSharedPreferencesName(this, mID), Activity.MODE_PRIVATE);
 			SharedPreferences.Editor editor = templatePreference.edit();
 			editor.putString(TEMPLATE_PREFERENCE, filePath);
 			editor.commit();
@@ -125,7 +126,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		super.onPause();
 
 		// Unregister the listener whenever a key changes            
-		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);    
+		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
 	}
 	
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -147,7 +148,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		}
     }
 	
-	private String getSharedPreferencesName() {
-	    return getPackageName() + "_peer_" + mID;
+	public static String getSharedPreferencesName(Context context, int id) {
+	    return context.getPackageName() + "_peer_" + id;
 	}
 }

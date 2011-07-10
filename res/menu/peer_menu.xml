@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/connect_peer"
+          android:title="@string/connect_peer" />
+    <item android:id="@+id/disconnect_peer"
+          android:title="@string/disconnect_peer" />
+    <item android:id="@+id/edit_peer"
+          android:title="@string/edit_peer" />
+    <item android:id="@+id/delete_peer"
+          android:title="@string/delete_peer" />
+</menu>
