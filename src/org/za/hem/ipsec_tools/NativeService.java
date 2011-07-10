@@ -1,8 +1,5 @@
 package org.za.hem.ipsec_tools;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -108,9 +105,10 @@ public class NativeService extends Service {
     }
 
     private void foo() {
-		NativeCommand command = new NativeCommand(NativeService.this);
 
 		/*
+		NativeCommand command = new NativeCommand(NativeService.this);
+
 		Process process = new ProcessBuilder()
     		.command("/system/bin/ping", "android.com")
     		.redirectErrorStream(true)

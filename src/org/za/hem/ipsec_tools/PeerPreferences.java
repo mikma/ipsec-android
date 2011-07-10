@@ -19,7 +19,6 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.Preference.OnPreferenceClickListener;
-import android.widget.Toast;
 
 import com.lamerman.FileDialog;
 
@@ -156,7 +155,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		} else if (pref instanceof ListPreference) {
 			pref.setSummary("List " + val);
 		} else if (key.equals(TEMPLATE_PREFERENCE)) {
-			pref.setSummary("File " + val);
+			pref.setSummary(val.toString());
 		}
     }
 	

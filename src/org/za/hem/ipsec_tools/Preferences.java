@@ -24,10 +24,7 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 		addPreferencesFromResource(R.xml.preferences);
           
 		mEditTextPreference = (EditTextPreference)getPreferenceScreen().findPreference("editTextPref");
-		
-		PreferenceCategory mPeers = (PreferenceCategory)getPreferenceScreen().findPreference("peers");
-		mPeers.addPreference(new IPsecPreference(this));
-                                              
+		                                           
 		// Get the custom preference
 		Preference customPref = (Preference) findPreference("customPref");
 			customPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -92,22 +89,4 @@ public class Preferences extends PreferenceActivity implements OnSharedPreferenc
 	String ringtonePreference;
 	String secondEditTextPreference;
 	String customPref;
- 
-	private void getPrefs() {
-		// Get the xml/preferences.xml preferences
-		SharedPreferences prefs = PreferenceManager
-		.getDefaultSharedPreferences(getBaseContext());
-		CheckboxPreference = prefs.getBoolean("checkboxPref", true);
-		ListPreference = prefs.getString("listPref", "nr1");
-		editTextPreference = prefs.getString("editTextPref",
-		"Nothing has been entered");
-		ringtonePreference = prefs.getString("ringtonePref",
-		"DEFAULT_RINGTONE_URI");
-		secondEditTextPreference = prefs.getString("SecondEditTextPref",
-		"Nothing has been entered");
-		// Get the custom preference
-		SharedPreferences mySharedPreferences = getSharedPreferences(
-				"myCustomSharedPrefs", Activity.MODE_PRIVATE);
-                customPref = mySharedPreferences.getString("myCusomPref", "");
-	}
-}
+ }
