@@ -188,7 +188,19 @@ public class IPsecToolsActivity extends PreferenceActivity
             });
             */
     }
+
+    protected void connectPeer(final PeerID id) {
+    	// FIXME
+    }
     
+    protected void disconnectPeer(final PeerID id) {
+    	// FIXME
+    }
+    
+    protected void togglePeer(final PeerID id) {
+    	// FIXME
+    }
+
     protected void editPeer(final PeerID id) {
         Intent settingsActivity = new Intent(getBaseContext(),
                 PeerPreferences.class);
@@ -312,7 +324,22 @@ public class IPsecToolsActivity extends PreferenceActivity
     	//getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);    
     }
     
-	public void onCreateContextMenu (ContextMenu menu, View v,
+    @Override
+    protected void onStop()
+    {
+    	Log.i("IPsecToolsActivity", "onStop:" + this);
+    	super.onStop();
+    }
+    
+    @Override
+    protected void onDestroy()
+    {
+    	Log.i("IPsecToolsActivity", "onDestroy:" + this);
+    	super.onDestroy();
+    }
+        
+    @Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenu.ContextMenuInfo menuInfo) {
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
 		ListView list = (ListView)v;
@@ -340,10 +367,10 @@ public class IPsecToolsActivity extends PreferenceActivity
 	
 		switch (item.getItemId()) {
 		case R.id.connect_peer:
-			//connectPeer(info.id);
+			connectPeer(selectedID);
 			return true;
 		case R.id.disconnect_peer:
-			//disconnectPeer(info.id);
+			disconnectPeer(selectedID);
 			return true;
 		case R.id.edit_peer:
 			editPeer(selectedID);
@@ -361,19 +388,18 @@ public class IPsecToolsActivity extends PreferenceActivity
 		selectedID = null;
 	}
 	
-    protected void onStop()
-    {
-    	Log.i("IPsecToolsActivity", "onStop:" + this);
-    	super.onStop();
-    }
-    
-    protected void onDestroy()
-    {
-    	Log.i("IPsecToolsActivity", "onDestroy:" + this);
-    	super.onDestroy();
-    }
-    
-    
+	@Override
+	public boolean onPreferenceClick(Preference arg0) {
+		try {
+			PeerID id = PeerID.fromString(arg0.getKey());
+			Log.i("IPsecToolsActivity", "Click " + id);
+			togglePeer(id);
+			return true;
+		} catch (PeerID.KeyFormatException e) {
+			return false;
+		}
+	}
+
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
     	public void onReceive(Context context, Intent intent) {
     		//output("Receive destroyed");
@@ -435,16 +461,4 @@ public class IPsecToolsActivity extends PreferenceActivity
     	Toast toast = Toast.makeText(this, str, duration);
     	toast.show();
     }
-
-	@Override
-	public boolean onPreferenceClick(Preference arg0) {
-		try {
-			PeerID id = PeerID.fromString(arg0.getKey());
-			Log.i("IPsecToolsActivity", "Click " + id);
-			// FIXME call connect/disconnect
-			return true;
-		} catch (PeerID.KeyFormatException e) {
-			return false;
-		}
-	}
 }
