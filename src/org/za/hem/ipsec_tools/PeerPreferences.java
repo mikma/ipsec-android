@@ -41,17 +41,13 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	private static final int REQUEST_SAVE = 1;
 	private static final int REQUEST_LOAD = 2;
 	
-	private int mID;
+	private PeerID mID;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		mID = getIntent().getIntExtra(EXTRA_ID, -1);
-		if (mID < 0) {
-			setResult(RESULT_FIRST_USER);
-			finish();
-		}
+
+		mID = new PeerID(getIntent().getIntExtra(EXTRA_ID, -1));
 		
 		PreferenceManager manager = getPreferenceManager();
 		manager.setSharedPreferencesName(getSharedPreferencesName(this, mID));
@@ -64,7 +60,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		SharedPreferences idPreference = getSharedPreferences(
 				getSharedPreferencesName(this, mID), Activity.MODE_PRIVATE);
 		SharedPreferences.Editor editor = idPreference.edit();
-		editor.putInt(ID_PREFERENCE, mID);
+		editor.putInt(ID_PREFERENCE, mID.intValue());
 		editor.commit();
 
 		Preference customPref = findPreference(TEMPLATE_PREFERENCE);
@@ -148,7 +144,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		}
     }
 	
-	public static String getSharedPreferencesName(Context context, int id) {
-	    return context.getPackageName() + "_peer_" + id;
+	public static String getSharedPreferencesName(Context context, PeerID id) {
+	    return context.getPackageName() + "_" + id;
 	}
 }
