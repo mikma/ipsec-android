@@ -5,14 +5,6 @@
 		        <EditTextPreference
                 		android:title="Name"
                 		android:key="namePref" />
-                <CheckBoxPreference
-                        android:title="Checkbox Preference"
-                        android:defaultValue="false"
-                        android:summary="This preference can be true or false"
-                        android:key="checkboxPref" />
-                <Preference
-                        android:title="Peer ID"
-                        android:key="idPref" />
  				<Preference
         		        android:title="Template file"
                 		android:key="templatePref" />
