@@ -32,6 +32,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.HashMap;
@@ -116,9 +117,8 @@ public class IPsecToolsActivity extends PreferenceActivity {
 			public boolean onPreferenceClick(Preference preference) {
                 Intent settingsActivity = new Intent(getBaseContext(),
                         PeerPreferences.class);
-                // FIXME
-                settingsActivity.putExtra(PeerPreferences.EXTRA_ID,
-                		17);
+                int id = createPeer();
+                settingsActivity.putExtra(PeerPreferences.EXTRA_ID, id);
                 startActivity(settingsActivity);
 				return true;
 			}
@@ -178,6 +178,42 @@ public class IPsecToolsActivity extends PreferenceActivity {
                     }
             });
             */
+    }
+    
+    protected int createPeer()
+    {
+    	PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
+        SharedPreferences sharedPreferences =
+        	getPreferenceScreen().getSharedPreferences();
+        // Start transaction
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+    	Set<Integer> set = peers.keySet();
+    	Integer[] ids = new Integer[set.size()];
+    	set.toArray(ids);
+    	Arrays.sort(ids);
+    	
+    	Integer last = -1;
+    	for (int i = 0; i < ids.length; i++) {
+    		Integer id = ids[i];
+    		if (id != last + 1) {
+    			break;
+    		}
+    		last = id;
+    	}
+    	
+    	Integer newId = last + 1;
+
+    	Preference peerPref = new Preference(this);
+    	peerPref.setSummary(R.string.connect_peer);
+    	peersPref.addPreference(peerPref);
+        peers.put(newId, peerPref);
+    	
+    	String peersStr = Utils.join(ids," ") + " " + newId;
+        editor.putString(PEERS_PREFERENCE, peersStr);
+    	Log.i("IPsecToolsActivity", "Peers: " + peersStr);
+        editor.commit();
+    	return newId;
     }
     
     protected void onStart()
