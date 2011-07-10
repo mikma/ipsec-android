@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import java.util.Map;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -132,9 +133,24 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		UpdateSummary(pref, key, val);
 	}
     
+    @Override
+	public void onBackPressed() {
+        SharedPreferences sharedPreferences = getPreferenceScreen()
+        	.getSharedPreferences();
+    	if (sharedPreferences.getString(NAME_PREFERENCE, "").length() == 0) {
+    		//
+    		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    		builder.setMessage("Foo");
+    		AlertDialog alert = builder.create();
+    		alert.show();
+    		return;
+    	}
+		finish();
+	}
+    
     private void UpdateSummary(Preference pref, String key, Object val) {
     	if (pref instanceof EditTextPreference) {
-			pref.setSummary("Text " + val);
+			pref.setSummary(val.toString());
 		} else if (pref instanceof CheckBoxPreference) {
 			pref.setSummary("Check " + val);
 		} else if (pref instanceof ListPreference) {

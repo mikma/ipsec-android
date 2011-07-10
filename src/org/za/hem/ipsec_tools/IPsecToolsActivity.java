@@ -35,6 +35,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
@@ -85,7 +86,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private static final String ADD_PREFERENCE = "addPref";
 	private static final String PEERS_PREFERENCE = "peersPref";
 	private static final String COUNT_PREFERENCE = "countPref";
-	private Map<PeerID, Preference> peers;
+	private ArrayList<Preference> peers;
 	private PeerID selectedID;
 	
 	/*
@@ -135,25 +136,27 @@ public class IPsecToolsActivity extends PreferenceActivity
     	peersPref.removeAll();
         SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
-        PeerID id = new PeerID(0);
         int count = sharedPreferences.getInt(COUNT_PREFERENCE,0);
-        peers = new HashMap<PeerID, Preference>();
+        peers = new ArrayList<Preference>(count);
         
+    	Log.i("IPsecToolsActivity", "Count: " + count);
         for (int i = 0; i < count; i++) {
+        	PeerID id = new PeerID(i);
         	String key = id.toString();
         	Log.i("IPsecToolsActivity", "Add pref: " + key);
-    		Preference peerPref = new Preference(this);
-    		peerPref.setKey(key);
-    		peerPref.setSummary(R.string.connect_peer);
-    		peerPref.setOnPreferenceClickListener(this);
         	if (sharedPreferences.getBoolean(key, true)) {
+        		Preference peerPref = new Preference(this);
+        		peerPref.setKey(key);
+        		peerPref.setSummary(R.string.connect_peer);
+        		peerPref.setOnPreferenceClickListener(this);
             	Log.i("IPsecToolsActivity", "Add peerPref: " + key);
         		peersPref.addPreference(peerPref);
+        		peers.add(peerPref);
+        	} else {
+        		peers.add(null);
         	}
-    		peers.put(id, peerPref);
     		id = id.next();
         }
-    	Log.i("IPsecToolsActivity", "Add peerPref[0]: " + peers.get(new PeerID(0)));
         
         /*    	
     	Log.i("IPsecToolsActivity", "onCreate:" + this);
@@ -210,8 +213,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     
     protected void deletePeer(PeerID id) {
 		PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
-		Preference peerPref = peers.get(id);
-    	Log.i("IPsecToolsActivity", "Remove peerPref: " + peers.size() + " " + id + " " + peerPref + " " + peers.get(new PeerID(0)));
+		Preference peerPref = peers.get(id.intValue());
+    	Log.i("IPsecToolsActivity", "Remove peerPref: " + peers.size() + " " + id + " " + peerPref);
 		peersPref.removePreference(peerPref);
 
 		SharedPreferences.Editor editor;
@@ -241,21 +244,13 @@ public class IPsecToolsActivity extends PreferenceActivity
         // Start transaction
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-    	Set<PeerID> set = peers.keySet();
-    	PeerID[] ids = new PeerID[set.size()];
-    	set.toArray(ids);
-    	Arrays.sort(ids);
+        int empty = peers.indexOf(null);
+        if (empty == -1) {
+        	empty = sharedPreferences.getInt(COUNT_PREFERENCE, 0);
+        	peers.ensureCapacity(empty + 1);
+        }
     	
-    	PeerID last = new PeerID();
-    	for (int i = 0; i < ids.length; i++) {
-    		PeerID id = ids[i];
-    		if (id != last.next()) {
-    			break;
-    		}
-    		last = id;
-    	}
-    	
-    	PeerID newId = last.next();
+    	PeerID newId = new PeerID(empty);
     	String key = newId.toString();
 
     	Preference peerPref = new Preference(this);
@@ -263,10 +258,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     	peerPref.setSummary(R.string.connect_peer);
     	peerPref.setOnPreferenceClickListener(this);
     	peersPref.addPreference(peerPref);
-        peers.put(newId, peerPref);
-        if (peerPref != peers.get(new PeerID(newId.intValue()))) {
-        	throw new RuntimeException();
-        }
+        peers.set(empty, peerPref);
     	
         editor.putBoolean(key, true);
         editor.commit();
@@ -290,19 +282,18 @@ public class IPsecToolsActivity extends PreferenceActivity
 		SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
 
-		Set<PeerID> keys = peers.keySet();
-    	Iterator<PeerID> iter = keys.iterator();
-    	while (iter.hasNext()) {
-    		PeerID id = iter.next();
-    		
-    		if (sharedPreferences.getBoolean(id.toString(), true)) {
+		for (int i=0; i < peers.size(); i++) {
+    		PeerID id = new PeerID(i);
+
+    		if (sharedPreferences.getBoolean(id.toString(), true)
+    				&& peers.get(i) != null ) {
     			SharedPreferences peerPreferences =
     				getSharedPreferences(
     						PeerPreferences.getSharedPreferencesName(this, id),
     						Activity.MODE_PRIVATE);
     			String name = peerPreferences.getString(PeerPreferences.NAME_PREFERENCE, "");
     	
-    			peers.get(id).setTitle(name);
+    			peers.get(i).setTitle(name);
     		}
     	}
         
@@ -399,8 +390,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 			return false;
 		}
 	}
-
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+	
+	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
     	public void onReceive(Context context, Intent intent) {
     		//output("Receive destroyed");
             Log.i("LocalIPSecToolsActivity", "received destroyed");
