@@ -67,6 +67,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private static final String COUNT_PREFERENCE = "countPref";
 	private ArrayList<Preference> peers;
 	private PeerID selectedID;
+	private int mUseCount;
 	
 	/*
 	public String getLocalIpAddress() {
@@ -90,6 +91,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     public void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
 
+    	mUseCount = 0;
 		addPreferencesFromResource(R.xml.preferences);
 
         mNative = new NativeCommand(this);
@@ -139,10 +141,18 @@ public class IPsecToolsActivity extends PreferenceActivity
 
     protected void connectPeer(final PeerID id) {
     	// FIXME
+    	if (mUseCount == 0) {
+    		doBindService();
+    	}
+    	mUseCount++;
     }
     
     protected void disconnectPeer(final PeerID id) {
     	// FIXME
+    	mUseCount--;
+    	if (mUseCount == 0) {
+        	doUnbindService();
+    	}
     }
     
     protected void togglePeer(final PeerID id) {
@@ -222,7 +232,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     	super.onResume();
     	registerReceiver(mReceiver, new IntentFilter("org.za.hem.ipsec_tools.DESTROYED"));
         registerForContextMenu(getListView());
-    	//doBindService();    	
 
 		SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
@@ -251,7 +260,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     {
     	Log.i("IPsecToolsActivity", "onPause:" + this);
     	super.onPause();
-    	//doUnbindService();
     	unregisterReceiver(mReceiver);
 		unregisterForContextMenu(getListView());
 
@@ -374,10 +382,10 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    // class name because we want a specific service implementation that
 	    // we know will be running in our own process (and thus won't be
 	    // supporting component replacement by other applications).
-		//ComponentName nativeService = startService(new Intent(IPsecToolsActivity.this, 
-	    //        NativeService.class));
+		ComponentName nativeService = startService(new Intent(IPsecToolsActivity.this, 
+	            NativeService.class));
 	    bindService(new Intent(IPsecToolsActivity.this, 
-	            NativeService.class), mConnection, Context.BIND_AUTO_CREATE);
+	            NativeService.class), mConnection, 0);
 	    mIsBound = true;
 	}
 	
@@ -385,8 +393,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    if (mIsBound) {
 	        // Detach our existing connection.
 	        unbindService(mConnection);
-        	//stopService(new Intent(IPsecToolsActivity.this, 
-        	//		NativeService.class));
+        	stopService(new Intent(IPsecToolsActivity.this, 
+        			NativeService.class));
 	        mIsBound = false;
 	    }
 	}

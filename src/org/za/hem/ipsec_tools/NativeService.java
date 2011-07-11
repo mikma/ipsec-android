@@ -1,5 +1,13 @@
 package org.za.hem.ipsec_tools;
 
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -42,9 +50,10 @@ public class NativeService extends Service {
         Log.i("LocalService", "Received start id " + startId + ": " + intent);
         
         if (intent.getAction() == null ) {
+        	Log.i("LocalService", "Start thread");
         	new Thread(new Runnable() {
         		public void run() {
-        			foo();
+        			doRun();
         		}
         	}).start();
         } else if (intent.getAction().equals(ACTION_NOTIFICATION)) {
@@ -104,24 +113,38 @@ public class NativeService extends Service {
         mNM.notify(NOTIFICATION, notification);
     }
 
-    private void foo() {
-
-		/*
+    private void doRun() {
 		NativeCommand command = new NativeCommand(NativeService.this);
 
-		Process process = new ProcessBuilder()
-    		.command("/system/bin/ping", "android.com")
+		Process process = null;
+
+		try {
+	        Log.i("LocalService", "Start process");
+			process = new ProcessBuilder()
+    		.command("/data/data/org.za.hem.ipsec_tools/app_bin/racoon.sh",
+    				"-F", "-v", "-d",
+    				"-f",
+    				"/data/data/org.za.hem.ipsec_tools/app_bin/racoon.conf",
+    				"-l",
+    				"/sdcard/ipsec/racoon.log")
     		.redirectErrorStream(true)
     		.start();
-    	try {
+
     		InputStream in = process.getInputStream();
     		OutputStream out = process.getOutputStream();
-
-    		readStream(in);
+    		
+    		BufferedReader reader = new BufferedReader(
+    				new InputStreamReader(in));
+    		int read;
+    		char[] buffer = new char[4096];
+    		while ((read = reader.read(buffer)) > 0) {
+    		}
+    		reader.close();
+    	} catch (IOException e) {
+    		throw new RuntimeException(e);
     	}
-    	finally {
+		finally {
     		process.destroy();
     	}
-    	*/
     }
 }
