@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
+import org.za.hem.ipsec_tools.racoon.Admin;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -130,6 +132,15 @@ public class NativeService extends Service {
     		.redirectErrorStream(true)
     		.start();
 
+			// FIXME
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			Admin admin = new Admin();
+			admin.foo();
+			
     		InputStream in = process.getInputStream();
     		OutputStream out = process.getOutputStream();
     		
