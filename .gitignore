@@ -1,8 +1,4 @@
-assets/*.so
-assets/openssl
-assets/racoon
-assets/racoonctl
-assets/setkey
+assets/ipsec-tools.zip
 bin/
 external/tarballs/
 gen/
