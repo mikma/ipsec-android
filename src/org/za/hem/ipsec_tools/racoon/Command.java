@@ -1,6 +1,8 @@
 package org.za.hem.ipsec_tools.racoon;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -69,27 +71,66 @@ public class Command {
 			InetSocketAddress src,
 			InetSocketAddress dst) {
 		
-		// FIXME INET6
-		short prefixLen = 32;
+		// TODO check src.length == dst.length
+		
+		int prefixLen = dst.getAddress().getAddress().length * 8;
 		
 		ByteBuffer index = buildComIndexes(
 				src, prefixLen,
 				dst, prefixLen,
-				(short)0);
-		Log.i("ipsec-android", "index: " + index);
+				0);
 		int indexLen = index.position();
 		index.rewind();
 
 		ByteBuffer header = buildHeader(ADMIN_ESTABLISH_SA,
 										ADMIN_PROTO_ISAKMP,
 										indexLen);
-		Log.i("ipsec-android", "header: " + header);
 		
 		header.put(index);
-		Log.i("ipsec-android", "header: " + header);
 		return header;
 	}
 	
+	/**
+	 * Delete all security association to destination.
+	 */
+	public static ByteBuffer buildDeleteAllSADst(
+			InetSocketAddress dst) {
+		
+		int prefixLen = dst.getAddress().getAddress().length * 8;
+		InetAddress anyAddr;
+				
+		if (prefixLen == 32) { 
+			try {
+				anyAddr = InetAddress.getByName("0.0.0.0");
+			} catch (UnknownHostException e) {
+				throw new RuntimeException(e);
+			}
+		} else if (prefixLen == 128){
+			try {
+				anyAddr = InetAddress.getByName("::");
+			} catch (UnknownHostException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			throw new RuntimeException("Invalid destination address length.");
+		}
+		
+		InetSocketAddress src = new InetSocketAddress(anyAddr, 0);
+		ByteBuffer index = buildComIndexes(
+				src, prefixLen,
+				dst, prefixLen,
+				0);
+		int indexLen = index.position();
+		index.rewind();
+
+		ByteBuffer header = buildHeader(ADMIN_DELETE_ALL_SA_DST,
+										ADMIN_PROTO_ISAKMP,
+										indexLen);
+		
+		header.put(index);
+		return header;
+	}
+
 	protected static ByteBuffer buildHeader(int cmd,
 											int proto, int len) {
 		int totalLen = len + 8;
@@ -130,9 +171,7 @@ public class Command {
 			putUnsignedShort(bb, AF_INET);
 			bb.order(ByteOrder.BIG_ENDIAN);
 			putUnsignedShort(bb, sa.getPort());
-			Log.i("ipsec-android", "begin addr: " + bb);
 			bb.put(addr);
-			Log.i("ipsec-android", "end addr: " + bb);
 		} else if (addr.length == 16){
 			putUnsignedShort(bb, AF_INET6);
 			bb.order(ByteOrder.BIG_ENDIAN);
@@ -150,15 +189,15 @@ public class Command {
 
 	protected static ByteBuffer buildComIndexes(
 			InetSocketAddress src,
-			short prefs,
+			int srcPrefixLen,
 			InetSocketAddress dst,
-			short prefd,
-			short upperLayerProto) {
+			int dstPrefixLen,
+			int upperLayerProto) {
 		ByteBuffer bb = allocate(4 + 128 + 128);
 		
-		putUnsignedByte(bb, prefs);
-		putUnsignedByte(bb, prefd);
-		putUnsignedByte(bb, upperLayerProto);
+		putUnsignedByte(bb, (short)srcPrefixLen);
+		putUnsignedByte(bb, (short)dstPrefixLen);
+		putUnsignedByte(bb, (short)upperLayerProto);
 		putUnsignedByte(bb, (short)0); // reserved
 		putSocketAddressStorage(bb, src);
 		putSocketAddressStorage(bb, dst);

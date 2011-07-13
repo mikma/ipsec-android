@@ -2,11 +2,15 @@ package org.za.hem.ipsec_tools;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
 import android.content.Context;
 
 public class NativeCommand {
@@ -42,6 +46,50 @@ public class NativeCommand {
     }
     
     /**
+     * Copy binary file from ZIP assets into bin directory.
+     */
+    public void putZipBinary(ZipInputStream zis, ZipEntry ze) throws IOException {
+		String fileName = ze.getName();
+		File file = new File(mBinDir, fileName);
+		
+		if (file.lastModified() >= ze.getTime()) {
+			// FIXME add log
+			return;
+		}
+		
+		int read;
+		byte[] buffer = new byte[4096];
+		OutputStream output = new FileOutputStream(file);
+		
+		try {
+			while ((read = zis.read(buffer)) > 0) {
+				output.write(buffer, 0, read);
+			}
+			
+			chmod(file, 711);
+		} finally {
+			output.close();
+		}
+    }
+    
+	/**
+     * Copy binary files from ZIP assets into bin directory.
+     */
+    public void putZipBinaries(String zipName) throws IOException {
+		ZipInputStream zis =
+			new ZipInputStream(mContext.getAssets().open(zipName));
+
+		try {
+			ZipEntry ze;
+			while ((ze = zis.getNextEntry()) != null) {
+				putZipBinary(zis, ze);
+			}
+		} finally {
+			 zis.close();
+		}		 
+    }
+
+    /**
      * Set file mode
      * @param file File to modify
      * @param mode New file mode
@@ -56,7 +104,7 @@ public class NativeCommand {
      * @param cmd System command to run
      * @return stdout
      */
-    private String system(String cmd) {
+    public static String system(String cmd) {
     	try {
     		// Executes the command.
     		Process process = Runtime.getRuntime().exec(cmd);
@@ -85,7 +133,7 @@ public class NativeCommand {
     	}
     }
     
-    private String system(String prog, String[] parameters)
+    public static String system(String prog, String[] parameters)
     {
     	StringBuffer buf = new StringBuffer(4096);
     	

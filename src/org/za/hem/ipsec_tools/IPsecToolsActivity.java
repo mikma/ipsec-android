@@ -25,6 +25,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,17 +48,13 @@ import java.util.logging.Logger;
 public class IPsecToolsActivity extends PreferenceActivity
 		implements OnPreferenceClickListener {
 	final private String binaries[] = {
-			"libcrypto.so",
-			"libipsec.so",
-			"libracoonlib.so",
-			"libssl.so",
-			"openssl",
-			"racoon",
-			"racoonctl",
 			"racoon.sh",
-			"setkey",
+			"racoonctl.sh",
 			"setkey.sh"
  	};
+    // FIXME debugging
+	private final boolean DEBUG = true;
+
 	private Handler handler = new Handler();
 	private boolean mIsBound;
 	private NativeService mBoundService;
@@ -91,14 +88,23 @@ public class IPsecToolsActivity extends PreferenceActivity
     public void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
 
-    	mUseCount = 0;
+        if (DEBUG) {
+        	NativeCommand.system("killall racoon");
+        }
+
+        mUseCount = 0;
 		addPreferencesFromResource(R.xml.preferences);
 
         mNative = new NativeCommand(this);
         for (int i=0; i < binaries.length; i++) {
         	mNative.putBinary(binaries[i]);
         }
-
+        try {
+			mNative.putZipBinaries("ipsec-tools.zip");
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}        
+        
 		Preference addPref = findPreference(ADD_PREFERENCE);
 		addPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			public boolean onPreferenceClick(Preference preference) {
@@ -136,7 +142,11 @@ public class IPsecToolsActivity extends PreferenceActivity
         		peers.add(null);
         	}
     		id = id.next();
-        }        
+        }
+        
+        if (DEBUG) {
+        	doBindService();
+        }
     }
 
     protected void connectPeer(final PeerID id) {
