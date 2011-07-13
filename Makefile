@@ -27,7 +27,7 @@ build:
 	touch --date="2011-03-06" external/ipsec-tools/Android.mk && OPENSSL_INC=$(PWD)/external/openssl/include OPENSSL_LIB=$(PWD)/external/openssl/libs/armeabi ndk-build -C external/ipsec-tools
 
 install: build
-	cp $(FILES) assets/
+	zip -j assets/ipsec-tools.zip $(FILES)
 
 push:
 	adb push external/openssl/libs/armeabi/libcrypto.so $(PREFIX)
