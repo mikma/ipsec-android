@@ -19,6 +19,8 @@ public class Admin {
 		com.send(Command.buildEstablishSA(src, dst));
 		Command cmd = com.receive();
 		handle(cmd);
+		cmd = com.receive();
+		handle(cmd);
 		
 		com.close();
 	}

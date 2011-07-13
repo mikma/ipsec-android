@@ -1,5 +1,7 @@
 package org.za.hem.ipsec_tools.racoon;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -62,7 +64,98 @@ public class Command {
 	
 	public static final int AF_INET = 2;
 	public static final int AF_INET6 = 10;
+	
+	public static final int HEADER_LEN = 8;
+	
+	private int mLen;
+	private int mCmd;
+	private short mErrno;
+	private int mProto;
 
+	public int getLen() {
+		return mLen;
+	}
+
+	public int getCmd() {
+		return mCmd;
+	}
+
+	public short getErrno() {
+		return mErrno;
+	}
+
+	public int getProto() {
+		return mProto;
+	}
+	
+	protected Command(int cmd, int proto, int len) {
+		mCmd = cmd;
+		mProto = proto;
+		mLen = len;
+	}
+
+	public static Command receive(InputStream is) throws IOException {
+		int res;
+		byte[] buf = new byte[HEADER_LEN];
+		
+		res = is.read(buf, 0, HEADER_LEN);
+		if (res < 0)
+			throw new IOException("Bad data");
+		if (res != HEADER_LEN)
+			throw new IOException("Expected " + HEADER_LEN + " bytes, got " + res);
+		
+		ByteBuffer bb = wrap(buf);
+		int lenLow = getUnsignedShort(bb);
+		int cmd = getUnsignedShort(bb);
+		int pos = bb.position();
+		short errno = bb.getShort(pos);
+		int lenHigh = getUnsignedShort(bb);
+		int proto = getUnsignedShort(bb);
+		int len;
+		
+		if (errno != 0 && (cmd & ADMIN_FLAG_LONG_REPLY) == 0) {
+			//cmd.mErrno = errno;
+			// FIXME
+			throw new RuntimeException("Errno: " + errno);
+		}
+		
+		if ((cmd & ADMIN_FLAG_LONG_REPLY) != 0) {
+			len = lenLow + (lenHigh << 16);
+		} else {
+			len = lenLow;
+		}
+		
+		final int dataLen = len - HEADER_LEN; 
+		byte[] dataBuf = new byte[dataLen];
+		
+		int p = 0;
+		while (p < dataLen) {
+			Log.i("ipsec-tools", "Read dataLen:" + dataLen + " p:" + p);
+			
+			if ((res = is.read(dataBuf, p, dataLen - p)) < 0) {
+				throw new RuntimeException("read");
+			}
+			
+			p = p + res;
+		}
+		
+		int c = cmd & ~ADMIN_FLAG_LONG_REPLY;
+		Log.i("ipsec-tools", "Command: " + c);
+		
+		switch (cmd & ~ADMIN_FLAG_LONG_REPLY) {
+		case ADMIN_SHOW_SCHED:
+			return null;
+		case ADMIN_SHOW_EVT:
+			return Event.create(proto, len, dataBuf);
+		case ADMIN_GET_SA_CERT:
+			return null;
+		case ADMIN_SHOW_SA:
+			return null;
+		default:
+			return new Command(cmd, proto, len);
+		}
+	}
+	
 	public static ByteBuffer buildShowEvt() {
 		return buildHeader(ADMIN_SHOW_EVT, 0, 0);					
 	}
@@ -148,16 +241,74 @@ public class Command {
 		return bb;
 	}
 	
+	protected static ByteBuffer wrap(byte[] b) {
+		ByteBuffer bb = ByteBuffer.wrap(b);
+		bb.order(ByteOrder.nativeOrder());
+		return bb;
+	}
+	
+	protected static int getUnsignedByte(ByteBuffer bb) {
+		return ((int)bb.get() & 0xff);
+	}
+
 	protected static void putUnsignedByte(ByteBuffer bb, short value) {
 		bb.put((byte)(value & 0xff));
 	}
 
+	protected static int getUnsignedShort(ByteBuffer bb) {
+		return ((int)bb.getShort() & 0xffff);
+	}
+	
 	protected static void putUnsignedShort(ByteBuffer bb, int value) {
 		bb.putShort((short)(value & 0xffff));
 	}
 
+	protected static long getUnsignedInt(ByteBuffer bb) {
+		return ((long)bb.getInt() & 0xffffffffL);
+	}
+	
+	protected static long getUnsignedInt(ByteBuffer bb, int pos) {
+		return ((long)bb.getInt(pos) & 0xffffffffL);
+	}
+
 	protected static void putUnsignedInt(ByteBuffer bb, long value) {
-		bb.putInt((int)(value & 0xffffffff));
+		bb.putInt((int)(value & 0xffffffffL));
+	}
+
+	protected static InetSocketAddress getSocketAddressStorage(ByteBuffer bb) {
+		ByteOrder tmp = bb.order();
+		int pos = bb.position();
+		int family = getUnsignedShort(bb);
+		bb.order(ByteOrder.BIG_ENDIAN);
+		int port = getUnsignedShort(bb);
+		byte[] addr;
+		
+		switch (family) {
+		case AF_INET:
+			addr = new byte[4];
+			long intAddr = getUnsignedInt(bb, bb.position());
+			Log.i("ipsec-tools", "sa " + family + " " + port + " " + intAddr);
+			bb.get(addr);
+			break;
+		case AF_INET6:
+			getUnsignedInt(bb); // Should be 0
+			addr = new byte[16];
+			bb.get(addr);
+			getUnsignedInt(bb); // Should be 0
+			break;
+		default:
+			bb.order(tmp);
+			throw new RuntimeException("Unknown address family: " + family);
+		}
+		
+		bb.position(pos + 128);
+		bb.order(tmp);
+		
+		try {
+			return new InetSocketAddress(InetAddress.getByAddress(addr), port);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	protected static void putSocketAddressStorage(ByteBuffer bb,
@@ -202,5 +353,9 @@ public class Command {
 		putSocketAddressStorage(bb, src);
 		putSocketAddressStorage(bb, dst);
 		return bb;
+	}
+	
+	public String toString() {
+		return "Command: " + mCmd + " " + mProto + " " + mLen;
 	}
 }
