@@ -34,6 +34,7 @@ public class ComSocket {
 	}
 	
 	public void close() throws IOException {
+		Log.i("ipsec-tools", "Close racoon com socket");
 		mOs.close();
 		mSocket.close();
 	}

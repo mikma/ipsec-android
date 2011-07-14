@@ -1,40 +1,114 @@
 package org.za.hem.ipsec_tools.racoon;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 public class Admin {
-	public static final String SOCK_PATH = "/tmp/racoon.sock";
+	// FIXME
+	public static final String SOCK_PATH = "/data/data/org.za.hem.ipsec_tools/app_bin/racoon.sock";
+	public static final int MESSAGE_COMMAND = 2;
 	
-	public void foo() throws IOException {
-		ComSocket com = new ComSocket(SOCK_PATH);
-		
+	private Thread mThread;
+	private ComSocket mCom;
+	private OnCommandListener mListener;
+	
+	public interface OnCommandListener {
+		public abstract void onCommand(Command cmd);
+	}
+	
 //		com.send(Command.buildShowEvt());
+	
+	public void start() throws IOException {
+		if (mCom != null && mThread != null)
+			return;
 		
-		InetAddress dstAddr = InetAddress.getByName("gw.hem.za.org");
-		DatagramSocket sock = new DatagramSocket();
-		sock.connect(dstAddr, 4500);
-		InetAddress srcAddr = sock.getLocalAddress();
-
-		// vpn-connect <ip> == establish-sa isakpm inet <srcip> <dstip>
-		InetSocketAddress dst = new InetSocketAddress(dstAddr, 0);
-		//InetSocketAddress src = new InetSocketAddress("192.168.1.179", 0);
-		InetSocketAddress src = new InetSocketAddress(srcAddr, 0);
-		Log.i("ipsec-tools", "vpn-connect " + src + "->" + dst);
-		com.send(Command.buildEstablishSA(src, dst));
-		Command cmd = com.receive();
-		handle(cmd);
-		cmd = com.receive();
-		handle(cmd);
+		if (mCom != null) {
+			mCom.close();
+			// FIXME remove socket file SOCK_PATH
+		}
 		
-		com.close();
+		// Wait for racoon to creat local unix domain socket
+		File file = new File(SOCK_PATH);
+		for (int i=0; i < 10; i++) {
+			if (file.exists())
+				break;
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				break;
+			}
+		}
+		
+		mCom = new ComSocket(SOCK_PATH);
+		
+		mThread = new Thread(new Runnable() {
+			public void run() {
+				try {
+					while (true) {
+						Command cmd = mCom.receive();
+						if (cmd != null)
+							Message.obtain(mHandler, MESSAGE_COMMAND, cmd).sendToTarget();
+					}
+				} catch (IOException e) {
+					//throw new RuntimeException(e);
+				}
+				Log.i("ipsec-tools", "Admin com socket EOF");
+			}
+			
+		});
+		mThread.start();
 	}
 	
-	protected void handle(Command cmd) {
-		Log.i(this.getClass().toString(), "Handle command " + cmd);
+	public void stop() throws IOException {
+		if (mCom != null) {
+			Log.i("ipsec-tools", "Stop admin");
+			mCom.close();
+			try {
+				mThread.join(1000);
+			} catch (InterruptedException e) {
+			}
+			mCom = null;
+			mThread = null;
+		}
+		/*File file = new File(SOCK_PATH);
+		if (file.exists())
+			file.delete();*/
 	}
+	
+	// vpn-connect <ip> == establish-sa isakpm inet <srcip> <dstip>
+	
+	public void vpnConnect(InetAddress vpnGateway) throws IOException {
+		mCom.send(Command.buildVpnConnect(vpnGateway));
+	}
+	
+	public void vpnDisconnect(InetAddress vpnGateway) throws IOException {
+		Log.i("ipsec-tools", "vpn-disconnect " + vpnGateway);
+		mCom.send(Command.buildVpnDisconnect(vpnGateway));		
+	}
+	
+	public void showEvt() throws IOException {
+		Log.i("ipsec-tools", "show-event");
+		mCom.send(Command.buildShowEvt());
+	}
+	
+	public void setOnCommandListener(OnCommandListener listener) {
+		mListener = listener;
+	}
+	
+	private Handler mHandler = new Handler() {		
+		public void handleMessage(Message msg) {
+			Command cmd = (Command)msg.obj;
+			Log.i(this.getClass().toString(), "Handle command " + cmd);
+			if (mListener != null)
+				mListener.onCommand(cmd);
+		}
+	};
 }

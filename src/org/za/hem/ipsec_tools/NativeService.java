@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.InetAddress;
 
 import org.za.hem.ipsec_tools.racoon.Admin;
+import org.za.hem.ipsec_tools.racoon.Command;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -16,14 +18,19 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
+import android.os.Message;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 
 
 public class NativeService extends Service {
-	final public static String ACTION_NOTIFICATION = "org.za.hem.ipsec_tools.NOTIFICATION";
+	public static final int HANDLER_RACOON_STARTED = 1;
+	public static final String ACTION_NOTIFICATION = "org.za.hem.ipsec_tools.NOTIFICATION";
 	
 	private NotificationManager mNM;
+	private Admin mAdmin;
 	
 	// Unique Identification Number for the Notification.
     // We use it on Notification start, and to cancel it.
@@ -52,10 +59,21 @@ public class NativeService extends Service {
         Log.i("LocalService", "Received start id " + startId + ": " + intent);
         
         if (intent.getAction() == null ) {
+			mAdmin = new Admin();
+			/*
+			try {
+				// FIXME DEBUG
+				mAdmin.stop();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}*/
+
         	Log.i("LocalService", "Start thread");
         	new Thread(new Runnable() {
         		public void run() {
-        			doRun();
+        			// FIXME DEBUGing code
+        			//doRun();
+            		Message.obtain(mHandler, HANDLER_RACOON_STARTED).sendToTarget();
         		}
         	}).start();
         } else if (intent.getAction().equals(ACTION_NOTIFICATION)) {
@@ -117,14 +135,13 @@ public class NativeService extends Service {
 
     private void doRun() {
 		NativeCommand command = new NativeCommand(NativeService.this);
-
 		Process process = null;
-
+		
 		try {
-	        Log.i("LocalService", "Start process");
+			Log.i("LocalService", "Start process");
 			process = new ProcessBuilder()
     		.command("/data/data/org.za.hem.ipsec_tools/app_bin/racoon.sh",
-    				"-F", "-v", "-d",
+    				"-v", "-d",
     				"-f",
     				"/data/data/org.za.hem.ipsec_tools/app_bin/racoon.conf",
     				"-l",
@@ -132,15 +149,6 @@ public class NativeService extends Service {
     		.redirectErrorStream(true)
     		.start();
 
-			// FIXME
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-			Admin admin = new Admin();
-			admin.foo();
-			
     		InputStream in = process.getInputStream();
     		OutputStream out = process.getOutputStream();
     		
@@ -151,11 +159,51 @@ public class NativeService extends Service {
     		while ((read = reader.read(buffer)) > 0) {
     		}
     		reader.close();
+    		in.close();
+    		out.close();
+    		Message.obtain(mHandler, HANDLER_RACOON_STARTED).sendToTarget();
     	} catch (IOException e) {
     		throw new RuntimeException(e);
     	}
 		finally {
-    		process.destroy();
+			if (process != null)
+				process.destroy();
     	}
+    }
+    
+    private Handler mHandler = new Handler() {
+    	@Override
+    	public void handleMessage(Message msg) {
+    		switch (msg.what) {
+    		case HANDLER_RACOON_STARTED:
+    			foo();
+    			break;
+    		}
+    	}
+    };
+
+    private void foo() {
+    	try {
+    		mAdmin.start();
+			mAdmin.showEvt();
+			mAdmin.setOnCommandListener(new Admin.OnCommandListener() {
+				public void onCommand(Command cmd) {
+					Log.i("ipsec-tools", "Command received");
+				}
+			});
+
+			Admin adminCmd = new Admin();
+			adminCmd.start();
+    		InetAddress gw = InetAddress.getByName("gw.hem.za.org");
+    		adminCmd.vpnConnect(gw);
+    		// TODO wait for acknowledge
+    		Thread.sleep(1000);
+    		adminCmd.stop();
+    		adminCmd = null;
+    	} catch (IOException e) {
+    		throw new RuntimeException(e);
+    	} catch (InterruptedException e) {
+    		throw new RuntimeException(e);
+		}
     }
 }

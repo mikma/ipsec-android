@@ -74,6 +74,6 @@ public class Event extends Command {
 	}
 
 	public String toString() {
-		return "Event: " + mType + " " + mTimeStamp + " " + mPh1src + " " + mPh1dst;
+		return "Event: " + mType + " " + mTimeStamp + " " + mPh1src + " " + mPh1dst + " " + mPh2MsgId;
 	}
 }

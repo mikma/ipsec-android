@@ -2,8 +2,10 @@ package org.za.hem.ipsec_tools.racoon;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -100,6 +102,7 @@ public class Command {
 		
 		res = is.read(buf, 0, HEADER_LEN);
 		if (res < 0)
+			// TODO handle graceful, stream closed by Admin.
 			throw new IOException("Bad data");
 		if (res != HEADER_LEN)
 			throw new IOException("Expected " + HEADER_LEN + " bytes, got " + res);
@@ -146,7 +149,10 @@ public class Command {
 		case ADMIN_SHOW_SCHED:
 			return null;
 		case ADMIN_SHOW_EVT:
-			return Event.create(proto, len, dataBuf);
+			if (len == HEADER_LEN)
+				return null;
+			else
+				return Event.create(proto, len, dataBuf);
 		case ADMIN_GET_SA_CERT:
 			return null;
 		case ADMIN_SHOW_SA:
@@ -159,13 +165,26 @@ public class Command {
 	public static ByteBuffer buildShowEvt() {
 		return buildHeader(ADMIN_SHOW_EVT, 0, 0);					
 	}
+
+	public static ByteBuffer buildVpnConnect(InetAddress vpnGateway) {
+		InetAddress srcAddr = getLocalAddress(vpnGateway);
+		InetSocketAddress dst = new InetSocketAddress(vpnGateway, 0);
+		InetSocketAddress src = new InetSocketAddress(srcAddr, 0);
+		Log.i("ipsec-tools", "vpn-connect " + src + "->" + dst);
 	
-	public static ByteBuffer buildEstablishSA(
-			InetSocketAddress src,
-			InetSocketAddress dst) {
-		
 		int prefixLenSrc = src.getAddress().getAddress().length * 8;
 		int prefixLenDst = dst.getAddress().getAddress().length * 8;
+		
+		return buildEstablishSA(
+				ADMIN_PROTO_ISAKMP,
+				src, prefixLenSrc,
+				dst, prefixLenDst);
+	}
+	
+	public static ByteBuffer buildEstablishSA(
+			int proto,
+			InetSocketAddress src, int prefixLenSrc,
+			InetSocketAddress dst, int prefixLenDst) {
 		
 		ByteBuffer index = buildComIndexes(
 				src, prefixLenSrc,
@@ -175,7 +194,7 @@ public class Command {
 		index.rewind();
 
 		ByteBuffer header = buildHeader(ADMIN_ESTABLISH_SA,
-										ADMIN_PROTO_ISAKMP,
+										proto,
 										indexLen);
 		
 		header.put(index);
@@ -185,38 +204,48 @@ public class Command {
 	/**
 	 * Delete all security association to destination.
 	 */
-	public static ByteBuffer buildDeleteAllSADst(
-			InetSocketAddress dst) {
+	public static ByteBuffer buildVpnDisconnect(
+			InetAddress vpnGateway) {
 		
-		int prefixLen = dst.getAddress().getAddress().length * 8;
+		int prefixLen = vpnGateway.getAddress().length * 8;
 		InetAddress anyAddr;
 				
-		if (prefixLen == 32) { 
-			try {
+		try {
+			if (prefixLen == 32) { 
 				anyAddr = InetAddress.getByName("0.0.0.0");
-			} catch (UnknownHostException e) {
-				throw new RuntimeException(e);
-			}
-		} else if (prefixLen == 128){
-			try {
+			} else if (prefixLen == 128){
 				anyAddr = InetAddress.getByName("::");
-			} catch (UnknownHostException e) {
-				throw new RuntimeException(e);
+			} else {
+				throw new RuntimeException("Invalid destination address length.");
 			}
-		} else {
-			throw new RuntimeException("Invalid destination address length.");
+		} catch (UnknownHostException e) {
+			throw new RuntimeException(e);
 		}
 		
 		InetSocketAddress src = new InetSocketAddress(anyAddr, 0);
+		InetSocketAddress dst = new InetSocketAddress(vpnGateway, 0);
+		return buildDeleteAllSADst(
+				ADMIN_PROTO_ISAKMP,
+				src, prefixLen, dst, prefixLen);
+	}
+
+	/**
+	 * Delete all security association to destination.
+	 */
+	public static ByteBuffer buildDeleteAllSADst(
+			int proto,
+			InetSocketAddress src, int prefixLenSrc,
+			InetSocketAddress dst, int prefixLenDst) {
+		
 		ByteBuffer index = buildComIndexes(
-				src, prefixLen,
-				dst, prefixLen,
+				src, prefixLenSrc,
+				dst, prefixLenDst,
 				0);
 		int indexLen = index.position();
 		index.rewind();
 
 		ByteBuffer header = buildHeader(ADMIN_DELETE_ALL_SA_DST,
-										ADMIN_PROTO_ISAKMP,
+										proto,
 										indexLen);
 		
 		header.put(index);
@@ -232,6 +261,19 @@ public class Command {
 		putUnsignedShort(bb, 1);
 		putUnsignedShort(bb, proto);
 		return bb;
+	}
+	
+	// TODO move to net utilities?
+	public static InetAddress getLocalAddress(InetAddress dstAddr) {
+		try {
+			DatagramSocket sock = new DatagramSocket();
+			sock.connect(dstAddr, 500);
+			InetAddress srcAddr = sock.getLocalAddress();
+			sock.close();
+			return srcAddr;
+		} catch (SocketException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	protected static ByteBuffer allocate(int len) {
