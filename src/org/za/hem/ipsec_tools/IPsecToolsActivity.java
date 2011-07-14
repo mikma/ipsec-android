@@ -62,7 +62,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private static final String ADD_PREFERENCE = "addPref";
 	private static final String PEERS_PREFERENCE = "peersPref";
 	private static final String COUNT_PREFERENCE = "countPref";
-	private ArrayList<Preference> peers;
+	private ArrayList<Preference> mPeers;
 	private PeerID selectedID;
 	
 	/*
@@ -121,7 +121,7 @@ public class IPsecToolsActivity extends PreferenceActivity
         SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
         int count = sharedPreferences.getInt(COUNT_PREFERENCE,0);
-        peers = new ArrayList<Preference>(count);
+        mPeers = new ArrayList<Preference>(count);
         
     	Log.i("IPsecToolsActivity", "Count: " + count);
         for (int i = 0; i < count; i++) {
@@ -135,9 +135,9 @@ public class IPsecToolsActivity extends PreferenceActivity
         		peerPref.setOnPreferenceClickListener(this);
             	Log.i("IPsecToolsActivity", "Add peerPref: " + key);
         		peersPref.addPreference(peerPref);
-        		peers.add(peerPref);
+        		mPeers.add(peerPref);
         	} else {
-        		peers.add(null);
+        		mPeers.add(null);
         	}
     		id = id.next();
         }
@@ -161,14 +161,29 @@ public class IPsecToolsActivity extends PreferenceActivity
 
     protected void connectPeer(final PeerID id) {
     	// FIXME hardcoded!
-    	if (mBoundService != null)
-    		mBoundService.vpnConnect("gw.hem.za.org");
+    	if (mBoundService == null)
+    		return;
+    		
+    	SharedPreferences peerPreferences =
+    		getSharedPreferences(
+    				PeerPreferences.getSharedPreferencesName(this, id),
+    				Activity.MODE_PRIVATE);
+		String addr = peerPreferences.getString(PeerPreferences.REMOTE_ADDR_PREFERENCE, "");
+   		mBoundService.vpnConnect(addr);
+    	
     }
     
     protected void disconnectPeer(final PeerID id) {
     	// FIXME hardcoded!
-    	if (mBoundService != null)
-    		mBoundService.vpnDisconnect("gw.hem.za.org");
+    	if (mBoundService == null)
+    		return;
+        	
+    	SharedPreferences peerPreferences =
+    		getSharedPreferences(
+    				PeerPreferences.getSharedPreferencesName(this, id),
+    				Activity.MODE_PRIVATE);
+    	String addr = peerPreferences.getString(PeerPreferences.REMOTE_ADDR_PREFERENCE, "");
+    	mBoundService.vpnDisconnect(addr);
     }
     
     protected void togglePeer(final PeerID id) {
@@ -184,8 +199,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     
     protected void deletePeer(PeerID id) {
 		PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
-		Preference peerPref = peers.get(id.intValue());
-    	Log.i("IPsecToolsActivity", "Remove peerPref: " + peers.size() + " " + id + " " + peerPref);
+		Preference peerPref = mPeers.get(id.intValue());
+    	Log.i("IPsecToolsActivity", "Remove peerPref: " + mPeers.size() + " " + id + " " + peerPref);
 		peersPref.removePreference(peerPref);
 
 		SharedPreferences.Editor editor;
@@ -215,10 +230,10 @@ public class IPsecToolsActivity extends PreferenceActivity
         // Start transaction
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        int empty = peers.indexOf(null);
+        int empty = mPeers.indexOf(null);
         if (empty == -1) {
         	empty = sharedPreferences.getInt(COUNT_PREFERENCE, 0);
-        	peers.ensureCapacity(empty + 1);
+        	mPeers.ensureCapacity(empty + 1);
         }
     	
     	PeerID newId = new PeerID(empty);
@@ -229,7 +244,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     	peerPref.setSummary(R.string.connect_peer);
     	peerPref.setOnPreferenceClickListener(this);
     	peersPref.addPreference(peerPref);
-        peers.set(empty, peerPref);
+        mPeers.set(empty, peerPref);
     	
         editor.putBoolean(key, true);
         editor.commit();
@@ -252,18 +267,18 @@ public class IPsecToolsActivity extends PreferenceActivity
 		SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
 
-		for (int i=0; i < peers.size(); i++) {
+		for (int i=0; i < mPeers.size(); i++) {
     		PeerID id = new PeerID(i);
 
     		if (sharedPreferences.getBoolean(id.toString(), true)
-    				&& peers.get(i) != null ) {
+    				&& mPeers.get(i) != null ) {
     			SharedPreferences peerPreferences =
     				getSharedPreferences(
     						PeerPreferences.getSharedPreferencesName(this, id),
     						Activity.MODE_PRIVATE);
     			String name = peerPreferences.getString(PeerPreferences.NAME_PREFERENCE, "");
     	
-    			peers.get(i).setTitle(name);
+    			mPeers.get(i).setTitle(name);
     		}
     	}
         

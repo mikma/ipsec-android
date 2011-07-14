@@ -35,6 +35,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	static final String TEMPLATE_PREFERENCE = "templatePref";
 	static final String ID_PREFERENCE = "idPref";
 	static final String NAME_PREFERENCE = "namePref";
+	static final String REMOTE_ADDR_PREFERENCE = "remoteAddrPref";
 	private static final String SDCARD_ROOT = "/sdcard";
 	
 	// FIXME

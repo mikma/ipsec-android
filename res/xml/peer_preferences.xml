@@ -3,10 +3,13 @@
         <PreferenceCategory
                 android:title="IPsec VPN Peer">
 		        <EditTextPreference
-                		android:title="Name"
+                		android:title="@string/name"
                 		android:key="namePref" />
+                <EditTextPreference
+                		android:title="@string/remote_address"
+                		android:key="remoteAddrPref" />
  				<Preference
-        		        android:title="Template file"
+        		        android:title="@string/template_file"
                 		android:key="templatePref" />
         </PreferenceCategory>
 </PreferenceScreen>
