@@ -24,13 +24,13 @@ public class Event extends Command {
 	public static final int EVT_PHASE2_DOWN			= 0x0202;
 	public static final int EVT_PHASE2_NO_RESPONSE	= 0x0203;
 
-	private long mType;
+	private int mType;
 	private long mTimeStamp;
 	private InetSocketAddress mPh1src;
 	private InetSocketAddress mPh1dst;
 	private long mPh2MsgId;
 	
-	public long getType() {
+	public int getType() {
 		return mType;
 	}
 
@@ -51,7 +51,7 @@ public class Event extends Command {
 	}
 
 	protected Event(int proto, int len,
-					long type, long timeStamp,
+					int type, long timeStamp,
 					InetSocketAddress ph1src, InetSocketAddress ph1dst, long ph2MsgId) {
 		super(ADMIN_SHOW_EVT, proto, len);
 		mType = type;
@@ -64,7 +64,7 @@ public class Event extends Command {
 	protected static Event create(int proto, int len, byte[] data) {
 		ByteBuffer bb = wrap(data);
 		
-		long type = getUnsignedInt(bb);
+		int type = (int)getUnsignedInt(bb);
 		long timeStamp = bb.getInt();
 		InetSocketAddress ph1src = getSocketAddressStorage(bb);
 		InetSocketAddress ph1dst = getSocketAddressStorage(bb);

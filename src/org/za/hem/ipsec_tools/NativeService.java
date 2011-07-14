@@ -11,6 +11,7 @@ import java.net.InetAddress;
 
 import org.za.hem.ipsec_tools.racoon.Admin;
 import org.za.hem.ipsec_tools.racoon.Command;
+import org.za.hem.ipsec_tools.racoon.Event;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -27,7 +28,11 @@ import android.util.Log;
 
 public class NativeService extends Service {
 	public static final int HANDLER_RACOON_STARTED = 1;
-	public static final String ACTION_NOTIFICATION = "org.za.hem.ipsec_tools.NOTIFICATION";
+	public static final String PACKAGE = "org.za.hem.ipsec_tool";
+	public static final String ACTION_NOTIFICATION = PACKAGE + ".NOTIFICATION";
+	public static final String ACTION_DESTROYED = PACKAGE + ".DESTROYED";
+	public static final String ACTION_PHASE1_UP = PACKAGE + ".PHASE1_UP";
+	public static final String ACTION_PHASE1_DOWN = PACKAGE + ".PHASE1_DOWN";
 	
 	private NotificationManager mNM;
 	private Admin mAdmin;
@@ -96,7 +101,7 @@ public class NativeService extends Service {
 		mAdmin = null;
 		
 		Intent broadcastIntent = new Intent();
-		broadcastIntent.setAction("org.za.hem.ipsec_tools.DESTROYED");
+		broadcastIntent.setAction(ACTION_DESTROYED);
 		//broadcastIntent.setData(Uri.parse("context://"+cer.getKey)));
 		//broadcastIntent.putExtra("reading",cer);
 		//broadcastIntent.addCategory("nl.vu.contextframework.CONTEXT");
@@ -238,7 +243,31 @@ public class NativeService extends Service {
 			mAdmin.showEvt();
 			mAdmin.setOnCommandListener(new Admin.OnCommandListener() {
 				public void onCommand(Command cmd) {
-					Log.i("ipsec-tools", "Command received");
+					if (cmd instanceof Event) {
+						Event evt = (Event)cmd;
+						String action = null;
+						switch (evt.getType()) {
+						case Event.EVT_PHASE1_UP:
+							action = ACTION_PHASE1_UP;
+							break;
+						case Event.EVT_PHASE1_DOWN:
+							action = ACTION_PHASE1_DOWN;
+							break;
+						default:
+							Log.i("ipsec-tools", "Unhandled event type");
+							break;
+						}
+						if (action != null) {
+							Intent broadcastIntent = new Intent();
+							broadcastIntent.setAction(action);
+							//broadcastIntent.setData(Uri.parse("context://"+cer.getKey)));
+							//broadcastIntent.putExtra("reading",cer);
+							//broadcastIntent.addCategory("nl.vu.contextframework.CONTEXT");
+							sendBroadcast(broadcastIntent);
+						}
+					}
+					
+					Log.i("ipsec-tools", "Command received " + cmd);
 				}
 			});
 

@@ -133,6 +133,7 @@ public class IPsecToolsActivity extends PreferenceActivity
         		peerPref.setKey(key);
         		peerPref.setSummary(R.string.connect_peer);
         		peerPref.setOnPreferenceClickListener(this);
+        		peerPref.setWidgetLayoutResource(R.layout.peer_widget_off);
             	Log.i("IPsecToolsActivity", "Add peerPref: " + key);
         		peersPref.addPreference(peerPref);
         		mPeers.add(peerPref);
@@ -261,7 +262,11 @@ public class IPsecToolsActivity extends PreferenceActivity
     {
     	Log.i("IPsecToolsActivity", "onResume:" + this);
     	super.onResume();
-    	registerReceiver(mReceiver, new IntentFilter("org.za.hem.ipsec_tools.DESTROYED"));
+    	IntentFilter filter = new IntentFilter();
+    	filter.addAction(NativeService.ACTION_DESTROYED);
+    	filter.addAction(NativeService.ACTION_PHASE1_UP);
+    	filter.addAction(NativeService.ACTION_PHASE1_DOWN);
+    	registerReceiver(mReceiver, filter);
         registerForContextMenu(getListView());
 
 		SharedPreferences sharedPreferences =
@@ -399,8 +404,17 @@ public class IPsecToolsActivity extends PreferenceActivity
 	
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
     	public void onReceive(Context context, Intent intent) {
+    		String action = intent.getAction();
+    		
+    		if (action.equals(NativeService.ACTION_PHASE1_UP)) {
+    			// FIXME hardcoded Peer
+    			mPeers.get(1).setWidgetLayoutResource(R.layout.peer_widget);
+    		} else if (action.equals(NativeService.ACTION_PHASE1_DOWN)) {
+    			// FIXME hardcoded Peer
+    			mPeers.get(1).setWidgetLayoutResource(R.layout.peer_widget_off);    			
+    		}
     		//output("Receive destroyed");
-            Log.i("LocalIPSecToolsActivity", "received destroyed");
+            Log.i("ipsec-tools", "broadcast received: " + intent);
     	}  	
     };
     
