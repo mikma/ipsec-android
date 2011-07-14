@@ -164,13 +164,12 @@ public class Command {
 			InetSocketAddress src,
 			InetSocketAddress dst) {
 		
-		// TODO check src.length == dst.length
-		
-		int prefixLen = dst.getAddress().getAddress().length * 8;
+		int prefixLenSrc = src.getAddress().getAddress().length * 8;
+		int prefixLenDst = dst.getAddress().getAddress().length * 8;
 		
 		ByteBuffer index = buildComIndexes(
-				src, prefixLen,
-				dst, prefixLen,
+				src, prefixLenSrc,
+				dst, prefixLenDst,
 				0);
 		int indexLen = index.position();
 		index.rewind();
