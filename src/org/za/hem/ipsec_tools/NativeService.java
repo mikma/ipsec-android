@@ -87,6 +87,14 @@ public class NativeService extends Service {
 	
 	@Override
     public void onDestroy() {
+		try {
+			mAdmin.stop();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		mAdmin = null;
+		
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction("org.za.hem.ipsec_tools.DESTROYED");
 		//broadcastIntent.setData(Uri.parse("context://"+cer.getKey)));
@@ -106,6 +114,48 @@ public class NativeService extends Service {
 	@Override
 	public IBinder onBind(Intent arg0) {
 		return mBinder;
+	}
+	
+	public void vpnConnect(String gw) {
+		// FIXME
+		Admin adminCmd = new Admin();
+		try {
+			adminCmd.start();
+			InetAddress addr = InetAddress.getByName(gw);
+			adminCmd.vpnConnect(addr);
+			// TODO wait for acknowledge
+			Thread.sleep(1000);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				adminCmd.stop();
+			} catch (IOException e) {
+			}
+		}
+	}
+	
+	public void vpnDisconnect(String gw) {
+		// FIXME
+		Admin adminCmd = new Admin();
+		try {
+			adminCmd.start();
+			InetAddress addr = InetAddress.getByName(gw);
+			adminCmd.vpnDisconnect(addr);
+			// TODO wait for acknowledge
+			Thread.sleep(1000);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				adminCmd.stop();
+			} catch (IOException e) {
+			}
+		}
 	}
 	
 	private void showNotification() {
@@ -192,18 +242,10 @@ public class NativeService extends Service {
 				}
 			});
 
-			Admin adminCmd = new Admin();
-			adminCmd.start();
-    		InetAddress gw = InetAddress.getByName("gw.hem.za.org");
-    		adminCmd.vpnConnect(gw);
-    		// TODO wait for acknowledge
-    		Thread.sleep(1000);
-    		adminCmd.stop();
-    		adminCmd = null;
     	} catch (IOException e) {
     		throw new RuntimeException(e);
-    	} catch (InterruptedException e) {
-    		throw new RuntimeException(e);
+/*    	} catch (InterruptedException e) {
+    		throw new RuntimeException(e);*/
 		}
     }
 }

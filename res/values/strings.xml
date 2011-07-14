@@ -36,5 +36,7 @@
     <string name="disconnect_peer">Disconnect peer</string>
     <string name="edit_peer">Edit peer</string>
     <string name="delete_peer">Delete peer</string>
+    <string name="start_service">Start service</string>
+    <string name="stop_service">Stop service</string>
 </resources>
 

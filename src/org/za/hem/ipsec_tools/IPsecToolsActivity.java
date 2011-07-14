@@ -64,7 +64,6 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private static final String COUNT_PREFERENCE = "countPref";
 	private ArrayList<Preference> peers;
 	private PeerID selectedID;
-	private int mUseCount;
 	
 	/*
 	public String getLocalIpAddress() {
@@ -92,7 +91,6 @@ public class IPsecToolsActivity extends PreferenceActivity
         	NativeCommand.system("killall racoon");
         }
 
-        mUseCount = 0;
 		addPreferencesFromResource(R.xml.preferences);
 
         mNative = new NativeCommand(this);
@@ -148,21 +146,29 @@ public class IPsecToolsActivity extends PreferenceActivity
         	doBindService();
         }
     }
+    
+    protected void startService() {
+    	if (mIsBound)
+    		return;
+    	doBindService();
+    }
+    
+    protected void stopService() {
+    	if (!mIsBound)
+    		return;
+    	doUnbindService();
+    }
 
     protected void connectPeer(final PeerID id) {
-    	// FIXME
-    	if (mUseCount == 0) {
-    		doBindService();
-    	}
-    	mUseCount++;
+    	// FIXME hardcoded!
+    	if (mBoundService != null)
+    		mBoundService.vpnConnect("gw.hem.za.org");
     }
     
     protected void disconnectPeer(final PeerID id) {
-    	// FIXME
-    	mUseCount--;
-    	if (mUseCount == 0) {
-        	doUnbindService();
-    	}
+    	// FIXME hardcoded!
+    	if (mBoundService != null)
+    		mBoundService.vpnDisconnect("gw.hem.za.org");
     }
     
     protected void togglePeer(final PeerID id) {
@@ -352,6 +358,28 @@ public class IPsecToolsActivity extends PreferenceActivity
 		} catch (PeerID.KeyFormatException e) {
 			return false;
 		}
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.options_menu, menu);
+	    return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	    case R.id.start_service:
+	        startService();
+	        return true;
+	    case R.id.stop_service:
+	        stopService();
+	        return true;
+	    default:
+	        return super.onOptionsItemSelected(item);
+	    }
 	}
 	
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {

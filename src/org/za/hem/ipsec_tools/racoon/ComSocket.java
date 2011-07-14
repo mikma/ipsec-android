@@ -35,7 +35,13 @@ public class ComSocket {
 	
 	public void close() throws IOException {
 		Log.i("ipsec-tools", "Close racoon com socket");
-		mOs.close();
+		mSocket.shutdownInput();
+		mSocket.shutdownOutput();
 		mSocket.close();
+		mSocket = null;
+		mOs.close();
+		mOs = null;
+		mIs.close();
+		mIs = null;
 	}
 }
