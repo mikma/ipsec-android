@@ -21,7 +21,7 @@ public class NativeCommand {
 	public NativeCommand(Context context) {
 		mContext = context;
 	    mBinDir = context.getDir("bin", Context.MODE_PRIVATE);
-	    mSystemBin = new File(new File(Environment.getRootDirectory(), "system"), "bin");
+	    mSystemBin = new File(Environment.getRootDirectory(), "bin");
 	}
 
 	
@@ -97,7 +97,7 @@ public class NativeCommand {
      * @param mode New file mode
      */
     private void chmod(File file, int mode) {
-		system(new File(mSystemBin, "chmod").getAbsolutePath() + mode + " " + file.getAbsolutePath());
+		system(new File(mSystemBin, "chmod").getAbsolutePath() + " " + mode + " " + file.getAbsolutePath());
     }
 
 
