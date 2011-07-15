@@ -60,7 +60,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private static final String ADD_PREFERENCE = "addPref";
 	private static final String PEERS_PREFERENCE = "peersPref";
 	private static final String COUNT_PREFERENCE = "countPref";
-	private ArrayList<Preference> mPeers;
+	private ArrayList<StatePreference> mPeers;
 	private PeerID selectedID;
 	
 	/*
@@ -119,7 +119,7 @@ public class IPsecToolsActivity extends PreferenceActivity
         SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
         int count = sharedPreferences.getInt(COUNT_PREFERENCE,0);
-        mPeers = new ArrayList<Preference>(count);
+        mPeers = new ArrayList<StatePreference>(count);
         
     	Log.i("IPsecToolsActivity", "Count: " + count);
         for (int i = 0; i < count; i++) {
@@ -127,11 +127,12 @@ public class IPsecToolsActivity extends PreferenceActivity
         	String key = id.toString();
         	Log.i("IPsecToolsActivity", "Add pref: " + key);
         	if (sharedPreferences.getBoolean(key, true)) {
-        		Preference peerPref = new Preference(this);
+        		StatePreference peerPref = new StatePreference(this);
         		peerPref.setKey(key);
         		peerPref.setSummary(R.string.connect_peer);
         		peerPref.setOnPreferenceClickListener(this);
-        		peerPref.setWidgetLayoutResource(R.layout.peer_widget_off);
+        		peerPref.setWidgetLayoutResource(R.layout.peer_widget);
+        		peerPref.setIconLevel(0);
             	Log.i("IPsecToolsActivity", "Add peerPref: " + key);
         		peersPref.addPreference(peerPref);
         		mPeers.add(peerPref);
@@ -159,7 +160,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     }
 
     protected void connectPeer(final PeerID id) {
-    	// FIXME hardcoded!
     	if (mBoundService == null)
     		return;
     		
@@ -173,7 +173,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     }
     
     protected void disconnectPeer(final PeerID id) {
-    	// FIXME hardcoded!
     	if (mBoundService == null)
     		return;
         	
@@ -238,10 +237,12 @@ public class IPsecToolsActivity extends PreferenceActivity
     	PeerID newId = new PeerID(empty);
     	String key = newId.toString();
 
-    	Preference peerPref = new Preference(this);
+    	StatePreference peerPref = new StatePreference(this);
     	peerPref.setKey(key);
     	peerPref.setSummary(R.string.connect_peer);
     	peerPref.setOnPreferenceClickListener(this);
+    	peerPref.setWidgetLayoutResource(R.layout.peer_widget);
+    	peerPref.setIconLevel(0);
     	peersPref.addPreference(peerPref);
         mPeers.set(empty, peerPref);
     	
@@ -406,10 +407,10 @@ public class IPsecToolsActivity extends PreferenceActivity
     		
     		if (action.equals(NativeService.ACTION_PHASE1_UP)) {
     			// FIXME hardcoded Peer
-    			mPeers.get(1).setWidgetLayoutResource(R.layout.peer_widget);
+    			mPeers.get(1).setIconLevel(1);
     		} else if (action.equals(NativeService.ACTION_PHASE1_DOWN)) {
     			// FIXME hardcoded Peer
-    			mPeers.get(1).setWidgetLayoutResource(R.layout.peer_widget_off);    			
+    			mPeers.get(1).setIconLevel(0);
     		}
     		//output("Receive destroyed");
             Log.i("ipsec-tools", "broadcast received: " + intent);

@@ -1,1 +1,16 @@
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/imageView1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@android:drawable/presence_online"></ImageView>
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:id="@+android:id/widget_frame"
+android:gravity="center"
+android:layout_width="fill_parent"
+android:layout_height="fill_parent">
+<ImageView
+    android:id="@+id/icon"
+    android:src="@drawable/peer_state"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="6dip"
+    android:layout_marginRight="6dip"
+    android:layout_gravity="center"/>
+</LinearLayout>
