@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Message;
 import android.os.IBinder;
 import android.util.Log;
@@ -27,12 +28,21 @@ import android.util.Log;
 
 public class NativeService extends Service {
 	public static final int HANDLER_RACOON_STARTED = 1;
+	
+	/* Worker handlers */
+	public static final int HANDLER_INTENT = 1;
+	public static final int HANDLER_VPN_CONNECT = 2;
+	public static final int HANDLER_VPN_DISCONNECT = 3;
+	
 	public static final String PACKAGE = "org.za.hem.ipsec_tool";
 	public static final String ACTION_NOTIFICATION = PACKAGE + ".NOTIFICATION";
 	public static final String ACTION_DESTROYED = PACKAGE + ".DESTROYED";
 	public static final String ACTION_PHASE1_UP = PACKAGE + ".PHASE1_UP";
 	public static final String ACTION_PHASE1_DOWN = PACKAGE + ".PHASE1_DOWN";
+	public static final String ACTION_VPN_CONNECT = PACKAGE + ".VPN_CONNECT";
+	public static final String ACTION_VPN_DISCONNECT = PACKAGE + ".VPN_DISCONNECT";
 	
+	private HandlerThread mWorker;
 	private NotificationManager mNM;
 	private Admin mAdmin;
 	
@@ -46,6 +56,8 @@ public class NativeService extends Service {
             return NativeService.this;
         }
     }
+    
+    private Handler mWorkerHandler;
 
 	// This is the object that receives interactions from clients.  See
     // RemoteService for a more complete example.
@@ -55,11 +67,31 @@ public class NativeService extends Service {
     public void onCreate() {
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		mSocketPath = new File(getDir("bin", 0), "racoon.sock").getPath();
+		mWorker = new HandlerThread("NativeService");
+		mWorker.start();
 
-		// Display a notification about us starting.  We put an icon in the status bar.
+	    mWorkerHandler = new Handler(mWorker.getLooper()) {
+	       	@Override
+	    	public void handleMessage(Message msg) {
+	       		switch (msg.what) {
+	       		case HANDLER_INTENT:
+		       		onHandleIntent((Intent)msg.obj);
+		       		break;
+	       		case HANDLER_VPN_CONNECT:
+	       			onVpnConnect((String)msg.obj);
+	       			break;
+	       		case HANDLER_VPN_DISCONNECT:
+	       			onVpnDisconnect((String)msg.obj);
+	       			break;
+	       		}
+	       		
+	    	}
+	    };
+
+	    // Display a notification about us starting.  We put an icon in the status bar.
 		showNotification();
 	}
-    
+   	   
 	@Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("LocalService", "Received start id " + startId + ": " + intent);
@@ -84,6 +116,12 @@ public class NativeService extends Service {
         	}).start();
         } else if (intent.getAction().equals(ACTION_NOTIFICATION)) {
         	Log.i("LocalService", "Notification");
+        } else {
+        	Message msg = mWorkerHandler.obtainMessage(HANDLER_INTENT);
+        	msg.obj = intent;
+        	msg.arg1 = flags;
+        	msg.arg2 = startId;
+        	msg.sendToTarget();
         }
         
         // We want this service to continue running until it is explicitly
@@ -93,6 +131,7 @@ public class NativeService extends Service {
 	
 	@Override
     public void onDestroy() {
+		mWorkerHandler.getLooper().quit();
 		try {
 			mAdmin.stop();
 		} catch (IOException e) {
@@ -122,7 +161,17 @@ public class NativeService extends Service {
 		return mBinder;
 	}
 	
+	protected void onHandleIntent(Intent intent) {
+		
+	}
+	
 	public void vpnConnect(String gw) {
+		Message msg = mWorkerHandler.obtainMessage(HANDLER_VPN_CONNECT);
+		msg.obj = gw;
+		msg.sendToTarget();
+	}
+	
+	protected void onVpnConnect(String gw) {
 		// FIXME
 		Admin adminCmd = new Admin();
 		try {
@@ -144,6 +193,12 @@ public class NativeService extends Service {
 	}
 	
 	public void vpnDisconnect(String gw) {
+		Message msg = mWorkerHandler.obtainMessage(HANDLER_VPN_DISCONNECT);
+		msg.obj = gw;
+		msg.sendToTarget();		
+	}
+	
+	public void onVpnDisconnect(String gw) {
 		// FIXME
 		Admin adminCmd = new Admin();
 		try {
