@@ -2,10 +2,7 @@ package org.za.hem.ipsec_tools.racoon;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
 
 import android.os.Handler;
 import android.os.Message;

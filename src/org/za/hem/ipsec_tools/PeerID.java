@@ -10,6 +10,10 @@ class PeerID implements Comparable<PeerID> {
 	String key;
 	
 	public static class KeyFormatException extends Exception {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 7506071001428989998L;
 	}
 	
 	public PeerID(int theId) {

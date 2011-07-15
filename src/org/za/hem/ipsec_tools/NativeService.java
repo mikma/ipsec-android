@@ -2,8 +2,6 @@ package org.za.hem.ipsec_tools;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,7 +22,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.IBinder;
-import android.os.Message;
 import android.util.Log;
 
 
@@ -193,7 +190,6 @@ public class NativeService extends Service {
     }
 
     private void doRun() {
-		NativeCommand command = new NativeCommand(NativeService.this);
 		Process process = null;
 		
 		try {

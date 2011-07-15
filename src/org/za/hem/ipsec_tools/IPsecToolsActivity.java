@@ -9,7 +9,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -55,7 +54,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     // FIXME debugging
 	private final boolean DEBUG = true;
 
-	private Handler handler = new Handler();
 	private boolean mIsBound;
 	private NativeService mBoundService;
 	private NativeCommand mNative;
@@ -449,7 +447,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    // class name because we want a specific service implementation that
 	    // we know will be running in our own process (and thus won't be
 	    // supporting component replacement by other applications).
-		ComponentName nativeService = startService(new Intent(IPsecToolsActivity.this, 
+		startService(new Intent(IPsecToolsActivity.this, 
 	            NativeService.class));
 	    bindService(new Intent(IPsecToolsActivity.this, 
 	            NativeService.class), mConnection, 0);
