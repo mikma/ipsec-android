@@ -1,6 +1,7 @@
 package org.za.hem.ipsec_tools;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -40,6 +41,7 @@ public class NativeService extends Service {
 	// Unique Identification Number for the Notification.
     // We use it on Notification start, and to cancel it.
     private int NOTIFICATION = R.string.native_service_started;
+    private String mSocketPath;
 
     public class NativeBinder extends Binder {
         NativeService getService() {
@@ -54,6 +56,7 @@ public class NativeService extends Service {
    	@Override
     public void onCreate() {
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		mSocketPath = new File(getDir("bin", 0), "racoon.sock").getPath();
 
 		// Display a notification about us starting.  We put an icon in the status bar.
 		showNotification();
@@ -125,7 +128,7 @@ public class NativeService extends Service {
 		// FIXME
 		Admin adminCmd = new Admin();
 		try {
-			adminCmd.start();
+			adminCmd.start(mSocketPath);
 			InetAddress addr = InetAddress.getByName(gw);
 			adminCmd.vpnConnect(addr);
 			// TODO wait for acknowledge
@@ -146,7 +149,7 @@ public class NativeService extends Service {
 		// FIXME
 		Admin adminCmd = new Admin();
 		try {
-			adminCmd.start();
+			adminCmd.start(mSocketPath);
 			InetAddress addr = InetAddress.getByName(gw);
 			adminCmd.vpnDisconnect(addr);
 			// TODO wait for acknowledge
@@ -194,11 +197,12 @@ public class NativeService extends Service {
 		
 		try {
 			Log.i("LocalService", "Start process");
+			File binDir = this.getDir("bin", 0);
 			process = new ProcessBuilder()
-    		.command("/data/data/org.za.hem.ipsec_tools/app_bin/racoon.sh",
+    		.command(new File(binDir, "racoon.sh").getAbsolutePath(),
     				"-v", "-d",
     				"-f",
-    				"/data/data/org.za.hem.ipsec_tools/app_bin/racoon.conf",
+    				new File(binDir, "racoon.conf").getAbsolutePath(),
     				"-l",
     				"/sdcard/ipsec/racoon.log")
     		.redirectErrorStream(true)
@@ -239,7 +243,7 @@ public class NativeService extends Service {
 
     private void foo() {
     	try {
-    		mAdmin.start();
+    		mAdmin.start(mSocketPath);
 			mAdmin.showEvt();
 			mAdmin.setOnCommandListener(new Admin.OnCommandListener() {
 				public void onCommand(Command cmd) {

@@ -13,7 +13,6 @@ import android.util.Log;
 
 public class Admin {
 	// FIXME
-	public static final String SOCK_PATH = "/data/data/org.za.hem.ipsec_tools/app_bin/racoon.sock";
 	public static final int MESSAGE_COMMAND = 2;
 	
 	private Thread mThread;
@@ -26,7 +25,7 @@ public class Admin {
 	
 //		com.send(Command.buildShowEvt());
 	
-	public void start() throws IOException {
+	public void start(String socketPath) throws IOException {
 		if (mCom != null && mThread != null)
 			return;
 		
@@ -36,7 +35,7 @@ public class Admin {
 		}
 		
 		// Wait for racoon to creat local unix domain socket
-		File file = new File(SOCK_PATH);
+		File file = new File(socketPath);
 		for (int i=0; i < 10; i++) {
 			if (file.exists())
 				break;
@@ -47,7 +46,7 @@ public class Admin {
 			}
 		}
 		
-		mCom = new ComSocket(SOCK_PATH);
+		mCom = new ComSocket(socketPath);
 		
 		mThread = new Thread(new Runnable() {
 			public void run() {
