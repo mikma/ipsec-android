@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
@@ -36,7 +37,6 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	static final String ID_PREFERENCE = "idPref";
 	static final String NAME_PREFERENCE = "namePref";
 	static final String REMOTE_ADDR_PREFERENCE = "remoteAddrPref";
-	private static final String SDCARD_ROOT = "/sdcard";
 	
 	// FIXME
 	private static final int REQUEST_SAVE = 1;
@@ -70,7 +70,8 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 			public boolean onPreferenceClick(Preference preference) {
 				Intent intent = new Intent(activity.getBaseContext(),
 						FileDialog.class);
-				intent.putExtra(FileDialog.START_PATH, SDCARD_ROOT);
+				intent.putExtra(FileDialog.START_PATH,
+								Environment.getExternalStorageDirectory().getAbsolutePath());
 				activity.startActivityForResult(intent, REQUEST_SAVE);
 				return true;
 			}

@@ -20,6 +20,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.IBinder;
@@ -198,13 +199,13 @@ public class NativeService extends Service {
 		try {
 			Log.i("LocalService", "Start process");
 			File binDir = this.getDir("bin", 0);
+			// TODO check getExternalStorageState()
+			File ipsecDir = new File(Environment.getExternalStorageDirectory(), "ipsec");
 			process = new ProcessBuilder()
     		.command(new File(binDir, "racoon.sh").getAbsolutePath(),
     				"-v", "-d",
-    				"-f",
-    				new File(binDir, "racoon.conf").getAbsolutePath(),
-    				"-l",
-    				"/sdcard/ipsec/racoon.log")
+    				"-f", new File(binDir, "racoon.conf").getAbsolutePath(),
+    				"-l", new File(ipsecDir, "racoon.log").getAbsolutePath())
     		.redirectErrorStream(true)
     		.start();
 
