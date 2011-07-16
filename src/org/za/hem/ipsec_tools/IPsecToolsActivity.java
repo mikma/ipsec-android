@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.za.hem.ipsec_tools.service.NativeService;
+
 /*
  * Register
  * android.telephony.TelephonyManager.DATA_CONNECTED
