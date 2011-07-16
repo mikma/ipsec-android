@@ -117,11 +117,11 @@ public class Command {
 		int len;
 		
 		if (errno != 0 && (cmd & ADMIN_FLAG_LONG_REPLY) == 0) {
-			//cmd.mErrno = errno;
-			// FIXME
-			throw new RuntimeException("Errno: " + errno);
+			Command c = new Command(cmd, proto, lenLow);
+			c.mErrno = errno;
+			return c;
 		}
-		
+
 		if ((cmd & ADMIN_FLAG_LONG_REPLY) != 0) {
 			len = lenLow + (lenHigh << 16);
 		} else {

@@ -115,7 +115,7 @@ public class NativeService extends Service {
         		}
         	}).start();
         } else if (intent.getAction().equals(ACTION_NOTIFICATION)) {
-        	Log.i("LocalService", "Notification");
+        	Log.i("ipsec-tools", "Notification");
         } else {
         	Message msg = mWorkerHandler.obtainMessage(HANDLER_INTENT);
         	msg.obj = intent;
