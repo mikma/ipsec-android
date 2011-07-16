@@ -25,7 +25,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,26 +64,9 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private static final String ADD_PREFERENCE = "addPref";
 	private static final String PEERS_PREFERENCE = "peersPref";
 	private static final String COUNT_PREFERENCE = "countPref";
-	private ArrayList<StatePreference> mPeers;
+	private ArrayList<Peer> mPeers;
 	private PeerID selectedID;
-	
-	/*
-	public String getLocalIpAddress() {
-	    try {
-	        for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
-	            NetworkInterface intf = en.nextElement();
-	            for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
-	                InetAddress inetAddress = enumIpAddr.nextElement();
-	                if (!inetAddress.isLoopbackAddress()) {
-	                    return inetAddress.getHostAddress().toString();
-	                }
-	            }
-	        }
-	    } catch (SocketException ex) {
-	        Log.e(LOG_TAG, ex.toString());
-	    }
-	    return null;
-*/
+	private Peer selectedPeer;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -121,13 +106,13 @@ public class IPsecToolsActivity extends PreferenceActivity
         SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
         int count = sharedPreferences.getInt(COUNT_PREFERENCE,0);
-        mPeers = new ArrayList<StatePreference>(count);
+        mPeers = new ArrayList<Peer>(count);
         
     	Log.i("IPsecToolsActivity", "Count: " + count);
         for (int i = 0; i < count; i++) {
         	PeerID id = new PeerID(i);
         	String key = id.toString();
-        	Log.i("IPsecToolsActivity", "Add pref: " + key);
+        	Log.i("ipsec-tools", "Add pref: " + key);
         	if (sharedPreferences.getBoolean(key, true)) {
         		StatePreference peerPref = new StatePreference(this);
         		peerPref.setKey(key);
@@ -135,9 +120,9 @@ public class IPsecToolsActivity extends PreferenceActivity
         		peerPref.setOnPreferenceClickListener(this);
         		peerPref.setWidgetLayoutResource(R.layout.peer_widget);
         		peerPref.setIconLevel(0);
-            	Log.i("IPsecToolsActivity", "Add peerPref: " + key);
+            	Log.i("ipsec-tools", "Add peerPref: " + key);
         		peersPref.addPreference(peerPref);
-        		mPeers.add(peerPref);
+        		mPeers.add(new Peer(this, id, peerPref));
         	} else {
         		mPeers.add(null);
         	}
@@ -160,34 +145,48 @@ public class IPsecToolsActivity extends PreferenceActivity
     		return;
     	doUnbindService();
     }
+    
+    protected Peer findPeerForRemote(final InetSocketAddress addr) {
+    	Iterator<Peer> iter = mPeers.iterator();
+    	
+    	while (iter.hasNext()) {
+    		Peer peer = iter.next();
+    		if (peer.getRemoteAddr().equals(addr))
+    			return peer;
+    	}
+    	
+    	return null;
+    }
 
     protected void connectPeer(final PeerID id) {
     	if (mBoundService == null)
     		return;
-    		
-    	SharedPreferences peerPreferences =
-    		getSharedPreferences(
-    				PeerPreferences.getSharedPreferencesName(this, id),
-    				Activity.MODE_PRIVATE);
-		String addr = peerPreferences.getString(PeerPreferences.REMOTE_ADDR_PREFERENCE, "");
-   		mBoundService.vpnConnect(addr);
     	
+    	Peer peer = mPeers.get(id.intValue());
+    	String addr = peer.getRemoteAddr();
+    	Log.i("ipsec-tools", "connectPeer " + addr);
+   		mBoundService.vpnConnect(addr);   	
     }
     
     protected void disconnectPeer(final PeerID id) {
-    	if (mBoundService == null)
+    	if (mBoundService == null) {
+    		Log.i("ipsec-tools", "No service");
     		return;
-        	
-    	SharedPreferences peerPreferences =
-    		getSharedPreferences(
-    				PeerPreferences.getSharedPreferencesName(this, id),
-    				Activity.MODE_PRIVATE);
-    	String addr = peerPreferences.getString(PeerPreferences.REMOTE_ADDR_PREFERENCE, "");
+    	}
+    	
+    	Peer peer = mPeers.get(id.intValue());
+    	String addr = peer.getRemoteAddr();
+    	Log.i("ipsec-tools", "disconnectPeer " + addr);
     	mBoundService.vpnDisconnect(addr);
     }
     
     protected void togglePeer(final PeerID id) {
-    	// FIXME
+    	Peer peer = mPeers.get(id.intValue());
+    	Log.i("ipsec-tools", "togglePeer " + id + " " + peer);
+    	if (peer.getStatus() == Peer.STATUS_CONNECTED)
+    		disconnectPeer(id);
+    	else
+    		connectPeer(id);
     }
 
     protected void editPeer(final PeerID id) {
@@ -198,28 +197,23 @@ public class IPsecToolsActivity extends PreferenceActivity
     }
     
     protected void deletePeer(PeerID id) {
+    	Peer peer = mPeers.get(id.intValue());
+    	
 		PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
-		Preference peerPref = mPeers.get(id.intValue());
+		Preference peerPref = peer.getPreference();
     	Log.i("IPsecToolsActivity", "Remove peerPref: " + mPeers.size() + " " + id + " " + peerPref);
 		peersPref.removePreference(peerPref);
 
-		SharedPreferences.Editor editor;
-		
 		// Hide peer
+		SharedPreferences.Editor editor;		
 		SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
 		editor = sharedPreferences.edit();
 		editor.putBoolean(id.toString(), false);
 		editor.commit();
 
-		// Clear peer preferences
-		SharedPreferences peerPreferences =
-			getSharedPreferences(
-					PeerPreferences.getSharedPreferencesName(this, id),
-					Activity.MODE_PRIVATE);
-		editor = peerPreferences.edit();
-		editor.clear();
-		editor.commit();
+		peer.clear();
+		mPeers.set(id.intValue(), null);
     }
     
     protected PeerID createPeer()
@@ -246,7 +240,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     	peerPref.setWidgetLayoutResource(R.layout.peer_widget);
     	peerPref.setIconLevel(0);
     	peersPref.addPreference(peerPref);
-        mPeers.set(empty, peerPref);
+        mPeers.set(empty, new Peer(this, newId, peerPref));
     	
         editor.putBoolean(key, true);
         editor.commit();
@@ -278,13 +272,10 @@ public class IPsecToolsActivity extends PreferenceActivity
 
     		if (sharedPreferences.getBoolean(id.toString(), true)
     				&& mPeers.get(i) != null ) {
-    			SharedPreferences peerPreferences =
-    				getSharedPreferences(
-    						PeerPreferences.getSharedPreferencesName(this, id),
-    						Activity.MODE_PRIVATE);
-    			String name = peerPreferences.getString(PeerPreferences.NAME_PREFERENCE, "");
-    	
-    			mPeers.get(i).setTitle(name);
+    			// FIXME move to Peer?
+    			Peer peer = mPeers.get(i);
+    			String name = peer.getName();
+    			peer.getPreference().setTitle(name);
     		}
     	}
         
@@ -330,11 +321,14 @@ public class IPsecToolsActivity extends PreferenceActivity
 			selectedID = PeerID.fromString(pref.getKey());
 		
 			if (selectedID.isValid()) {
-				Logger.getLogger(IPsecToolsActivity.class.getName()).log(
-						Level.WARNING, "onCreateContextMenu " + info.id + " " + info.position + " " + pref);
+				selectedPeer = mPeers.get(selectedID.intValue());
+				Log.i("ipsec-tools", "onCreateContextMenu " + info.id + " " + info.position + " " + pref + " " + selectedPeer);
 		
 				MenuInflater inflater = getMenuInflater();
 				inflater.inflate(R.menu.peer_menu, menu);
+			} else {
+				selectedPeer = null;
+				Log.i("ipsec-tools", "onCreateContextMenu item not found");
 			}
 		} catch (PeerID.KeyFormatException e) {
 			Logger.getLogger(IPsecToolsActivity.class.getName()).log(
@@ -346,6 +340,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 	public boolean onContextItemSelected(MenuItem item) {
 		//AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 	
+		Log.i("ipsec-tools", "onContextItemSelected " + item);
+		
 		switch (item.getItemId()) {
 		case R.id.connect_peer:
 			connectPeer(selectedID);
@@ -373,7 +369,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	public boolean onPreferenceClick(Preference arg0) {
 		try {
 			PeerID id = PeerID.fromString(arg0.getKey());
-			Log.i("IPsecToolsActivity", "Click " + id);
+			Log.i("ipsec-tools", "click " + id);
 			togglePeer(id);
 			return true;
 		} catch (PeerID.KeyFormatException e) {
@@ -406,13 +402,13 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
     	public void onReceive(Context context, Intent intent) {
     		String action = intent.getAction();
+    		// FIXME lookup Peer
+    		Peer peer = mPeers.get(1);
     		
     		if (action.equals(NativeService.ACTION_PHASE1_UP)) {
-    			// FIXME hardcoded Peer
-    			mPeers.get(1).setIconLevel(1);
+    			peer.onPhase1Up();
     		} else if (action.equals(NativeService.ACTION_PHASE1_DOWN)) {
-    			// FIXME hardcoded Peer
-    			mPeers.get(1).setIconLevel(0);
+    			peer.onPhase1Down();
     		}
     		//output("Receive destroyed");
             Log.i("ipsec-tools", "broadcast received: " + intent);
@@ -450,6 +446,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    // class name because we want a specific service implementation that
 	    // we know will be running in our own process (and thus won't be
 	    // supporting component replacement by other applications).
+		// FIXME handle start errors
 		startService(new Intent(IPsecToolsActivity.this, 
 	            NativeService.class));
 	    bindService(new Intent(IPsecToolsActivity.this, 

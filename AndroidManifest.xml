@@ -33,7 +33,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-		<service android:name=".NativeService"></service>
+		<service android:name="org.za.hem.ipsec_tools.service.NativeService"></service>
     </application>
 
 
