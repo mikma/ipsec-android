@@ -438,6 +438,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getMenuInflater();
 	    inflater.inflate(R.menu.options_menu, menu);
+	    menu.findItem(R.id.start_service).setVisible(!mIsBound);
+	    menu.findItem(R.id.stop_service).setVisible(mIsBound);
 	    return true;
 	}
 	
@@ -451,6 +453,11 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    case R.id.stop_service:
 	        stopService();
 	        return true;
+	    case R.id.preferences:
+            Intent settingsActivity = new Intent(getBaseContext(),
+            		Preferences.class);
+            startActivity(settingsActivity);
+	    	return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
 	    }

@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/start_service"
-          android:title="@string/start_service" />
+          android:title="@string/start_service"
+          android:icon="@android:drawable/button_onoff_indicator_off" />
     <item android:id="@+id/stop_service"
-          android:title="@string/stop_service" />
+          android:title="@string/stop_service"
+          android:icon="@android:drawable/button_onoff_indicator_on"
+          android:visible="false" />
+    <item android:id="@+id/preferences"
+          android:title="@string/preferences"
+          android:icon="@android:drawable/ic_menu_preferences" />
 </menu>
