@@ -212,7 +212,9 @@ public class NativeService extends Service {
 		// FIXME
 		Admin adminCmd = new Admin();
 		try {
+			adminCmd.setOnCommandListener(mListener);
 			adminCmd.open(mSocketPath);
+    		adminCmd.start();
 			InetAddress addr = InetAddress.getByName(gw);
 			adminCmd.vpnConnect(addr);
 			// TODO wait for acknowledge
@@ -239,7 +241,9 @@ public class NativeService extends Service {
 		// FIXME
 		Admin adminCmd = new Admin();
 		try {
+			adminCmd.setOnCommandListener(mListener);
 			adminCmd.open(mSocketPath);
+    		adminCmd.start();
 			InetAddress addr = InetAddress.getByName(gw);
 			adminCmd.vpnDisconnect(addr);
 			// TODO wait for acknowledge

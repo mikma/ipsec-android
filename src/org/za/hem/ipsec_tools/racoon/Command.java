@@ -108,6 +108,8 @@ public class Command {
 			throw new IOException("Expected " + HEADER_LEN + " bytes, got " + res);
 		
 		ByteBuffer bb = wrap(buf);
+		Log.i("ipsec-tools", "receive: " + bb);
+
 		int lenLow = getUnsignedShort(bb);
 		int cmd = getUnsignedShort(bb);
 		int pos = bb.position();
@@ -409,6 +411,6 @@ public class Command {
 	}
 	
 	public String toString() {
-		return "Command: " + mCmd + " " + mProto + " " + mLen;
+		return "Command: " + mCmd + " " + mProto + " " + mErrno + " " + mLen;
 	}
 }
