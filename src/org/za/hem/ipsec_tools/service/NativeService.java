@@ -35,6 +35,7 @@ public class NativeService extends Service {
 	public static final int HANDLER_INTENT = 1;
 	public static final int HANDLER_VPN_CONNECT = 2;
 	public static final int HANDLER_VPN_DISCONNECT = 3;
+	public static final int HANDLER_DUMP_ISAKMP_SA = 4;
 	
 	public static final String PACKAGE = "org.za.hem.ipsec_tool";
 	public static final String ACTION_NOTIFICATION = PACKAGE + ".NOTIFICATION";
@@ -84,6 +85,12 @@ public class NativeService extends Service {
 	       			break;
 	       		case HANDLER_VPN_DISCONNECT:
 	       			onVpnDisconnect((String)msg.obj);
+	       			break;
+	       		case HANDLER_DUMP_ISAKMP_SA:
+	       			onDumpIsakmpSA();
+	       			break;
+	       		default:
+	       			Log.i("ipsec-tools", "Unhandled " + msg.obj);
 	       			break;
 	       		}
 	       		
@@ -167,6 +174,34 @@ public class NativeService extends Service {
 		
 	}
 	
+	public void dumpIsakmpSA() {
+		Log.i("ipsec-tools", "dumpIsakmpSA");
+		Message msg = mWorkerHandler.obtainMessage(HANDLER_DUMP_ISAKMP_SA);
+		msg.sendToTarget();
+	}
+	
+	protected void onDumpIsakmpSA() {
+		// FIXME
+		Admin adminCmd = new Admin();
+		try {
+			adminCmd.setOnCommandListener(mListener);
+			adminCmd.open(mSocketPath);
+    		adminCmd.start();
+			adminCmd.dumpIsakmpSA();
+			// TODO wait for acknowledge
+			Thread.sleep(1000);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				adminCmd.stop();
+			} catch (IOException e) {
+			}
+		}
+	}
+
 	public void vpnConnect(String gw) {
 		Message msg = mWorkerHandler.obtainMessage(HANDLER_VPN_CONNECT);
 		msg.obj = gw;
@@ -177,7 +212,7 @@ public class NativeService extends Service {
 		// FIXME
 		Admin adminCmd = new Admin();
 		try {
-			adminCmd.start(mSocketPath);
+			adminCmd.open(mSocketPath);
 			InetAddress addr = InetAddress.getByName(gw);
 			adminCmd.vpnConnect(addr);
 			// TODO wait for acknowledge
@@ -204,7 +239,7 @@ public class NativeService extends Service {
 		// FIXME
 		Admin adminCmd = new Admin();
 		try {
-			adminCmd.start(mSocketPath);
+			adminCmd.open(mSocketPath);
 			InetAddress addr = InetAddress.getByName(gw);
 			adminCmd.vpnDisconnect(addr);
 			// TODO wait for acknowledge
@@ -294,40 +329,45 @@ public class NativeService extends Service {
     		}
     	}
     };
+    
+    private Admin.OnCommandListener mListener = new Admin.OnCommandListener() {
+		public void onCommand(Command cmd) {
+			if (cmd instanceof Event) {
+				Event evt = (Event)cmd;
+				String action = null;
+				switch (evt.getType()) {
+				case Event.EVT_PHASE1_UP:
+					action = ACTION_PHASE1_UP;
+					break;
+				case Event.EVT_PHASE1_DOWN:
+					action = ACTION_PHASE1_DOWN;
+					break;
+				default:
+					Log.i("ipsec-tools", "Unhandled event type");
+					break;
+				}
+				if (action != null) {
+					Intent broadcastIntent = new Intent();
+					broadcastIntent.setAction(action);
+					//broadcastIntent.setData(Uri.parse("context://"+cer.getKey)));
+					//broadcastIntent.putExtra("reading",cer);
+					//broadcastIntent.addCategory("nl.vu.contextframework.CONTEXT");
+					sendBroadcast(broadcastIntent);
+				}
+			} else {
+				Log.i("ipsec-tools", "Unhandled command " + cmd);						
+			}
+			
+			Log.i("ipsec-tools", "Command received " + cmd);
+		}
+    };
 
     private void foo() {
     	try {
-    		mAdmin.start(mSocketPath);
+			mAdmin.setOnCommandListener(mListener);
+    		mAdmin.open(mSocketPath);
+    		mAdmin.start();
 			mAdmin.showEvt();
-			mAdmin.setOnCommandListener(new Admin.OnCommandListener() {
-				public void onCommand(Command cmd) {
-					if (cmd instanceof Event) {
-						Event evt = (Event)cmd;
-						String action = null;
-						switch (evt.getType()) {
-						case Event.EVT_PHASE1_UP:
-							action = ACTION_PHASE1_UP;
-							break;
-						case Event.EVT_PHASE1_DOWN:
-							action = ACTION_PHASE1_DOWN;
-							break;
-						default:
-							Log.i("ipsec-tools", "Unhandled event type");
-							break;
-						}
-						if (action != null) {
-							Intent broadcastIntent = new Intent();
-							broadcastIntent.setAction(action);
-							//broadcastIntent.setData(Uri.parse("context://"+cer.getKey)));
-							//broadcastIntent.putExtra("reading",cer);
-							//broadcastIntent.addCategory("nl.vu.contextframework.CONTEXT");
-							sendBroadcast(broadcastIntent);
-						}
-					}
-					
-					Log.i("ipsec-tools", "Command received " + cmd);
-				}
-			});
 
     	} catch (IOException e) {
     		throw new RuntimeException(e);

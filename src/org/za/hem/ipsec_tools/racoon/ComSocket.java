@@ -24,7 +24,7 @@ public class ComSocket {
 	
 
 	public void send(ByteBuffer bb) throws IOException {
-		Log.i("ipsec-android", "req: " + bb);
+		Log.i("ipsec-tools", "req: " + bb);
 		mOs.write(bb.array());
 	}
 	
@@ -39,8 +39,6 @@ public class ComSocket {
 		mSocket.close();
 		mSocket = null;
 		mOs.close();
-		mOs = null;
 		mIs.close();
-		mIs = null;
 	}
 }

@@ -3,6 +3,10 @@ package org.za.hem.ipsec_tools.racoon;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.Iterator;
+
+import org.za.hem.ipsec_tools.racoon.Ph1Dump.Item;
 
 import android.os.Handler;
 import android.os.Message;
@@ -13,8 +17,12 @@ public class Admin {
 	public static final int MESSAGE_COMMAND = 2;
 	
 	private Thread mThread;
-	private ComSocket mCom;
+	private volatile ComSocket mCom;
 	private OnCommandListener mListener;
+	
+	public Admin () {
+		Log.i("ipsec-tools", "Admin ctor " + this);
+	}
 	
 	public interface OnCommandListener {
 		public abstract void onCommand(Command cmd);
@@ -22,8 +30,8 @@ public class Admin {
 	
 //		com.send(Command.buildShowEvt());
 	
-	public void start(String socketPath) throws IOException {
-		if (mCom != null && mThread != null)
+	public void open(String socketPath) throws IOException {
+		if (mCom != null)
 			return;
 		
 		if (mCom != null) {
@@ -44,11 +52,17 @@ public class Admin {
 		}
 		
 		mCom = new ComSocket(socketPath);
+	}
+
+	public void start() throws IOException {
+		if (mThread != null)
+			return;
 		
 		mThread = new Thread(new Runnable() {
 			public void run() {
 				try {
 					while (true) {
+						// FIXME mCom can be null, synchronize!
 						Command cmd = mCom.receive();
 						if (cmd != null)
 							Message.obtain(mHandler, MESSAGE_COMMAND, cmd).sendToTarget();
@@ -68,7 +82,8 @@ public class Admin {
 			Log.i("ipsec-tools", "Stop admin");
 			mCom.close();
 			try {
-				mThread.join(1000);
+				if (mThread != null)
+					mThread.join(1000);
 			} catch (InterruptedException e) {
 			}
 			mCom = null;
@@ -80,6 +95,10 @@ public class Admin {
 	}
 	
 	// vpn-connect <ip> == establish-sa isakpm inet <srcip> <dstip>
+	
+	public void dumpIsakmpSA() throws IOException {
+		mCom.send(Command.buildDumpIsakmpSA());
+	}
 	
 	public void vpnConnect(InetAddress vpnGateway) throws IOException {
 		mCom.send(Command.buildVpnConnect(vpnGateway));
@@ -95,16 +114,57 @@ public class Admin {
 		mCom.send(Command.buildShowEvt());
 	}
 	
+	protected void onDumpIsakmpSA(Ph1Dump pd) {
+		Iterator<Item> iter = pd.getItems().iterator();
+		
+		while (iter.hasNext()) {
+			Item dump = iter.next();
+
+			Log.i("ipsec-tools", "onDumpIsakmpSA " + dump.mRemote);
+	
+			if (mListener == null) {
+				Log.i("ipsec-tools", "No listener " + this);			
+				return;
+			}
+	
+			// FIXME
+			final int INITIATOR = 0;
+			final int RESPONDER = 1; 
+			InetSocketAddress ph1src;
+			InetSocketAddress ph1dst;
+			
+			if (dump.mSide == INITIATOR) {
+				ph1src = dump.mLocal;
+				ph1dst = dump.mRemote;
+			} else {
+				ph1src = dump.mRemote;
+				ph1dst = dump.mLocal;
+			}
+			
+			Event evt = new Event(Command.ADMIN_PROTO_ISAKMP, -1, Event.EVT_PHASE1_UP,
+					dump.mTimeCreated, ph1src, ph1dst, -1);
+			mListener.onCommand(evt);
+		}
+}
+	
 	public void setOnCommandListener(OnCommandListener listener) {
+		Log.i("ipsec-tools", "setOnCommandListener " + this);
 		mListener = listener;
 	}
 	
 	private Handler mHandler = new Handler() {		
 		public void handleMessage(Message msg) {
+			Log.i("ipsec-tools", "handleMessage " + msg.obj);
 			Command cmd = (Command)msg.obj;
 			Log.i(this.getClass().toString(), "Handle command " + cmd);
-			if (mListener != null)
+			
+			if (cmd.getCmd() == Command.ADMIN_SHOW_SA &&
+				cmd.getProto() == Command.ADMIN_PROTO_ISAKMP) {
+				Ph1Dump ph1dump = (Ph1Dump)cmd;
+				onDumpIsakmpSA(ph1dump);
+			} else if (mListener != null) {
 				mListener.onCommand(cmd);
+			}
 		}
 	};
 }

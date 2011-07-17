@@ -158,6 +158,16 @@ public class IPsecToolsActivity extends PreferenceActivity
     	return null;
     }
 
+    /*
+    protected void updatePeers() {
+    	if (mBoundService == null)
+    		return;
+    	
+    	Log.i("ipsec-tools", "updatePeers");
+   		mBoundService.vpnConnect(addr);	
+    }
+    */
+
     protected void connectPeer(final PeerID id) {
     	if (mBoundService == null)
     		return;
@@ -424,6 +434,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        // cast its IBinder to a concrete class and directly access it.
 	        mBoundService = ((NativeService.NativeBinder)service).getService();
 	        output("Connected");
+	        mBoundService.dumpIsakmpSA();
 	        // Tell the user about this for our demo.
 //	        Toast.makeText(Binding.this, R.string.native_service_connected,
 	//                Toast.LENGTH_SHORT).show();

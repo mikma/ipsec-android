@@ -156,7 +156,12 @@ public class Command {
 		case ADMIN_GET_SA_CERT:
 			return null;
 		case ADMIN_SHOW_SA:
-			return null;
+			switch (proto) {
+			case ADMIN_PROTO_ISAKMP:
+				return Ph1Dump.create(len, dataBuf);
+			default:
+				return null;
+			}
 		default:
 			return new Command(cmd, proto, len);
 		}
@@ -252,6 +257,13 @@ public class Command {
 		return header;
 	}
 
+	public static ByteBuffer buildDumpIsakmpSA() {
+		ByteBuffer header = buildHeader(ADMIN_SHOW_SA,
+										ADMIN_PROTO_ISAKMP,
+										0);
+		return header;
+	}
+
 	protected static ByteBuffer buildHeader(int cmd,
 											int proto, int len) {
 		int totalLen = len + 8;
@@ -288,8 +300,8 @@ public class Command {
 		return bb;
 	}
 	
-	protected static int getUnsignedByte(ByteBuffer bb) {
-		return ((int)bb.get() & 0xff);
+	protected static short getUnsignedByte(ByteBuffer bb) {
+		return ((short)(bb.get() & 0xff));
 	}
 
 	protected static void putUnsignedByte(ByteBuffer bb, short value) {
