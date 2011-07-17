@@ -49,5 +49,8 @@
     <string name="enabled">Enabled</string>
     <string name="msg_disconnect_first">You must disconnect first.</string>
     <string name="msg_fill_in_name">Please, fill in a name.</string>
+    <string name="add_ipsec_vpn">Add IPsec VPN</string>
+    <string name="ipsec_vpns">IPsec VPNs</string>
+    <string name="ipsec_vpn_peer">IPsec VPN Peer</string>
 </resources>
 

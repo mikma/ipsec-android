@@ -1,0 +1,15 @@
+privsep {
+#	user 10127;
+#	group 10127;
+#	chroot "/data/data/org.za.hem.ipsec_tools/app_bin/root";	
+}
+
+listen {
+	adminsock "/data/data/org.za.hem.ipsec_tools/app_bin/racoon.sock" "app_127" "app_127" 0600;
+}
+
+path pre_shared_key "/data/data/org.za.hem.ipsec_tools/app_bin/psk.txt"; 
+path certificate "/sdcard/vpn/certificates";
+path scripts "/etc/racoon/scripts";
+path pidfile "/data/data/org.za.hem.ipsec_tools/app_bin/racoon.pid";
+

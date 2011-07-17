@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
         <PreferenceCategory
-                android:title="IPsec VPN Peer">
+                android:title="@string/ipsec_vpn_peer">
 		        <EditTextPreference
                 		android:title="@string/name"
                 		android:key="namePref" />

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 		<Preference
-        	android:title="Add IPsec VPN"
+        	android:title="@string/add_ipsec_vpn"
             android:key="addPref" />
         <PreferenceCategory
-                android:title="IPsec VPNs"
+                android:title="@string/ipsec_vpns"
                 android:key="peersPref" >
         </PreferenceCategory>
 </PreferenceScreen>
