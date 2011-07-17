@@ -14,6 +14,7 @@ public class Peer {
 	public static final int STATUS_DISCONNECTED = 0;
 	public static final int STATUS_CONNECTED = 1;
 	public static final int STATUS_PROGRESS = 2;
+	public static final int STATUS_DISABLED = 3;
 	
 	private PeerID mID;
 	private StatePreference mPref;
@@ -39,7 +40,11 @@ public class Peer {
 	public PeerID getPeerID() {
 		return mID;
 	}
-
+	
+	public boolean isEnabled() {
+		return mShared.getBoolean(PeerPreferences.ENABLED_PREFERENCE, true);
+	}
+	
 	public Preference getPreference() {
 		return mPref;
 	}

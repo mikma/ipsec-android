@@ -30,12 +30,11 @@ import com.lamerman.FileDialog;
  * IPsec peer preference activity
  */
 public class PeerPreferences extends PreferenceActivity implements OnSharedPreferenceChangeListener {
-	public static final String PEER_ID = "PEER_ID";
 	public static final String EXTRA_ID = "org.za.hem.ipsec_tools.ID";
 	
 	static final String TEMPLATE_PREFERENCE = "templatePref";
-	static final String ID_PREFERENCE = "idPref";
 	static final String NAME_PREFERENCE = "namePref";
+	static final String ENABLED_PREFERENCE = "enabledPref";
 	static final String REMOTE_ADDR_PREFERENCE = "remoteAddrPref";
 	
 	// FIXME
@@ -55,24 +54,14 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		addPreferencesFromResource(R.xml.peer_preferences);
 
 		// Get the template preference
-		final Activity activity = this;
-		
-		// FIXME remove
-		SharedPreferences idPreference = getSharedPreferences(
-				getSharedPreferencesName(this, mID), Activity.MODE_PRIVATE);
-		SharedPreferences.Editor editor = idPreference.edit();
-		editor.putInt(ID_PREFERENCE, mID.intValue());
-		editor.commit();
-
 		Preference customPref = findPreference(TEMPLATE_PREFERENCE);
-		
 		customPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			public boolean onPreferenceClick(Preference preference) {
-				Intent intent = new Intent(activity.getBaseContext(),
+				Intent intent = new Intent(PeerPreferences.this.getBaseContext(),
 						FileDialog.class);
 				intent.putExtra(FileDialog.START_PATH,
 								Environment.getExternalStorageDirectory().getAbsolutePath());
-				activity.startActivityForResult(intent, REQUEST_SAVE);
+				PeerPreferences.this.startActivityForResult(intent, REQUEST_SAVE);
 				return true;
 			}
 		});
@@ -139,9 +128,11 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
         SharedPreferences sharedPreferences = getPreferenceScreen()
         	.getSharedPreferences();
     	if (sharedPreferences.getString(NAME_PREFERENCE, "").length() == 0) {
-    		//
     		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    		builder.setMessage("Foo");
+    		builder.setTitle(android.R.string.dialog_alert_title);
+    		builder.setIcon(android.R.drawable.ic_dialog_alert);
+    		builder.setMessage(R.string.msg_fill_in_name);
+    		builder.setPositiveButton(android.R.string.ok, null);
     		AlertDialog alert = builder.create();
     		alert.show();
     		return;
@@ -153,7 +144,6 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
     	if (pref instanceof EditTextPreference) {
 			pref.setSummary(val.toString());
 		} else if (pref instanceof CheckBoxPreference) {
-			pref.setSummary("Check " + val);
 		} else if (pref instanceof ListPreference) {
 			pref.setSummary("List " + val);
 		} else if (key.equals(TEMPLATE_PREFERENCE)) {

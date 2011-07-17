@@ -46,5 +46,8 @@
     <string name="title_delete_peer">Delete peer</string>
     <string name="msg_delete_peer">The peer \&quot;%1$s\&quot; will be deleted.</string>
     <string name="preferences">Settings</string>
+    <string name="enabled">Enabled</string>
+    <string name="msg_disconnect_first">You must disconnect first.</string>
+    <string name="msg_fill_in_name">Please, fill in a name.</string>
 </resources>
 

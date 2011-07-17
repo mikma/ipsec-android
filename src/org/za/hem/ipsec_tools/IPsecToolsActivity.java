@@ -137,13 +137,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     		id = id.next();
         }
         
-        ConfigManager cm = new ConfigManager();
-        try {
-			cm.build(mPeers);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-        
         if (DEBUG) {
         	doBindService();
         }
@@ -168,6 +161,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     	while (iter.hasNext()) {
     		Peer peer = iter.next();
     		if (peer == null)
+    			continue;
+    		if (!peer.isEnabled())
     			continue;
     		try {
     			// FIXME change Peer.getAddress type
@@ -200,6 +195,13 @@ public class IPsecToolsActivity extends PreferenceActivity
     	String addr = peer.getRemoteAddr();
     	Log.i("ipsec-tools", "connectPeer " + addr);
     	peer.setStatus(Peer.STATUS_PROGRESS);
+
+/*    	ConfigManager cm = new ConfigManager(this);
+        try {
+			cm.build(mPeers);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}*/
    		mBoundService.vpnConnect(addr);   	
     }
     
@@ -226,6 +228,18 @@ public class IPsecToolsActivity extends PreferenceActivity
     }
 
     protected void editPeer(final PeerID id) {
+    	Peer peer = mPeers.get(id.intValue());
+       	if (peer.getStatus() == Peer.STATUS_CONNECTED) {
+    		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    		builder.setIcon(android.R.drawable.ic_dialog_alert);
+    		builder.setTitle(peer.getName());
+    		builder.setMessage(R.string.msg_disconnect_first);
+    		builder.setPositiveButton(android.R.string.ok, null);
+    		AlertDialog alert = builder.create();
+    		alert.show();
+    		return;
+    	}
+    	
         Intent settingsActivity = new Intent(getBaseContext(),
                 PeerPreferences.class);
         settingsActivity.putExtra(PeerPreferences.EXTRA_ID, id.intValue());
@@ -347,6 +361,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     	super.onPause();
     	unregisterReceiver(mReceiver);
 		unregisterForContextMenu(getListView());
+		mNM = null;
 
     	// Unregister the listener whenever a key changes
     	// TODO unregister all peer listeners
