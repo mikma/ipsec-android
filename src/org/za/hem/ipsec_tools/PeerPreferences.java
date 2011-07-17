@@ -173,9 +173,12 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
     	if (key.equals(TEMPLATE_PREFERENCE)) {
     		pref.setSummary(val.toString());
     	} else if (key.equals(REMOTE_ADDR_PREFERENCE)) {
-        	pref.setSummary(val.toString() + "/"
-        			+ sharedPreferences.getString(REMOTE_ADDR_IP_PREFERENCE,
-        					val.toString()));
+    		String host = (String)val;
+    		String ip = sharedPreferences.getString(REMOTE_ADDR_IP_PREFERENCE,null);
+    		if (ip != null && !ip.equals(host))
+    			pref.setSummary(host + "/" + ip);
+    		else
+    			pref.setSummary(host);
     	} else if (pref instanceof EditTextPreference) {
 			pref.setSummary(val.toString());
 		} else if (pref instanceof CheckBoxPreference) {
