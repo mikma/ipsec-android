@@ -1,12 +1,14 @@
 package org.za.hem.ipsec_tools;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -28,7 +30,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -150,15 +154,24 @@ public class IPsecToolsActivity extends PreferenceActivity
     	doUnbindService();
     }
     
-    protected Peer findPeerForRemote(final InetSocketAddress addr) {
+    protected Peer findPeerForRemote(final InetSocketAddress sa) {
+    	InetAddress addr = sa.getAddress();
     	Iterator<Peer> iter = mPeers.iterator();
     	
     	while (iter.hasNext()) {
     		Peer peer = iter.next();
-    		if (peer.getRemoteAddr().equals(addr))
-    			return peer;
+    		if (peer == null)
+    			continue;
+    		try {
+    			// FIXME change Peer.getAddress type
+				InetAddress peerAddr = InetAddress.getByName(peer.getRemoteAddr());
+	    		if (peerAddr.equals(addr))
+	    			return peer;
+			} catch (UnknownHostException e) {
+				continue;
+			}
     	}
-    	
+
     	return null;
     }
 
@@ -212,24 +225,43 @@ public class IPsecToolsActivity extends PreferenceActivity
         startActivity(settingsActivity);
     }
     
-    protected void deletePeer(PeerID id) {
-    	Peer peer = mPeers.get(id.intValue());
+    protected void deletePeer(final PeerID id) {
+    	final Peer peer = mPeers.get(id.intValue());
     	
-		PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
-		Preference peerPref = peer.getPreference();
-    	Log.i("IPsecToolsActivity", "Remove peerPref: " + mPeers.size() + " " + id + " " + peerPref);
-		peersPref.removePreference(peerPref);
+		Log.i("ipsec-tools", "deletePeer");
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle(R.string.title_delete_peer);
+		String msgFormat = getResources().getString(R.string.msg_delete_peer);  
+		String msg = String.format(msgFormat, peer.getName());
+		builder.setMessage(msg);
+		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface arg0, int arg1) {
+				  // do something when the OK button is clicked
+				PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
+				Preference peerPref = peer.getPreference();
+		    	Log.i("IPsecToolsActivity", "Remove peerPref: " + mPeers.size() + " " + id + " " + peerPref);
+				peersPref.removePreference(peerPref);
 
-		// Hide peer
-		SharedPreferences.Editor editor;		
-		SharedPreferences sharedPreferences =
-        	getPreferenceScreen().getSharedPreferences();
-		editor = sharedPreferences.edit();
-		editor.putBoolean(id.toString(), false);
-		editor.commit();
+				// Hide peer
+				SharedPreferences.Editor editor;		
+				SharedPreferences sharedPreferences =
+		        	getPreferenceScreen().getSharedPreferences();
+				editor = sharedPreferences.edit();
+				editor.putBoolean(id.toString(), false);
+				editor.commit();
 
-		peer.clear();
-		mPeers.set(id.intValue(), null);
+				peer.clear();
+				mPeers.set(id.intValue(), null);
+			}
+		});
+		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface arg0, int arg1) {
+				  // do something when the Cancel button is clicked
+			}
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
+		Log.i("ipsec-tools", "After show");
     }
     
     protected PeerID createPeer()
@@ -426,7 +458,7 @@ public class IPsecToolsActivity extends PreferenceActivity
         Intent intent = new Intent(this, IPsecToolsActivity.class);
         //intent.setAction(ACTION_NOTIFICATION);
         
-        PendingIntent contentIntent = PendingIntent.getService(this, 0,
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
                 intent, 0);
 
         notification.setLatestEventInfo(this, getText(R.string.native_service_label),
@@ -440,8 +472,17 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
     	public void onReceive(Context context, Intent intent) {
     		String action = intent.getAction();
+    		InetSocketAddress remote_address = (InetSocketAddress)intent.getSerializableExtra("remote_addr");
+            Log.i("ipsec-tools", "onReceive remote_addr:" + remote_address);
+    		if (remote_address == null)
+    			throw new RuntimeException("No remote_addr in broadcastintent");
     		// FIXME lookup Peer
-    		Peer peer = mPeers.get(1);
+    		Peer peer = findPeerForRemote(remote_address);
+    		
+    		if (peer == null) {
+                Log.i("ipsec-tools", "Unknown peer " + remote_address);
+    			return;
+    		}
     		
     		if (action.equals(NativeService.ACTION_PHASE1_UP)) {
     			showNotification(peer, R.string.notify_peer_up);

@@ -349,6 +349,7 @@ public class NativeService extends Service {
 				if (action != null) {
 					Intent broadcastIntent = new Intent();
 					broadcastIntent.setAction(action);
+					broadcastIntent.putExtra("remote_addr", evt.getPh1dst());
 					//broadcastIntent.setData(Uri.parse("context://"+cer.getKey)));
 					//broadcastIntent.putExtra("reading",cer);
 					//broadcastIntent.addCategory("nl.vu.contextframework.CONTEXT");
