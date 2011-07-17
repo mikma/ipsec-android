@@ -1,5 +1,7 @@
 package org.za.hem.ipsec_tools;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,6 +12,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,7 +22,9 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
+import android.util.Log;
 
 import com.lamerman.FileDialog;
 
@@ -36,6 +41,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	static final String NAME_PREFERENCE = "namePref";
 	static final String ENABLED_PREFERENCE = "enabledPref";
 	static final String REMOTE_ADDR_PREFERENCE = "remoteAddrPref";
+	static final String REMOTE_ADDR_IP_PREFERENCE = "remoteAddrIpPref";
 	
 	// FIXME
 	private static final int REQUEST_SAVE = 1;
@@ -62,6 +68,24 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 				intent.putExtra(FileDialog.START_PATH,
 								Environment.getExternalStorageDirectory().getAbsolutePath());
 				PeerPreferences.this.startActivityForResult(intent, REQUEST_SAVE);
+				return true;
+			}
+		});
+		
+		Preference remoteAddrPref = findPreference(REMOTE_ADDR_PREFERENCE);
+		remoteAddrPref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			public boolean onPreferenceChange (Preference preference, Object newValue) {
+		        SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
+	    		try {
+	    			String addr = (String)newValue;
+					InetAddress ip = InetAddress.getByName(addr);
+	    			Editor editor = sharedPreferences.edit();
+	    			editor.putString(REMOTE_ADDR_IP_PREFERENCE, ip.getHostAddress());
+	    			editor.commit();
+				} catch (UnknownHostException e) {
+					// FIXME add alert
+					return false;
+		    	}
 				return true;
 			}
 		});
@@ -117,8 +141,10 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	}
 	
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		Preference pref= getPreferenceScreen().findPreference(key);
+		Log.i("ipsec-tools", "onSharedPreferenceChanged key:" + key);
+
 		Map<String, ?> map = sharedPreferences.getAll();
+		Preference pref= getPreferenceScreen().findPreference(key);
 		Object val = map.get(key);
 		UpdateSummary(pref, key, val);
 	}
@@ -141,13 +167,20 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	}
     
     private void UpdateSummary(Preference pref, String key, Object val) {
-    	if (pref instanceof EditTextPreference) {
+        SharedPreferences sharedPreferences = getPreferenceScreen()
+    	.getSharedPreferences();
+
+    	if (key.equals(TEMPLATE_PREFERENCE)) {
+    		pref.setSummary(val.toString());
+    	} else if (key.equals(REMOTE_ADDR_PREFERENCE)) {
+        	pref.setSummary(val.toString() + "/"
+        			+ sharedPreferences.getString(REMOTE_ADDR_IP_PREFERENCE,
+        					val.toString()));
+    	} else if (pref instanceof EditTextPreference) {
 			pref.setSummary(val.toString());
 		} else if (pref instanceof CheckBoxPreference) {
 		} else if (pref instanceof ListPreference) {
 			pref.setSummary("List " + val);
-		} else if (key.equals(TEMPLATE_PREFERENCE)) {
-			pref.setSummary(val.toString());
 		}
     }
 	

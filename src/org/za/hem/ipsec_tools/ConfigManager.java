@@ -39,11 +39,9 @@ public class ConfigManager {
 	
 	protected void buildPeerConfig(Peer peer, Writer os) {
 		// FIXME don't hardcode directory
-		try {
-			mVariables.put("remote_addr", InetAddress.getByName(peer.getRemoteAddr()).getHostAddress());
-		} catch (UnknownHostException e) {
-			Log.i("ipsec-tools", e.toString());
-		}
+		InetAddress addr = peer.getRemoteAddr();
+		if (addr != null)
+			mVariables.put("remote_addr", addr.getHostAddress());
 		mVariables.put("local_addr", peer.getLocalAddr().getHostAddress());
 		File input = peer.getTemplateFile();
 		if (input == null)

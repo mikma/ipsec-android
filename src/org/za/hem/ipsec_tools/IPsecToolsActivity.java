@@ -164,14 +164,9 @@ public class IPsecToolsActivity extends PreferenceActivity
     			continue;
     		if (!peer.isEnabled())
     			continue;
-    		try {
-    			// FIXME change Peer.getAddress type
-				InetAddress peerAddr = InetAddress.getByName(peer.getRemoteAddr());
-	    		if (peerAddr.equals(addr))
-	    			return peer;
-			} catch (UnknownHostException e) {
-				continue;
-			}
+			InetAddress peerAddr = peer.getRemoteAddr();
+    		if (peerAddr != null && peerAddr.equals(addr))
+    			return peer;
     	}
 
     	return null;
@@ -192,7 +187,10 @@ public class IPsecToolsActivity extends PreferenceActivity
     		return;
     	
     	Peer peer = mPeers.get(id.intValue());
-    	String addr = peer.getRemoteAddr();
+    	InetAddress addr = peer.getRemoteAddr();
+    	if (addr == null)
+    		// FIXME error message
+    		return;
     	Log.i("ipsec-tools", "connectPeer " + addr);
     	peer.setStatus(Peer.STATUS_PROGRESS);
 
@@ -202,7 +200,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}*/
-   		mBoundService.vpnConnect(addr);   	
+   		mBoundService.vpnConnect(addr.getHostAddress());   	
     }
     
     protected void disconnectPeer(final PeerID id) {
@@ -212,10 +210,13 @@ public class IPsecToolsActivity extends PreferenceActivity
     	}
     	
     	Peer peer = mPeers.get(id.intValue());
-    	String addr = peer.getRemoteAddr();
+    	InetAddress addr = peer.getRemoteAddr();
+    	if (addr == null)
+    		// FIXME error message
+    		return;
     	Log.i("ipsec-tools", "disconnectPeer " + addr);
     	peer.setStatus(Peer.STATUS_PROGRESS);
-    	mBoundService.vpnDisconnect(addr);
+    	mBoundService.vpnDisconnect(addr.getHostAddress());
     }
     
     protected void togglePeer(final PeerID id) {

@@ -2,6 +2,7 @@ package org.za.hem.ipsec_tools;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import android.app.Activity;
 import android.content.Context;
@@ -27,7 +28,6 @@ public class Peer {
 		mShared = context.getSharedPreferences(
 					PeerPreferences.getSharedPreferencesName(context, id),
     				Activity.MODE_PRIVATE);
-		// TODO fetch status from racoon
 		mStatus = STATUS_DISCONNECTED;
 	}
 	
@@ -53,18 +53,22 @@ public class Peer {
 		return mShared.getString(PeerPreferences.NAME_PREFERENCE, "");
 	}
 	
-	public String getRemoteAddr() {
-		String addr = mShared.getString(PeerPreferences.REMOTE_ADDR_PREFERENCE, null);
-		Log.i("ipsec-tools", "getRemoteAddr " + addr);
-		return addr;
+	public InetAddress getRemoteAddr() {
+		String host = mShared.getString(PeerPreferences.REMOTE_ADDR_PREFERENCE, null);
+		String ip = mShared.getString(PeerPreferences.REMOTE_ADDR_IP_PREFERENCE, null);
+		try {
+			InetAddress ipAddr = InetAddress.getByName(host);
+			InetAddress addr = InetAddress.getByAddress(host, ipAddr.getAddress());
+			Log.i("ipsec-tools", "getRemoteAddr " + addr);
+			return addr;
+		} catch (UnknownHostException e) {
+			return null;
+		}
 	}
 	
 	public InetAddress getLocalAddr() {
-		try {
-			return Utils.getLocalAddress(InetAddress.getByName(getRemoteAddr()));
-		} catch (java.net.UnknownHostException e) {
-			return null;
-		}
+		// FIXME remote addr may be null
+		return Utils.getLocalAddress(getRemoteAddr());
 	}
 	
 	public File getTemplateFile() {
