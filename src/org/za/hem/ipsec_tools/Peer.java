@@ -1,5 +1,8 @@
 package org.za.hem.ipsec_tools;
 
+import java.io.File;
+import java.net.InetAddress;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -49,6 +52,22 @@ public class Peer {
 		String addr = mShared.getString(PeerPreferences.REMOTE_ADDR_PREFERENCE, null);
 		Log.i("ipsec-tools", "getRemoteAddr " + addr);
 		return addr;
+	}
+	
+	public InetAddress getLocalAddr() {
+		try {
+			return Utils.getLocalAddress(InetAddress.getByName(getRemoteAddr()));
+		} catch (java.net.UnknownHostException e) {
+			return null;
+		}
+	}
+	
+	public File getTemplateFile() {
+		String addr = mShared.getString(PeerPreferences.TEMPLATE_PREFERENCE, null);
+		Log.i("ipsec-tools", "getRemoteAddr " + addr);
+		if (addr == null)
+			return null;
+		return new File(addr);
 	}
 	
 	public int getStatus() {

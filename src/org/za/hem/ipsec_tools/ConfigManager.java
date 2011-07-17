@@ -7,7 +7,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.AbstractCollection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,13 +22,43 @@ public class ConfigManager {
 	
 	public ConfigManager() {
 		mVariables = new HashMap<String,String>();
-		mVariables.put("bindir", "/data/data/org.za.hem.ipsec_tools/app_bin");
-		mVariables.put("extdir", "/sdcard");
-		mVariables.put("local_addr", "192.168.1.17");
+		//mVariables.put("bindir", "/data/data/org.za.hem.ipsec_tools/app_bin");
+		//mVariables.put("extdir", "/sdcard");
+		//mVariables.put("local_addr", "192.168.1.17");
 		mPat = Pattern.compile(PATTERN);
 	}
 	
-	public void AddVariable(String key, String value) {
+	protected File buildPeerConfig(Peer peer) {
+		// FIXME don't hardcode directory
+		mVariables.put("remote_addr", peer.getRemoteAddr());
+		mVariables.put("local_addr", peer.getLocalAddr().getHostAddress());
+		File input = peer.getTemplateFile();
+		if (input == null)
+			return null;
+		File output = new File("/data/data/org.za.hem.ipsec_tools/app_bin/" + peer.getPeerID().key + ".conf");		
+		substitute(input, output);
+		return output;
+	}
+
+	public void build(AbstractCollection<Peer> peers) throws IOException {
+		Iterator<Peer> iter = peers.iterator();
+		// FIXME don't hardcode directory
+		Writer out = new FileWriter("/data/data/org.za.hem.ipsec_tools/app_bin/peers.conf");
+		while (iter.hasNext()) {
+			Peer peer = iter.next();
+			if (peer == null)
+				continue;
+			mVariables.remove("remote_addr");
+			mVariables.remove("local_addr");
+			File file = buildPeerConfig(peer);
+			if (file != null)
+				out.write("include \"" + file.getAbsolutePath() + "\";\n");
+		}
+		out.close();
+		// build peers.conf
+	}
+	
+	public void addVariable(String key, String value) {
 		mVariables.put(key, value);
 	}
 
@@ -59,7 +91,7 @@ public class ConfigManager {
 
 		try {
 			BufferedReader is = new BufferedReader(new FileReader(input));
-			Writer os = new FileWriter(input);
+			Writer os = new FileWriter(output);
 	
 			try {
 				String line;
@@ -67,17 +99,15 @@ public class ConfigManager {
 					os.write(substituteLine(line));
 				}				
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new RuntimeException(e);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new RuntimeException(e);
 			} finally {
 				is.close();
 				os.close();
 			}
 		} catch (IOException e) {
-			// Ignore error on close
+			throw new RuntimeException(e);
 		}
 	}
 }

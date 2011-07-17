@@ -2,15 +2,15 @@ package org.za.hem.ipsec_tools.racoon;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import android.util.Log;
+
+import org.za.hem.ipsec_tools.Utils;
 
 public class Command {
 	/*
@@ -174,7 +174,7 @@ public class Command {
 	}
 
 	public static ByteBuffer buildVpnConnect(InetAddress vpnGateway) {
-		InetAddress srcAddr = getLocalAddress(vpnGateway);
+		InetAddress srcAddr = Utils.getLocalAddress(vpnGateway);
 		InetSocketAddress dst = new InetSocketAddress(vpnGateway, 0);
 		InetSocketAddress src = new InetSocketAddress(srcAddr, 0);
 		Log.i("ipsec-tools", "vpn-connect " + src + "->" + dst);
@@ -275,19 +275,6 @@ public class Command {
 		putUnsignedShort(bb, 1);
 		putUnsignedShort(bb, proto);
 		return bb;
-	}
-	
-	// TODO move to net utilities?
-	public static InetAddress getLocalAddress(InetAddress dstAddr) {
-		try {
-			DatagramSocket sock = new DatagramSocket();
-			sock.connect(dstAddr, 500);
-			InetAddress srcAddr = sock.getLocalAddress();
-			sock.close();
-			return srcAddr;
-		} catch (SocketException e) {
-			throw new RuntimeException(e);
-		}
 	}
 	
 	protected static ByteBuffer allocate(int len) {

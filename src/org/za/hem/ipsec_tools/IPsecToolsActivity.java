@@ -137,6 +137,13 @@ public class IPsecToolsActivity extends PreferenceActivity
     		id = id.next();
         }
         
+        ConfigManager cm = new ConfigManager();
+        try {
+			cm.build(mPeers);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+        
         if (DEBUG) {
         	doBindService();
         }
