@@ -10,6 +10,7 @@ import android.util.Log;
 public class Peer {
 	public static final int STATUS_DISCONNECTED = 0;
 	public static final int STATUS_CONNECTED = 1;
+	public static final int STATUS_PROGRESS = 2;
 	
 	private PeerID mID;
 	private StatePreference mPref;
@@ -54,14 +55,17 @@ public class Peer {
 		return mStatus;
 	}
 
-	public void onPhase1Up() {
-		mStatus = STATUS_CONNECTED;
+	public void setStatus(int status) {
+		mStatus = status;
 		mPref.setIconLevel(mStatus);
 	}
 
+	public void onPhase1Up() {
+		setStatus(STATUS_CONNECTED);
+	}
+
 	public void onPhase1Down() {
-		mStatus = STATUS_DISCONNECTED;
-		mPref.setIconLevel(mStatus);	
+		setStatus(STATUS_DISCONNECTED);
 	}
 	
 	public String toString() {

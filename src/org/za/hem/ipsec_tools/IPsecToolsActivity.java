@@ -175,6 +175,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     	Peer peer = mPeers.get(id.intValue());
     	String addr = peer.getRemoteAddr();
     	Log.i("ipsec-tools", "connectPeer " + addr);
+    	peer.setStatus(Peer.STATUS_PROGRESS);
    		mBoundService.vpnConnect(addr);   	
     }
     
@@ -187,6 +188,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     	Peer peer = mPeers.get(id.intValue());
     	String addr = peer.getRemoteAddr();
     	Log.i("ipsec-tools", "disconnectPeer " + addr);
+    	peer.setStatus(Peer.STATUS_PROGRESS);
     	mBoundService.vpnDisconnect(addr);
     }
     

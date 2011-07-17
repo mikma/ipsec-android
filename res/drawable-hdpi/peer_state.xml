@@ -7,4 +7,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 <item
     android:drawable="@android:drawable/presence_online"
     android:maxLevel="1" />
+<item
+    android:drawable="@android:drawable/presence_away"
+    android:maxLevel="2" />
 </level-list>
