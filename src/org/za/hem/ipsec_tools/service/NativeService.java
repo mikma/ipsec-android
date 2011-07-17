@@ -105,7 +105,7 @@ public class NativeService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("LocalService", "Received start id " + startId + ": " + intent);
         
-        if (intent.getAction() == null ) {
+        if (intent == null || intent.getAction() == null ) {
 			mAdmin = new Admin();
 			/*
 			try {

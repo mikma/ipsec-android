@@ -41,5 +41,7 @@
     <string name="name">Name</string>
     <string name="template_file">Template file</string>
     <string name="remote_address">Remote address</string>
+    <string name="notify_peer_up">IPsec VPN peer up</string>
+    <string name="notify_peer_down">IPsec VPN peer down</string>
 </resources>
 

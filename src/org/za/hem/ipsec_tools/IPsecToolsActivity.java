@@ -1,6 +1,9 @@
 package org.za.hem.ipsec_tools;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -59,6 +62,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private final boolean DEBUG = true;
 
 	private boolean mIsBound;
+	private NotificationManager mNM;
 	private NativeService mBoundService;
 	private NativeCommand mNative;
 	private static final String ADD_PREFERENCE = "addPref";
@@ -269,6 +273,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     {
     	Log.i("IPsecToolsActivity", "onResume:" + this);
     	super.onResume();
+		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+
     	IntentFilter filter = new IntentFilter();
     	filter.addAction(NativeService.ACTION_DESTROYED);
     	filter.addAction(NativeService.ACTION_PHASE1_UP);
@@ -411,6 +417,26 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    }
 	}
 	
+	private void showNotification(Peer peer, int id) {
+        CharSequence text = getString(id) + " " + peer.getName();
+        Notification notification = new Notification(R.drawable.icon, text,
+                System.currentTimeMillis());
+        //notification.flags |= Notification.FLAG_AUTO_CANCEL; 
+        	
+        Intent intent = new Intent(this, IPsecToolsActivity.class);
+        //intent.setAction(ACTION_NOTIFICATION);
+        
+        PendingIntent contentIntent = PendingIntent.getService(this, 0,
+                intent, 0);
+
+        notification.setLatestEventInfo(this, getText(R.string.native_service_label),
+                       text, contentIntent);
+
+        // Send the notification.
+        mNM.notify(peer.getName(), R.string.notify_peer_up, notification);
+    }
+
+	
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
     	public void onReceive(Context context, Intent intent) {
     		String action = intent.getAction();
@@ -418,8 +444,10 @@ public class IPsecToolsActivity extends PreferenceActivity
     		Peer peer = mPeers.get(1);
     		
     		if (action.equals(NativeService.ACTION_PHASE1_UP)) {
+    			showNotification(peer, R.string.notify_peer_up);
     			peer.onPhase1Up();
     		} else if (action.equals(NativeService.ACTION_PHASE1_DOWN)) {
+    			showNotification(peer, R.string.notify_peer_down);
     			peer.onPhase1Down();
     		}
     		//output("Receive destroyed");
