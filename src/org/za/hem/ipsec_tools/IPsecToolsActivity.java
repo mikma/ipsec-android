@@ -56,7 +56,7 @@ import org.za.hem.ipsec_tools.service.NativeService;
  */
 
 public class IPsecToolsActivity extends PreferenceActivity
-		implements OnPreferenceClickListener {
+		implements OnPreferenceClickListener, OnPeerChangeListener {
 	final private String binaries[] = {
 			"racoon.sh",
 			"racoonctl.sh",
@@ -115,6 +115,7 @@ public class IPsecToolsActivity extends PreferenceActivity
         	getPreferenceScreen().getSharedPreferences();
         int count = sharedPreferences.getInt(COUNT_PREFERENCE,0);
         mPeers = new PeerList(count);
+        mPeers.setOnPeerChangeListener(this);
         
     	Log.i("IPsecToolsActivity", "Count: " + count);
         for (int i = 0; i < count; i++) {

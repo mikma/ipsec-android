@@ -20,6 +20,7 @@ public class PeerList extends ArrayList<Peer> {
 	private static final long serialVersionUID = -3584858864706289236L;
 	
 	private ArrayList<Peer> mPeers;
+	private OnPeerChangeListener mListener;
 	
 	public PeerList(int capacity) {
 		super(capacity);
@@ -32,6 +33,10 @@ public class PeerList extends ArrayList<Peer> {
 	
 	protected void set(PeerID id, Peer peer) {
 		mPeers.set(id.intValue(), peer);
+	}
+	
+	protected void setOnPeerChangeListener(OnPeerChangeListener listener) {
+		mListener = listener;
 	}
 
 	protected Peer findForRemote(final InetSocketAddress sa) {
