@@ -101,7 +101,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 			public boolean onPreferenceClick(Preference preference) {
                 Intent settingsActivity = new Intent(getBaseContext(),
                         PeerPreferences.class);
-                PeerID id = createPeer();
+                PeerID id = mPeers.createPeer(IPsecToolsActivity.this);
                 settingsActivity.putExtra(PeerPreferences.EXTRA_ID, id.intValue());
                 startActivity(settingsActivity);
 				return true;
@@ -181,22 +181,15 @@ public class IPsecToolsActivity extends PreferenceActivity
 		editor.commit();
 	}
 
-    protected PeerID createPeer()
-    {
+	public void onCreatePeer(Peer peer) {
+    	String key = peer.getPeerID().toString();
+    	int id = peer.getPeerID().intValue();
+	
     	PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
         SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
         // Start transaction
         SharedPreferences.Editor editor = sharedPreferences.edit();
-
-        int empty = mPeers.indexOf(null);
-        if (empty == -1) {
-        	empty = sharedPreferences.getInt(COUNT_PREFERENCE, 0);
-        	mPeers.ensureCapacity(empty + 1);
-        }
-    	
-    	PeerID newId = new PeerID(empty);
-    	String key = newId.toString();
 
     	StatePreference peerPref = new StatePreference(this);
     	peerPref.setKey(key);
@@ -205,13 +198,14 @@ public class IPsecToolsActivity extends PreferenceActivity
     	peerPref.setWidgetLayoutResource(R.layout.peer_widget);
     	peerPref.setIconLevel(0);
     	peersPref.addPreference(peerPref);
-        mPeers.set(empty, new Peer(this, newId, peerPref));
-    	
+    	peer.setPreference(peerPref);
+    
+    	if (id >= sharedPreferences.getInt(COUNT_PREFERENCE, 0))
+    		editor.putInt(COUNT_PREFERENCE, id + 1);
         editor.putBoolean(key, true);
         editor.commit();
-    	return newId;
-    }
-    
+    }	
+
     protected void onStart()
     {
     	Log.i("IPsecToolsActivity", "onStart:" + this);

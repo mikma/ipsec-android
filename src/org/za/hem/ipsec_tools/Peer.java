@@ -49,6 +49,10 @@ public class Peer {
 		return mPref;
 	}
 	
+	public void setPreference(StatePreference pref) {
+		mPref = pref;
+	}
+	
 	public String getName() {
 		return mShared.getString(PeerPreferences.NAME_PREFERENCE, "");
 	}

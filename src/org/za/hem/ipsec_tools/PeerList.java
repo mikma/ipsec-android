@@ -61,6 +61,29 @@ public class PeerList extends ArrayList<Peer> {
     	return null;
     }
 	
+    protected PeerID createPeer(Context context)
+    {
+        int empty = mPeers.indexOf(null);
+        if (empty == -1) {
+        	empty = mPeers.size();
+        	Log.i("ipsec-tools", "Size " + mPeers.size());
+        }
+        mPeers.ensureCapacity(empty+1);
+
+    	Log.i("ipsec-tools", "New id " + empty);
+        PeerID newId = new PeerID(empty);
+    	Peer peer = new Peer(context, newId, null);
+    	if (empty >= mPeers.size())
+    		mPeers.add(peer);
+    	else
+    		mPeers.set(empty, peer);
+        
+        if (mListener != null)
+        	mListener.onCreatePeer(peer);
+        
+        return newId;
+    }
+    	
     protected void deletePeer(final PeerID id, Context context) {
     	final Peer peer = get(id);
     	
