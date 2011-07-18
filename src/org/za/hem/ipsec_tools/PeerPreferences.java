@@ -10,7 +10,6 @@ import java.util.Map;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -44,9 +43,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	static final String REMOTE_ADDR_PREFERENCE = "remoteAddrPref";
 	static final String REMOTE_ADDR_IP_PREFERENCE = "remoteAddrIpPref";
 	
-	// FIXME
-	private static final int REQUEST_SAVE = 1;
-	private static final int REQUEST_LOAD = 2;
+	static final int REQUEST_TEMPLATE = 1;
 	
 	private PeerID mID;
 	
@@ -68,7 +65,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 						FileDialog.class);
 				intent.putExtra(FileDialog.START_PATH,
 								Environment.getExternalStorageDirectory().getAbsolutePath());
-				PeerPreferences.this.startActivityForResult(intent, REQUEST_SAVE);
+				PeerPreferences.this.startActivityForResult(intent, REQUEST_TEMPLATE);
 				return true;
 			}
 		});
@@ -103,18 +100,15 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	@Override
 	protected void onActivityResult (int requestCode, int resultCode, final Intent data) {
 		if (resultCode == Activity.RESULT_OK) {
-			if (requestCode == REQUEST_SAVE) {
-				System.out.println("Saving...");
-			} else if (requestCode == REQUEST_LOAD) {
-				System.out.println("Loading...");
+			if (requestCode == REQUEST_TEMPLATE) {
+				String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
+	
+				SharedPreferences templatePreference = getSharedPreferences(
+						getSharedPreferencesName(this, mID), Activity.MODE_PRIVATE);
+				SharedPreferences.Editor editor = templatePreference.edit();
+				editor.putString(TEMPLATE_PREFERENCE, filePath);
+				editor.commit();
 			}
-			String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
-
-			SharedPreferences templatePreference = getSharedPreferences(
-					getSharedPreferencesName(this, mID), Activity.MODE_PRIVATE);
-			SharedPreferences.Editor editor = templatePreference.edit();
-			editor.putString(TEMPLATE_PREFERENCE, filePath);
-			editor.commit();
 		} else if (resultCode == Activity.RESULT_CANCELED) {
 			Logger.getLogger(PeerPreferences.class.getName()).log(
 					Level.WARNING, "file not selected");

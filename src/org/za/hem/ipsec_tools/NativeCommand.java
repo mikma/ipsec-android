@@ -12,6 +12,7 @@ import java.util.zip.ZipInputStream;
 
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
 
 public class NativeCommand {
 	private File mBinDir;
@@ -55,7 +56,7 @@ public class NativeCommand {
 		File file = new File(mBinDir, fileName);
 		
 		if (file.lastModified() >= ze.getTime()) {
-			// FIXME add log
+			Log.i("ipsec-tools", "File fresh:" + file);
 			return;
 		}
 		
