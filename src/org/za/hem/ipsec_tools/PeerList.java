@@ -5,9 +5,12 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.za.hem.ipsec_tools.service.NativeService;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 public class PeerList extends ArrayList<Peer> {
 
@@ -66,5 +69,51 @@ public class PeerList extends ArrayList<Peer> {
                 PeerPreferences.class);
         settingsActivity.putExtra(PeerPreferences.EXTRA_ID, id.intValue());
         context.startActivity(settingsActivity);
-    }    
+    }
+    
+    protected void connect(final PeerID id, NativeService mBoundService) {
+    	if (mBoundService == null)
+    		return;
+    	
+    	Peer peer = get(id);
+    	InetAddress addr = peer.getRemoteAddr();
+    	if (addr == null)
+    		// FIXME error message
+    		return;
+    	Log.i("ipsec-tools", "connectPeer " + addr);
+    	peer.setStatus(Peer.STATUS_PROGRESS);
+
+/*    	ConfigManager cm = new ConfigManager(this);
+        try {
+			cm.build(mPeers);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}*/
+   		mBoundService.vpnConnect(addr.getHostAddress());   	
+    }
+    
+    protected void disconnect(final PeerID id, NativeService mBoundService) {
+    	if (mBoundService == null) {
+    		Log.i("ipsec-tools", "No service");
+    		return;
+    	}
+    	
+    	Peer peer = get(id);
+    	InetAddress addr = peer.getRemoteAddr();
+    	if (addr == null)
+    		// FIXME error message
+    		return;
+    	Log.i("ipsec-tools", "disconnectPeer " + addr);
+    	peer.setStatus(Peer.STATUS_PROGRESS);
+    	mBoundService.vpnDisconnect(addr.getHostAddress());
+    }
+    
+    protected void toggle(final PeerID id, NativeService mBoundService) {
+    	Peer peer = get(id);
+    	Log.i("ipsec-tools", "togglePeer " + id + " " + peer);
+    	if (peer.getStatus() == Peer.STATUS_CONNECTED)
+    		disconnect(id, mBoundService);
+    	else
+    		connect(id, mBoundService);
+    }
 }

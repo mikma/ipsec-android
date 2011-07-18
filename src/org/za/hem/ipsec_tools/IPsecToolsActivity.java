@@ -164,52 +164,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     }
     */
 
-    protected void connectPeer(final PeerID id) {
-    	if (mBoundService == null)
-    		return;
-    	
-    	Peer peer = mPeers.get(id);
-    	InetAddress addr = peer.getRemoteAddr();
-    	if (addr == null)
-    		// FIXME error message
-    		return;
-    	Log.i("ipsec-tools", "connectPeer " + addr);
-    	peer.setStatus(Peer.STATUS_PROGRESS);
-
-/*    	ConfigManager cm = new ConfigManager(this);
-        try {
-			cm.build(mPeers);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}*/
-   		mBoundService.vpnConnect(addr.getHostAddress());   	
-    }
-    
-    protected void disconnectPeer(final PeerID id) {
-    	if (mBoundService == null) {
-    		Log.i("ipsec-tools", "No service");
-    		return;
-    	}
-    	
-    	Peer peer = mPeers.get(id);
-    	InetAddress addr = peer.getRemoteAddr();
-    	if (addr == null)
-    		// FIXME error message
-    		return;
-    	Log.i("ipsec-tools", "disconnectPeer " + addr);
-    	peer.setStatus(Peer.STATUS_PROGRESS);
-    	mBoundService.vpnDisconnect(addr.getHostAddress());
-    }
-    
-    protected void togglePeer(final PeerID id) {
-    	Peer peer = mPeers.get(id);
-    	Log.i("ipsec-tools", "togglePeer " + id + " " + peer);
-    	if (peer.getStatus() == Peer.STATUS_CONNECTED)
-    		disconnectPeer(id);
-    	else
-    		connectPeer(id);
-    }
-
     protected void deletePeer(final PeerID id) {
     	final Peer peer = mPeers.get(id);
     	
@@ -380,10 +334,10 @@ public class IPsecToolsActivity extends PreferenceActivity
 		
 		switch (item.getItemId()) {
 		case R.id.connect_peer:
-			connectPeer(selectedID);
+			mPeers.connect(selectedID, mBoundService);
 			return true;
 		case R.id.disconnect_peer:
-			disconnectPeer(selectedID);
+			mPeers.disconnect(selectedID, mBoundService);
 			return true;
 		case R.id.edit_peer:
 			mPeers.edit(this, selectedID);
@@ -406,7 +360,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 		try {
 			PeerID id = PeerID.fromString(arg0.getKey());
 			Log.i("ipsec-tools", "click " + id);
-			togglePeer(id);
+			mPeers.toggle(id, mBoundService);
 			return true;
 		} catch (PeerID.KeyFormatException e) {
 			return false;
