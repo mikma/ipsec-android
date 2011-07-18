@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 public class Utils {
+	public static final int ISAKMP_PORT = 500;
 
 	public static <T> String join(T[] array, String delimiter) {
 	    if (array.length == 0)
@@ -19,10 +20,11 @@ public class Utils {
 	}
 	
 	public static InetAddress getLocalAddress(InetAddress dstAddr) {
+		if (dstAddr == null)
+			return null;
 		try {
 			DatagramSocket sock = new DatagramSocket();
-			// TODO hardcoded
-			sock.connect(dstAddr, 500);
+			sock.connect(dstAddr, ISAKMP_PORT);
 			InetAddress srcAddr = sock.getLocalAddress();
 			sock.close();
 			return srcAddr;

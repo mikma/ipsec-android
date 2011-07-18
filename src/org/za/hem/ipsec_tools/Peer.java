@@ -61,7 +61,7 @@ public class Peer {
 		String host = mShared.getString(PeerPreferences.REMOTE_ADDR_PREFERENCE, null);
 		String ip = mShared.getString(PeerPreferences.REMOTE_ADDR_IP_PREFERENCE, null);
 		try {
-			InetAddress ipAddr = InetAddress.getByName(host);
+			InetAddress ipAddr = InetAddress.getByName(ip);
 			InetAddress addr = InetAddress.getByAddress(host, ipAddr.getAddress());
 			Log.i("ipsec-tools", "getRemoteAddr " + addr);
 			return addr;
@@ -71,7 +71,6 @@ public class Peer {
 	}
 	
 	public InetAddress getLocalAddr() {
-		// FIXME remote addr may be null
 		return Utils.getLocalAddress(getRemoteAddr());
 	}
 	

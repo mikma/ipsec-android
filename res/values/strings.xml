@@ -52,5 +52,6 @@
     <string name="add_ipsec_vpn">Add IPsec VPN</string>
     <string name="ipsec_vpns">IPsec VPNs</string>
     <string name="ipsec_vpn_peer">IPsec VPN Peer</string>
+    <string name="unknown_host_name">Unknown host name \&quot;%1$s\&quot;.</string>
 </resources>
 

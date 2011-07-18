@@ -10,6 +10,7 @@ import java.util.Map;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -76,14 +77,22 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		remoteAddrPref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			public boolean onPreferenceChange (Preference preference, Object newValue) {
 		        SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
+    			String addr = (String)newValue;
 	    		try {
-	    			String addr = (String)newValue;
 					InetAddress ip = InetAddress.getByName(addr);
 	    			Editor editor = sharedPreferences.edit();
 	    			editor.putString(REMOTE_ADDR_IP_PREFERENCE, ip.getHostAddress());
 	    			editor.commit();
 				} catch (UnknownHostException e) {
-					// FIXME add alert
+					Log.i("ipsec-tools", e.toString());
+					final Context context = preference.getContext();
+					AlertDialog.Builder builder = new AlertDialog.Builder(context);
+					builder.setTitle(android.R.string.dialog_alert_title);
+					String msgFormat = context.getString(R.string.unknown_host_name);
+					String msg = String.format(msgFormat, addr);
+					builder.setMessage(msg);
+					builder.setPositiveButton(android.R.string.ok, null);
+					builder.show();
 					return false;
 		    	}
 				return true;
