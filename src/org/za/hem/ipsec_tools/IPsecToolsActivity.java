@@ -165,45 +165,22 @@ public class IPsecToolsActivity extends PreferenceActivity
     }
     */
 
-    protected void deletePeer(final PeerID id) {
-    	final Peer peer = mPeers.get(id);
-    	
-		Log.i("ipsec-tools", "deletePeer");
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(R.string.title_delete_peer);
-		String msgFormat = getResources().getString(R.string.msg_delete_peer);  
-		String msg = String.format(msgFormat, peer.getName());
-		builder.setMessage(msg);
-		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface arg0, int arg1) {
-				  // do something when the OK button is clicked
-				PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
-				Preference peerPref = peer.getPreference();
-		    	Log.i("IPsecToolsActivity", "Remove peerPref: " + mPeers.size() + " " + id + " " + peerPref);
-				peersPref.removePreference(peerPref);
+	public void onDeletePeer(Peer peer) {
+		PeerID id = peer.getPeerID();
+		PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
+		Preference peerPref = peer.getPreference();
+		Log.i("IPsecToolsActivity", "Remove peerPref: " + mPeers.size() + " " + id + " " + peerPref);
+		peersPref.removePreference(peerPref);
+	
+		// Hide peer
+		SharedPreferences.Editor editor;		
+		SharedPreferences sharedPreferences =
+	    	getPreferenceScreen().getSharedPreferences();
+		editor = sharedPreferences.edit();
+		editor.putBoolean(id.toString(), false);
+		editor.commit();
+	}
 
-				// Hide peer
-				SharedPreferences.Editor editor;		
-				SharedPreferences sharedPreferences =
-		        	getPreferenceScreen().getSharedPreferences();
-				editor = sharedPreferences.edit();
-				editor.putBoolean(id.toString(), false);
-				editor.commit();
-
-				peer.clear();
-				mPeers.set(id, null);
-			}
-		});
-		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface arg0, int arg1) {
-				  // do something when the Cancel button is clicked
-			}
-		});
-		AlertDialog alert = builder.create();
-		alert.show();
-		Log.i("ipsec-tools", "After show");
-    }
-    
     protected PeerID createPeer()
     {
     	PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
@@ -344,7 +321,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 			mPeers.edit(this, selectedID);
 			return true;
 		case R.id.delete_peer:
-			deletePeer(selectedID);
+			mPeers.deletePeer(selectedID, this);
 			return true;
 		default:
 			return super.onContextItemSelected(item);

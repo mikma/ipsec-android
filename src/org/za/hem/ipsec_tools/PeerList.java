@@ -9,7 +9,11 @@ import org.za.hem.ipsec_tools.service.NativeService;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.Preference;
+import android.preference.PreferenceGroup;
 import android.util.Log;
 
 public class PeerList extends ArrayList<Peer> {
@@ -56,6 +60,37 @@ public class PeerList extends ArrayList<Peer> {
 
     	return null;
     }
+	
+    protected void deletePeer(final PeerID id, Context context) {
+    	final Peer peer = get(id);
+    	
+		Log.i("ipsec-tools", "deletePeer");
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		builder.setTitle(R.string.title_delete_peer);
+		String msgFormat = context.getResources().getString(R.string.msg_delete_peer);  
+		String msg = String.format(msgFormat, peer.getName());
+		builder.setMessage(msg);
+		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface arg0, int arg1) {
+				// do something when the OK button is clicked
+				if (mListener != null)
+					mListener.onDeletePeer(peer);
+
+				peer.clear();
+				set(id, null);
+			}
+		});
+		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface arg0, int arg1) {
+				  // do something when the Cancel button is clicked
+			}
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
+		Log.i("ipsec-tools", "After show");
+    }
+    
+
 	
     protected void edit(Context context, final PeerID id) {
     	Peer peer = mPeers.get(id.intValue());
