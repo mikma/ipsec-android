@@ -72,7 +72,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private static final String ADD_PREFERENCE = "addPref";
 	private static final String PEERS_PREFERENCE = "peersPref";
 	private static final String COUNT_PREFERENCE = "countPref";
-	private ArrayList<Peer> mPeers;
+	private PeerList mPeers;
 	private PeerID selectedID;
 	private Peer selectedPeer;
 	
@@ -114,7 +114,7 @@ public class IPsecToolsActivity extends PreferenceActivity
         SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
         int count = sharedPreferences.getInt(COUNT_PREFERENCE,0);
-        mPeers = new ArrayList<Peer>(count);
+        mPeers = new PeerList(count);
         
     	Log.i("IPsecToolsActivity", "Count: " + count);
         for (int i = 0; i < count; i++) {
