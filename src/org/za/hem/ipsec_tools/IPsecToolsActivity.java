@@ -222,6 +222,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     	filter.addAction(NativeService.ACTION_DESTROYED);
     	filter.addAction(NativeService.ACTION_PHASE1_UP);
     	filter.addAction(NativeService.ACTION_PHASE1_DOWN);
+    	filter.addAction(NativeService.ACTION_SERVICE_READY);
     	registerReceiver(mReceiver, filter);
         registerForContextMenu(getListView());
 
@@ -390,7 +391,14 @@ public class IPsecToolsActivity extends PreferenceActivity
 	
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
     	public void onReceive(Context context, Intent intent) {
+            Log.i("ipsec-tools", "broadcast received: " + intent);
     		String action = intent.getAction();
+    		
+    		if (action.equals(NativeService.ACTION_SERVICE_READY)) {
+    			mPeers.dumpIsakmpSA();
+    			return;
+     		}
+    		
     		InetSocketAddress remote_address = (InetSocketAddress)intent.getSerializableExtra("remote_addr");
             Log.i("ipsec-tools", "onReceive remote_addr:" + remote_address);
     		if (remote_address == null)
@@ -401,7 +409,7 @@ public class IPsecToolsActivity extends PreferenceActivity
                 Log.i("ipsec-tools", "Unknown peer " + remote_address);
     			return;
     		}
-    		
+  
     		if (action.equals(NativeService.ACTION_PHASE1_UP)) {
     			showNotification(peer, R.string.notify_peer_up);
     			peer.onPhase1Up();
@@ -409,8 +417,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     			showNotification(peer, R.string.notify_peer_down);
     			peer.onPhase1Down();
     		}
+
     		//output("Receive destroyed");
-            Log.i("ipsec-tools", "broadcast received: " + intent);
     	}  	
     };
     
@@ -424,7 +432,6 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        mBoundService = ((NativeService.NativeBinder)service).getService();
 	        output("Connected");
 	        mPeers.setService(mBoundService);
-	        mPeers.dumpIsakmpSA();
 	        // Tell the user about this for our demo.
 //	        Toast.makeText(Binding.this, R.string.native_service_connected,
 	//                Toast.LENGTH_SHORT).show();

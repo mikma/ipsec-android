@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.za.hem.ipsec_tools.IPsecToolsActivity;
 import org.za.hem.ipsec_tools.R;
@@ -37,17 +40,19 @@ public class NativeService extends Service {
 	public static final int HANDLER_VPN_DISCONNECT = 3;
 	public static final int HANDLER_DUMP_ISAKMP_SA = 4;
 	
-	public static final String PACKAGE = "org.za.hem.ipsec_tool";
+	public static final String PACKAGE = "org.za.hem.ipsec_tool.service";
 	public static final String ACTION_NOTIFICATION = PACKAGE + ".NOTIFICATION";
 	public static final String ACTION_DESTROYED = PACKAGE + ".DESTROYED";
 	public static final String ACTION_PHASE1_UP = PACKAGE + ".PHASE1_UP";
 	public static final String ACTION_PHASE1_DOWN = PACKAGE + ".PHASE1_DOWN";
 	public static final String ACTION_VPN_CONNECT = PACKAGE + ".VPN_CONNECT";
 	public static final String ACTION_VPN_DISCONNECT = PACKAGE + ".VPN_DISCONNECT";
+	public static final String ACTION_SERVICE_READY = PACKAGE + ".SERVICE_READY";
 	
 	private HandlerThread mWorker;
 	private NotificationManager mNM;
 	private Admin mAdmin;
+	private Admin mAdminCmd;
 	
 	// Unique Identification Number for the Notification.
     // We use it on Notification start, and to cancel it.
@@ -107,6 +112,7 @@ public class NativeService extends Service {
         
         if (intent == null || intent.getAction() == null ) {
 			mAdmin = new Admin();
+			mAdminCmd = new Admin();
 			/*
 			try {
 				// FIXME DEBUG
@@ -143,11 +149,13 @@ public class NativeService extends Service {
 		mWorkerHandler.getLooper().quit();
 		try {
 			mAdmin.stop();
+			mAdminCmd.stop();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		mAdmin = null;
+		mAdminCmd = null;
 		
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(ACTION_DESTROYED);
@@ -182,23 +190,28 @@ public class NativeService extends Service {
 	
 	protected void onDumpIsakmpSA() {
 		// FIXME
-		Admin adminCmd = new Admin();
+//		final Admin adminCmd = null;
+//		final BlockingQueue<Command> queue = new LinkedBlockingQueue<Command>();
 		try {
-			adminCmd.setOnCommandListener(mListener);
-			adminCmd.open(mSocketPath);
-    		adminCmd.start();
-			adminCmd.dumpIsakmpSA();
-			// TODO wait for acknowledge
-			Thread.sleep(1000);
+			//final Command result = null;
+/*
+			adminCmd.setOnCommandListener(new Admin.OnCommandListener() {
+				public void onCommand(Command cmd) {
+					Log.i("ipsec-tools", "Response received " + cmd);
+					try {
+						queue.put(cmd);
+					} catch (InterruptedException e) {
+						throw new RuntimeException(e);
+					}
+				}
+		    });
+		    */
+			mAdminCmd.dumpIsakmpSA();
+			//Command cmd = queue.poll(2000, TimeUnit.MILLISECONDS);
+			//Log.i("ipsec-tools", "onDumpIsakmpSA result: " + cmd);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
 		} finally {
-			try {
-				adminCmd.stop();
-			} catch (IOException e) {
-			}
 		}
 	}
 
@@ -210,13 +223,9 @@ public class NativeService extends Service {
 	
 	protected void onVpnConnect(String gw) {
 		// FIXME
-		Admin adminCmd = new Admin();
 		try {
-			adminCmd.setOnCommandListener(mListener);
-			adminCmd.open(mSocketPath);
-    		adminCmd.start();
 			InetAddress addr = InetAddress.getByName(gw);
-			adminCmd.vpnConnect(addr);
+			mAdminCmd.vpnConnect(addr);
 			// TODO wait for acknowledge
 			Thread.sleep(1000);
 		} catch (IOException e) {
@@ -224,10 +233,6 @@ public class NativeService extends Service {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} finally {
-			try {
-				adminCmd.stop();
-			} catch (IOException e) {
-			}
 		}
 	}
 	
@@ -239,13 +244,9 @@ public class NativeService extends Service {
 	
 	public void onVpnDisconnect(String gw) {
 		// FIXME
-		Admin adminCmd = new Admin();
 		try {
-			adminCmd.setOnCommandListener(mListener);
-			adminCmd.open(mSocketPath);
-    		adminCmd.start();
 			InetAddress addr = InetAddress.getByName(gw);
-			adminCmd.vpnDisconnect(addr);
+			mAdminCmd.vpnDisconnect(addr);
 			// TODO wait for acknowledge
 			Thread.sleep(1000);
 		} catch (IOException e) {
@@ -253,10 +254,6 @@ public class NativeService extends Service {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} finally {
-			try {
-				adminCmd.stop();
-			} catch (IOException e) {
-			}
 		}
 	}
 	
@@ -373,7 +370,15 @@ public class NativeService extends Service {
     		mAdmin.open(mSocketPath);
     		mAdmin.start();
 			mAdmin.showEvt();
+			
+			// FIXME change to mResultListener
+			mAdminCmd.setOnCommandListener(mListener);
+			mAdminCmd.open(mSocketPath);
+			mAdminCmd.start();
 
+			Intent broadcastIntent = new Intent();
+			broadcastIntent.setAction(ACTION_SERVICE_READY);
+			sendBroadcast(broadcastIntent);
     	} catch (IOException e) {
     		throw new RuntimeException(e);
 /*    	} catch (InterruptedException e) {
