@@ -154,24 +154,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     	doUnbindService();
     }
     
-    protected Peer findPeerForRemote(final InetSocketAddress sa) {
-    	InetAddress addr = sa.getAddress();
-    	Iterator<Peer> iter = mPeers.iterator();
-    	
-    	while (iter.hasNext()) {
-    		Peer peer = iter.next();
-    		if (peer == null)
-    			continue;
-    		if (!peer.isEnabled())
-    			continue;
-			InetAddress peerAddr = peer.getRemoteAddr();
-    		if (peerAddr != null && peerAddr.equals(addr))
-    			return peer;
-    	}
-
-    	return null;
-    }
-
     /*
     protected void updatePeers() {
     	if (mBoundService == null)
@@ -506,9 +488,8 @@ public class IPsecToolsActivity extends PreferenceActivity
             Log.i("ipsec-tools", "onReceive remote_addr:" + remote_address);
     		if (remote_address == null)
     			throw new RuntimeException("No remote_addr in broadcastintent");
-    		// FIXME lookup Peer
-    		Peer peer = findPeerForRemote(remote_address);
-    		
+    		Peer peer = mPeers.findForRemote(remote_address);
+   		
     		if (peer == null) {
                 Log.i("ipsec-tools", "Unknown peer " + remote_address);
     			return;
