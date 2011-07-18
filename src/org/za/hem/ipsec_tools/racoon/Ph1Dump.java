@@ -72,7 +72,7 @@ public class Ph1Dump extends Command {
 		
 		int count = len / (8 + 8 + 4 + 4 + 128 + 128 + 2 + 2 + 4 + 4);
 		
-		Log.i("ipsec-tools", "Ph1Dump create len:" + len + " count:" + count);
+		Log.i("ipsec-tools", "Ph1Dump create len:" + len + " count:" + count + " size:" + data.length);
 		
 		for (int i = 0; i<count; i++) {
 			Log.i("ipsec-tools", "pos:" + bb.position());
@@ -80,7 +80,7 @@ public class Ph1Dump extends Command {
 			byte[] icookie = new byte[8];
 			byte[] rcookie = new byte[8];
 			bb.get(icookie, 0, 8);
-			bb.get(rcookie, 8, 8);
+			bb.get(rcookie, 0, 8);
 			Log.i("ipsec-tools", "cookie:" + getHex(icookie) + ":" + getHex(rcookie));
 			int status = bb.getInt();
 			Log.i("ipsec-tools", "status:" + status);
