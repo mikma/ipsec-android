@@ -168,7 +168,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     	if (mBoundService == null)
     		return;
     	
-    	Peer peer = mPeers.get(id.intValue());
+    	Peer peer = mPeers.get(id);
     	InetAddress addr = peer.getRemoteAddr();
     	if (addr == null)
     		// FIXME error message
@@ -191,7 +191,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     		return;
     	}
     	
-    	Peer peer = mPeers.get(id.intValue());
+    	Peer peer = mPeers.get(id);
     	InetAddress addr = peer.getRemoteAddr();
     	if (addr == null)
     		// FIXME error message
@@ -202,7 +202,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     }
     
     protected void togglePeer(final PeerID id) {
-    	Peer peer = mPeers.get(id.intValue());
+    	Peer peer = mPeers.get(id);
     	Log.i("ipsec-tools", "togglePeer " + id + " " + peer);
     	if (peer.getStatus() == Peer.STATUS_CONNECTED)
     		disconnectPeer(id);
@@ -210,27 +210,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     		connectPeer(id);
     }
 
-    protected void editPeer(final PeerID id) {
-    	Peer peer = mPeers.get(id.intValue());
-       	if (peer.getStatus() == Peer.STATUS_CONNECTED) {
-    		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    		builder.setIcon(android.R.drawable.ic_dialog_alert);
-    		builder.setTitle(peer.getName());
-    		builder.setMessage(R.string.msg_disconnect_first);
-    		builder.setPositiveButton(android.R.string.ok, null);
-    		AlertDialog alert = builder.create();
-    		alert.show();
-    		return;
-    	}
-    	
-        Intent settingsActivity = new Intent(getBaseContext(),
-                PeerPreferences.class);
-        settingsActivity.putExtra(PeerPreferences.EXTRA_ID, id.intValue());
-        startActivity(settingsActivity);
-    }
-    
     protected void deletePeer(final PeerID id) {
-    	final Peer peer = mPeers.get(id.intValue());
+    	final Peer peer = mPeers.get(id);
     	
 		Log.i("ipsec-tools", "deletePeer");
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -255,7 +236,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 				editor.commit();
 
 				peer.clear();
-				mPeers.set(id.intValue(), null);
+				mPeers.set(id, null);
 			}
 		});
 		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -376,7 +357,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 			selectedID = PeerID.fromString(pref.getKey());
 		
 			if (selectedID.isValid()) {
-				selectedPeer = mPeers.get(selectedID.intValue());
+				selectedPeer = mPeers.get(selectedID);
 				Log.i("ipsec-tools", "onCreateContextMenu " + info.id + " " + info.position + " " + pref + " " + selectedPeer);
 		
 				MenuInflater inflater = getMenuInflater();
@@ -405,7 +386,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 			disconnectPeer(selectedID);
 			return true;
 		case R.id.edit_peer:
-			editPeer(selectedID);
+			mPeers.edit(this, selectedID);
 			return true;
 		case R.id.delete_peer:
 			deletePeer(selectedID);
