@@ -11,7 +11,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
@@ -21,6 +20,7 @@ public class PeerList extends ArrayList<Peer> {
 
 	public static final int HANDLER_VPN_CONNECT = 1;
 	public static final int HANDLER_VPN_DISCONNECT = 2;
+	public static final int HANDLER_DUMP_ISAKMP_SA = 3;
 	
 	/**
 	 * Serial for Serializable 
@@ -51,6 +51,9 @@ public class PeerList extends ArrayList<Peer> {
 			    	addr = (String)msg.obj;
 			   		mBoundService.vpnDisconnect(addr);
 					break;
+				case HANDLER_DUMP_ISAKMP_SA:
+				    mBoundService.dumpIsakmpSA();
+				    break;
 				}	
 			}
 		};
@@ -161,6 +164,11 @@ public class PeerList extends ArrayList<Peer> {
                 PeerPreferences.class);
         settingsActivity.putExtra(PeerPreferences.EXTRA_ID, id.intValue());
         context.startActivity(settingsActivity);
+    }
+
+    protected void dumpIsakmpSA() {
+    	Message msg = mHandler.obtainMessage(HANDLER_DUMP_ISAKMP_SA);
+    	msg.sendToTarget();
     }
     
     protected void connect(final PeerID id) {

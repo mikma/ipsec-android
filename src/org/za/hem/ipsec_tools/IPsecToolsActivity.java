@@ -424,7 +424,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        mBoundService = ((NativeService.NativeBinder)service).getService();
 	        output("Connected");
 	        mPeers.setService(mBoundService);
-	        mBoundService.dumpIsakmpSA();
+	        mPeers.dumpIsakmpSA();
 	        // Tell the user about this for our demo.
 //	        Toast.makeText(Binding.this, R.string.native_service_connected,
 	//                Toast.LENGTH_SHORT).show();
