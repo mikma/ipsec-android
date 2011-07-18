@@ -10,16 +10,21 @@ import android.net.LocalSocketAddress;
 import android.util.Log;
 
 public class ComSocket {
+	private String mAdminSockPath;
 	private LocalSocket mSocket;
 	private OutputStream mOs;
 	private InputStream mIs;
 	
-	public ComSocket(final String adminsock_path) throws IOException {
+	public ComSocket(final String adminsock_path) {
+		mAdminSockPath = adminsock_path;
+	}
+	
+	public void connect() throws IOException {
 		mSocket = new LocalSocket();
-		mSocket.connect(new LocalSocketAddress(adminsock_path,
+		mSocket.connect(new LocalSocketAddress(mAdminSockPath,
 				LocalSocketAddress.Namespace.FILESYSTEM));
 		mOs = mSocket.getOutputStream();
-		mIs = mSocket.getInputStream();
+		mIs = mSocket.getInputStream();		
 	}
 	
 

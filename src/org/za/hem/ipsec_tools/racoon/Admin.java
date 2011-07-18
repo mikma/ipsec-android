@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import org.za.hem.ipsec_tools.racoon.Ph1Dump.Item;
@@ -19,9 +20,11 @@ public class Admin {
 	private Thread mThread;
 	private volatile ComSocket mCom;
 	private OnCommandListener mListener;
+	private volatile boolean isStopping;
 	
 	public Admin () {
 		Log.i("ipsec-tools", "Admin ctor " + this);
+		isStopping = false;
 	}
 	
 	public interface OnCommandListener {
@@ -52,6 +55,7 @@ public class Admin {
 		}
 		
 		mCom = new ComSocket(socketPath);
+		mCom.connect();
 	}
 
 	public void start() throws IOException {
@@ -60,17 +64,30 @@ public class Admin {
 		
 		mThread = new Thread(new Runnable() {
 			public void run() {
-				try {
-					while (true) {
+				int maxTries = 10;
+				while (true) {
+					try {
 						// FIXME mCom can be null, synchronize!
+						Log.i("ipsec-tools", "Before receive");
 						Command cmd = mCom.receive();
+						Log.i("ipsec-tools", "After receive");
 						if (cmd != null)
 							Message.obtain(mHandler, MESSAGE_COMMAND, cmd).sendToTarget();
+					} catch (IOException e) {
+						//throw new RuntimeException(e);
+						Log.i("ipsec-tools", "Admin com socket EOF");
+						if (--maxTries <= 0)
+							throw new RuntimeException(e);
+						try {
+							Thread.sleep(500);
+							mCom.close();
+							mCom.connect();
+						} catch (InterruptedException e2) {
+							throw new RuntimeException(e2);
+						} catch (IOException e2) {
+						}
 					}
-				} catch (IOException e) {
-					//throw new RuntimeException(e);
 				}
-				Log.i("ipsec-tools", "Admin com socket EOF");
 			}
 			
 		});
@@ -80,6 +97,7 @@ public class Admin {
 	public void stop() throws IOException {
 		if (mCom != null) {
 			Log.i("ipsec-tools", "Stop admin");
+			isStopping = true;
 			mCom.close();
 			try {
 				if (mThread != null)
@@ -97,7 +115,9 @@ public class Admin {
 	// vpn-connect <ip> == establish-sa isakpm inet <srcip> <dstip>
 	
 	public void dumpIsakmpSA() throws IOException {
-		mCom.send(Command.buildDumpIsakmpSA());
+		ByteBuffer bb = Command.buildDumpIsakmpSA();
+		Log.i("ipsec-tools", "dumpIsakmpSA " + bb + " " + mCom);
+		mCom.send(bb);
 	}
 	
 	public void vpnConnect(InetAddress vpnGateway) throws IOException {
@@ -158,12 +178,14 @@ public class Admin {
 			Command cmd = (Command)msg.obj;
 			Log.i(this.getClass().toString(), "Handle command " + cmd);
 			
+			if (mListener != null) {
+				mListener.onCommand(cmd);
+			}
+
 			if (cmd.getCmd() == Command.ADMIN_SHOW_SA &&
 				cmd.getProto() == Command.ADMIN_PROTO_ISAKMP) {
 				Ph1Dump ph1dump = (Ph1Dump)cmd;
 				onDumpIsakmpSA(ph1dump);
-			} else if (mListener != null) {
-				mListener.onCommand(cmd);
 			}
 		}
 	};
