@@ -11,10 +11,17 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
 import android.util.Log;
 
 public class PeerList extends ArrayList<Peer> {
 
+	public static final int HANDLER_VPN_CONNECT = 1;
+	public static final int HANDLER_VPN_DISCONNECT = 2;
+	
 	/**
 	 * Serial for Serializable 
 	 */
@@ -22,10 +29,35 @@ public class PeerList extends ArrayList<Peer> {
 	
 	private ArrayList<Peer> mPeers;
 	private OnPeerChangeListener mListener;
+	private Handler mHandler;
+	private NativeService mBoundService;
 	
 	public PeerList(int capacity) {
 		super(capacity);
+		mBoundService = null;
 		mPeers = this;
+		// TODO stop thread
+		HandlerThread mHandlerThread = new HandlerThread("PeerList");
+		mHandlerThread.start();
+		mHandler = new Handler(mHandlerThread.getLooper()) {
+			public void handleMessage(Message msg) {
+				String addr;
+				switch (msg.what) {
+				case HANDLER_VPN_CONNECT:
+			    	addr = (String)msg.obj;
+			   		mBoundService.vpnConnect(addr);
+					break;
+				case HANDLER_VPN_DISCONNECT:
+			    	addr = (String)msg.obj;
+			   		mBoundService.vpnDisconnect(addr);
+					break;
+				}	
+			}
+		};
+	}
+	
+	protected void setService(NativeService service) {
+		mBoundService = service;
 	}
 	
 	protected Peer get(PeerID id) {
@@ -131,7 +163,7 @@ public class PeerList extends ArrayList<Peer> {
         context.startActivity(settingsActivity);
     }
     
-    protected void connect(final PeerID id, NativeService mBoundService) {
+    protected void connect(final PeerID id) {
     	if (mBoundService == null)
     		return;
     	
@@ -149,10 +181,13 @@ public class PeerList extends ArrayList<Peer> {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}*/
-   		mBoundService.vpnConnect(addr.getHostAddress());   	
+    	
+    	Message msg = mHandler.obtainMessage(HANDLER_VPN_CONNECT);
+    	msg.obj = addr.getHostAddress();
+    	msg.sendToTarget();
     }
     
-    protected void disconnect(final PeerID id, NativeService mBoundService) {
+    protected void disconnect(final PeerID id) {
     	if (mBoundService == null) {
     		Log.i("ipsec-tools", "No service");
     		return;
@@ -165,15 +200,17 @@ public class PeerList extends ArrayList<Peer> {
     		return;
     	Log.i("ipsec-tools", "disconnectPeer " + addr);
     	peer.setStatus(Peer.STATUS_PROGRESS);
-    	mBoundService.vpnDisconnect(addr.getHostAddress());
+    	Message msg = mHandler.obtainMessage(HANDLER_VPN_DISCONNECT);
+    	msg.obj = addr.getHostAddress();
+    	msg.sendToTarget();
     }
     
-    protected void toggle(final PeerID id, NativeService mBoundService) {
+    protected void toggle(final PeerID id) {
     	Peer peer = get(id);
     	Log.i("ipsec-tools", "togglePeer " + id + " " + peer);
     	if (peer.getStatus() == Peer.STATUS_CONNECTED)
-    		disconnect(id, mBoundService);
+    		disconnect(id);
     	else
-    		connect(id, mBoundService);
+    		connect(id);
     }
 }

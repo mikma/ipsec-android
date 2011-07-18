@@ -306,10 +306,10 @@ public class IPsecToolsActivity extends PreferenceActivity
 		
 		switch (item.getItemId()) {
 		case R.id.connect_peer:
-			mPeers.connect(selectedID, mBoundService);
+			mPeers.connect(selectedID);
 			return true;
 		case R.id.disconnect_peer:
-			mPeers.disconnect(selectedID, mBoundService);
+			mPeers.disconnect(selectedID);
 			return true;
 		case R.id.edit_peer:
 			mPeers.edit(this, selectedID);
@@ -332,7 +332,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 		try {
 			PeerID id = PeerID.fromString(arg0.getKey());
 			Log.i("ipsec-tools", "click " + id);
-			mPeers.toggle(id, mBoundService);
+			mPeers.toggle(id);
 			return true;
 		} catch (PeerID.KeyFormatException e) {
 			return false;
@@ -423,6 +423,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        // cast its IBinder to a concrete class and directly access it.
 	        mBoundService = ((NativeService.NativeBinder)service).getService();
 	        output("Connected");
+	        mPeers.setService(mBoundService);
 	        mBoundService.dumpIsakmpSA();
 	        // Tell the user about this for our demo.
 //	        Toast.makeText(Binding.this, R.string.native_service_connected,
@@ -436,6 +437,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        // see this happen.
 	        mBoundService = null;
 	        output("Disconnected");
+	        mPeers.setService(null);
 	  //      Toast.makeText(Binding.this, R.string.native_service_disconnected,
 	    //            Toast.LENGTH_SHORT).show();
 	    }
