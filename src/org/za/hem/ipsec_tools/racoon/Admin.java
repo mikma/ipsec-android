@@ -42,18 +42,6 @@ public class Admin {
 			// FIXME remove socket file SOCK_PATH
 		}
 		
-		// Wait for racoon to creat local unix domain socket
-		File file = new File(socketPath);
-		for (int i=0; i < 10; i++) {
-			if (file.exists())
-				break;
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				break;
-			}
-		}
-		
 		mCom = new ComSocket(socketPath);
 		mCom.connect();
 	}
@@ -107,9 +95,6 @@ public class Admin {
 			mCom = null;
 			mThread = null;
 		}
-		/*File file = new File(SOCK_PATH);
-		if (file.exists())
-			file.delete();*/
 	}
 	
 	// vpn-connect <ip> == establish-sa isakpm inet <srcip> <dstip>

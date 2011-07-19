@@ -288,6 +288,13 @@ public class NativeService extends Service {
 		try {
 			Log.i("LocalService", "Start process");
 			File binDir = this.getDir("bin", 0);
+			
+			// Remove racoon socket since we need to
+			// detect when the socket is created
+    		File socketFile = new File(mSocketPath);
+			if (socketFile.exists())
+				socketFile.delete();
+			
 			// TODO check getExternalStorageState()
 			File ipsecDir = new File(Environment.getExternalStorageDirectory(), "ipsec");
 			process = new ProcessBuilder()
@@ -310,6 +317,18 @@ public class NativeService extends Service {
     		reader.close();
     		in.close();
     		out.close();
+
+    		// Wait for racoon to creat local unix domain socket
+    		for (int i=0; i < 10; i++) {
+    			if (socketFile.exists())
+    				break;
+    			try {
+    				Thread.sleep(500);
+    			} catch (InterruptedException e) {
+    				break;
+    			}
+    		}    		
+
     		Message.obtain(mHandler, HANDLER_RACOON_STARTED).sendToTarget();
     	} catch (IOException e) {
     		throw new RuntimeException(e);
