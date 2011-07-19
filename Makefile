@@ -2,7 +2,6 @@ PREFIX := /data/local
 
 FILES := external/openssl/libs/armeabi/libcrypto.so \
 	external/openssl/libs/armeabi/libssl.so \
-	external/openssl/libs/armeabi/openssl \
 	external/ipsec-tools/libs/armeabi/libipsec.so \
 	external/ipsec-tools/libs/armeabi/libracoonlib.so \
 	external/ipsec-tools/libs/armeabi/racoon \
