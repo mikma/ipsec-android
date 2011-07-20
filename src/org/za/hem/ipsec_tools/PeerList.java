@@ -183,13 +183,6 @@ public class PeerList extends ArrayList<Peer> {
     	Log.i("ipsec-tools", "connectPeer " + addr);
     	peer.setStatus(Peer.STATUS_PROGRESS);
 
-/*    	ConfigManager cm = new ConfigManager(this);
-        try {
-			cm.build(mPeers);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}*/
-    	
     	Message msg = mHandler.obtainMessage(HANDLER_VPN_CONNECT);
     	msg.obj = addr.getHostAddress();
     	msg.sendToTarget();

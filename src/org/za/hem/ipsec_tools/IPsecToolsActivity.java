@@ -233,7 +233,15 @@ public class IPsecToolsActivity extends PreferenceActivity
     			peer.getPreference().setTitle(name);
     		}
     	}
-        
+
+		// TODO move
+		ConfigManager cm = new ConfigManager(this);
+        try {
+			cm.build(mPeers);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+ 
         // Set up a listener whenever a key changes
     	// TODO register all peer listeners
         //sharedPreferences.registerOnSharedPreferenceChangeListener(this);

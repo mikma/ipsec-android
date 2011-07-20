@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.os.Environment;
+import android.os.Process;
 
 public class ConfigManager {
 	
@@ -32,6 +33,8 @@ public class ConfigManager {
 	public static final String VAR_EXTDIR = "extdir";
 	public static final String VAR_REMOTE_ADDR = "remote_addr";
 	public static final String VAR_LOCAL_ADDR = "local_addr";
+	public static final String VAR_UID = "uid";
+	public static final String VAR_GID = "gid";
 	
 
 	private Pattern mPat;
@@ -44,6 +47,8 @@ public class ConfigManager {
 		mVariables = new HashMap<String,String>();
 		mVariables.put(VAR_BINDIR, mBinDir.getAbsolutePath());
 		mVariables.put(VAR_EXTDIR, Environment.getExternalStorageDirectory().getAbsolutePath());
+		mVariables.put(VAR_UID, "" + Process.myUid());
+		mVariables.put(VAR_GID, "" + Process.myUid());
 		mPat = Pattern.compile(PATTERN);
 		mContext = context;
 	}
@@ -84,7 +89,7 @@ public class ConfigManager {
 			mVariables.remove(VAR_LOCAL_ADDR);
 			try {
 				File output = buildPeerConfig(peer);
-				out.write("include \"" + output.getAbsolutePath() + "\";");
+				out.write("include \"" + output.getAbsolutePath() + "\";\n");
 			} catch (IOException e){
 			}
 		}
