@@ -12,16 +12,16 @@ public class Ph1Dump extends Command {
 	private ArrayList<Item> mItems;
 	
 	public class Item {
-		byte[] mInitiatorCookie;
-		byte[] mResponderCookie;
-		int mStatus;
-		int mSide;
-		InetSocketAddress mRemote;
-		InetSocketAddress mLocal;
-		short mVersion;
-		short mEType;
-		long mTimeCreated;
-		int mPh2Cnt;
+		public byte[] mInitiatorCookie;
+		public byte[] mResponderCookie;
+		public int mStatus;
+		public int mSide;
+		public InetSocketAddress mRemote;
+		public InetSocketAddress mLocal;
+		public short mVersion;
+		public short mEType;
+		public long mTimeCreated;
+		public int mPh2Cnt;
 
 		public Item(
 				// index

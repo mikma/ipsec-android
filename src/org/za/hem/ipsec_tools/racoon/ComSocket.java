@@ -19,6 +19,10 @@ public class ComSocket {
 		mAdminSockPath = adminsock_path;
 	}
 	
+	public boolean isConnected() {
+		return mSocket != null && mSocket.isConnected();
+	}
+	
 	public void connect() throws IOException {
 		mSocket = new LocalSocket();
 		mSocket.connect(new LocalSocketAddress(mAdminSockPath,

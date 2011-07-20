@@ -50,7 +50,7 @@ public class Event extends Command {
 		return mPh2MsgId;
 	}
 
-	protected Event(int proto, int len,
+	public Event(int proto, int len,
 					int type, long timeStamp,
 					InetSocketAddress ph1src, InetSocketAddress ph1dst, long ph2MsgId) {
 		super(ADMIN_SHOW_EVT, proto, len);
