@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.AbstractCollection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,30 +18,41 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.content.Context;
-import android.util.Log;
+import android.os.Environment;
 
 public class ConfigManager {
 	
 	public static final String PATTERN = "\\$\\{([a-zA-Z0-9_]+)\\}";
+	public static final String CONFIG_PREFIX = ".conf";
+	public static final String PEERS_CONFIG = "peers.conf";
+	public static final String RACOON_HEAD = "racoon.head";
+	
+	// Variables
+	public static final String VAR_BINDIR = "bindir";
+	public static final String VAR_EXTDIR = "extdir";
+	public static final String VAR_REMOTE_ADDR = "remote_addr";
+	public static final String VAR_LOCAL_ADDR = "local_addr";
+	
+
 	private Pattern mPat;
 	private Map<String,String> mVariables;
 	private Context mContext;
+	private File mBinDir;
 	
 	public ConfigManager(Context context) {
+		mBinDir = context.getDir("bin", Context.MODE_PRIVATE);
 		mVariables = new HashMap<String,String>();
-		//mVariables.put("bindir", "/data/data/org.za.hem.ipsec_tools/app_bin");
-		//mVariables.put("extdir", "/sdcard");
-		//mVariables.put("local_addr", "192.168.1.17");
+		mVariables.put(VAR_BINDIR, mBinDir.getAbsolutePath());
+		mVariables.put(VAR_EXTDIR, Environment.getExternalStorageDirectory().getAbsolutePath());
 		mPat = Pattern.compile(PATTERN);
 		mContext = context;
 	}
 	
 	protected void buildPeerConfig(Peer peer, Writer os) {
-		// FIXME don't hardcode directory
 		InetAddress addr = peer.getRemoteAddr();
 		if (addr != null)
-			mVariables.put("remote_addr", addr.getHostAddress());
-		mVariables.put("local_addr", peer.getLocalAddr().getHostAddress());
+			mVariables.put(VAR_REMOTE_ADDR, addr.getHostAddress());
+		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
 		File input = peer.getTemplateFile();
 		if (input == null)
 			return;
@@ -50,8 +60,8 @@ public class ConfigManager {
 	}
 	
 	protected File buildPeerConfig(Peer peer) throws IOException {
- 		mVariables.put("local_addr", peer.getLocalAddr().getHostAddress());
-		File output = new File("/data/data/org.za.hem.ipsec_tools/app_bin/" + peer.getPeerID().key + ".conf");
+ 		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
+		File output = new File(mBinDir, peer.getPeerID().key + CONFIG_PREFIX);
 		FileWriter os = new FileWriter(output);
 		buildPeerConfig(peer, os);
 		os.close();
@@ -61,8 +71,8 @@ public class ConfigManager {
 	public void build(AbstractCollection<Peer> peers) throws IOException {
 		Iterator<Peer> iter = peers.iterator();
 		// FIXME don't hardcode directory
-		Writer out = new FileWriter("/data/data/org.za.hem.ipsec_tools/app_bin/peers.conf");
-		Reader inHead = new InputStreamReader(mContext.getAssets().open("racoon.head"));
+		Writer out = new FileWriter(new File(mBinDir, PEERS_CONFIG));
+		Reader inHead = new InputStreamReader(mContext.getAssets().open(RACOON_HEAD));
 		substitute(inHead, out);
 		while (iter.hasNext()) {
 			Peer peer = iter.next();
@@ -70,8 +80,8 @@ public class ConfigManager {
 				continue;
 			if (!peer.isEnabled())
 				continue;
-			mVariables.remove("remote_addr");
-			mVariables.remove("local_addr");
+			mVariables.remove(VAR_REMOTE_ADDR);
+			mVariables.remove(VAR_LOCAL_ADDR);
 			try {
 				File output = buildPeerConfig(peer);
 				out.write("include \"" + output.getAbsolutePath() + "\";");
