@@ -96,35 +96,42 @@ public class Admin {
 	
 	// vpn-connect <ip> == establish-sa isakpm inet <srcip> <dstip>
 	
-	protected Command call(ByteBuffer bb) throws IOException {
-		open();
-		mQueue.clear();
-		start();
-		mCom.send(bb);
+	protected Command call(ByteBuffer bb) {
 		try {
+			open();
+			mQueue.clear();
+			start();
+			mCom.send(bb);
 			Command cmd = mQueue.poll(1000, TimeUnit.MILLISECONDS);
 			Log.i("ipsec-tools", "call result: " + cmd);
 			return cmd;
 		} catch (InterruptedException e) {
 			Log.i("ipsec-tools", "call interrupted");
-			// Todo contruct timeout Command?
+			return null;
+		} catch (IOException e) {
+			Log.i("ipsec-tools", "call i/o error");
 			return null;
 		} finally {
-			close();
+			try {
+				close();
+			} catch (IOException e) {
+			}
 		}
 	}
 	
-	public Command dumpIsakmpSA() throws IOException {
+	public Command dumpIsakmpSA() {
 		return call(Command.buildDumpIsakmpSA());
 	}
 	
-	public void vpnConnect(InetAddress vpnGateway) throws IOException {
-		call(Command.buildVpnConnect(vpnGateway));
+	public int vpnConnect(InetAddress vpnGateway) {
+		Command cmd = call(Command.buildVpnConnect(vpnGateway));
+		return cmd.getErrno();
 	}
 	
-	public void vpnDisconnect(InetAddress vpnGateway) throws IOException {
+	public int vpnDisconnect(InetAddress vpnGateway)  {
 		Log.i("ipsec-tools", "vpn-disconnect " + vpnGateway);
-		call(Command.buildVpnDisconnect(vpnGateway));		
+		Command cmd = call(Command.buildVpnDisconnect(vpnGateway));
+		return cmd.getErrno();
 	}
 	
 	public void showEvt() throws IOException {
@@ -132,6 +139,7 @@ public class Admin {
 		open();
 		start();
 		mCom.send(Command.buildShowEvt());
+		// TODO check result
 	}
 	
 	public void setOnCommandListener(OnCommandListener listener) {

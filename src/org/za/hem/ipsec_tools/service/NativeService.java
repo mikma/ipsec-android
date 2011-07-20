@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Iterator;
 
 import org.za.hem.ipsec_tools.IPsecToolsActivity;
@@ -188,41 +189,39 @@ public class NativeService extends Service {
 	}
 	
 	protected void onDumpIsakmpSA() {
-		try {
-			Command cmd = mAdminCmd.dumpIsakmpSA();
-			Ph1Dump pd = (Ph1Dump)cmd;
-			Iterator<Item> iter = pd.getItems().iterator();
-				
-			while (iter.hasNext()) {
-				Item dump = iter.next();
+		Command cmd = mAdminCmd.dumpIsakmpSA();
+		Ph1Dump pd = (Ph1Dump)cmd;
+		if (pd == null)
+			return;
+		Iterator<Item> iter = pd.getItems().iterator();
+			
+		while (iter.hasNext()) {
+			Item dump = iter.next();
 
-				Log.i("ipsec-tools", "onDumpIsakmpSA " + dump.mRemote);
-		
-				if (mListener == null) {
-					Log.i("ipsec-tools", "No listener " + this);			
-					return;
-				}
-		
-				// FIXME
-				final int INITIATOR = 0;
-				final int RESPONDER = 1; 
-				InetSocketAddress ph1src;
-				InetSocketAddress ph1dst;
-				
-				if (dump.mSide == INITIATOR) {
-					ph1src = dump.mLocal;
-					ph1dst = dump.mRemote;
-				} else {
-					ph1src = dump.mRemote;
-					ph1dst = dump.mLocal;
-				}
-				
-				Event evt = new Event(Command.ADMIN_PROTO_ISAKMP, -1, Event.EVT_PHASE1_UP,
-						dump.mTimeCreated, ph1src, ph1dst, -1);
-				mListener.onCommand(evt);
+			Log.i("ipsec-tools", "onDumpIsakmpSA " + dump.mRemote);
+	
+			if (mListener == null) {
+				Log.i("ipsec-tools", "No listener " + this);			
+				return;
 			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+	
+			// FIXME
+			final int INITIATOR = 0;
+			final int RESPONDER = 1; 
+			InetSocketAddress ph1src;
+			InetSocketAddress ph1dst;
+			
+			if (dump.mSide == INITIATOR) {
+				ph1src = dump.mLocal;
+				ph1dst = dump.mRemote;
+			} else {
+				ph1src = dump.mRemote;
+				ph1dst = dump.mLocal;
+			}
+			
+			Event evt = new Event(Command.ADMIN_PROTO_ISAKMP, -1, Event.EVT_PHASE1_UP,
+					dump.mTimeCreated, ph1src, ph1dst, -1);
+			mListener.onCommand(evt);
 		}
 	}
 
@@ -233,11 +232,10 @@ public class NativeService extends Service {
 	}
 	
 	protected void onVpnConnect(String gw) {
-		// FIXME
 		try {
 			InetAddress addr = InetAddress.getByName(gw);
 			mAdminCmd.vpnConnect(addr);
-		} catch (IOException e) {
+		} catch (UnknownHostException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -249,11 +247,10 @@ public class NativeService extends Service {
 	}
 	
 	public void onVpnDisconnect(String gw) {
-		// FIXME
 		try {
 			InetAddress addr = InetAddress.getByName(gw);
 			mAdminCmd.vpnDisconnect(addr);
-		} catch (IOException e) {
+		} catch (UnknownHostException e) {
 			throw new RuntimeException(e);
 		}
 	}
