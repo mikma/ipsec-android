@@ -114,13 +114,6 @@ public class NativeService extends Service {
         if (intent == null || intent.getAction() == null ) {
 			mAdmin = new Admin(mSocketPath);
 			mAdminCmd = new Admin(mSocketPath);
-			/*
-			try {
-				// FIXME DEBUG
-				mAdmin.stop();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}*/
 
         	Log.i("LocalService", "Start thread");
         	new Thread(new Runnable() {
@@ -159,9 +152,6 @@ public class NativeService extends Service {
 		
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(ACTION_DESTROYED);
-		//broadcastIntent.setData(Uri.parse("context://"+cer.getKey)));
-		//broadcastIntent.putExtra("reading",cer);
-		//broadcastIntent.addCategory("nl.vu.contextframework.CONTEXT");
 		sendBroadcast(broadcastIntent);
 		
         Log.i("LocalService", "Destroyed");
@@ -207,7 +197,7 @@ public class NativeService extends Service {
 	
 			// FIXME
 			final int INITIATOR = 0;
-			final int RESPONDER = 1; 
+			//final int RESPONDER = 1; 
 			InetSocketAddress ph1src;
 			InetSocketAddress ph1dst;
 			
@@ -280,7 +270,7 @@ public class NativeService extends Service {
         mNM.notify(NOTIFICATION, notification);
     }
 
-    private void doRun() {
+    private void startRacoon() {
 		Process process = null;
 		
 		try {
@@ -342,7 +332,7 @@ public class NativeService extends Service {
     	public void handleMessage(Message msg) {
     		switch (msg.what) {
     		case HANDLER_RACOON_STARTED:
-    			foo();
+    			onRacoonStarted();
     			break;
     		}
     	}
@@ -368,9 +358,6 @@ public class NativeService extends Service {
 					Intent broadcastIntent = new Intent();
 					broadcastIntent.setAction(action);
 					broadcastIntent.putExtra("remote_addr", evt.getPh1dst());
-					//broadcastIntent.setData(Uri.parse("context://"+cer.getKey)));
-					//broadcastIntent.putExtra("reading",cer);
-					//broadcastIntent.addCategory("nl.vu.contextframework.CONTEXT");
 					sendBroadcast(broadcastIntent);
 				}
 			} else {
@@ -381,7 +368,7 @@ public class NativeService extends Service {
 		}
     };
 
-    private void foo() {
+    private void onRacoonStarted() {
     	try {
 			mAdmin.setOnCommandListener(mListener);
 			mAdmin.showEvt();
