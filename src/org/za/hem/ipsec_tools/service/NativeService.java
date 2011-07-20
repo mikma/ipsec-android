@@ -7,15 +7,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.net.InetSocketAddress;
+import java.util.Iterator;
 
 import org.za.hem.ipsec_tools.IPsecToolsActivity;
 import org.za.hem.ipsec_tools.R;
 import org.za.hem.ipsec_tools.racoon.Admin;
 import org.za.hem.ipsec_tools.racoon.Command;
 import org.za.hem.ipsec_tools.racoon.Event;
+import org.za.hem.ipsec_tools.racoon.Ph1Dump;
+import org.za.hem.ipsec_tools.racoon.Ph1Dump.Item;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -97,22 +98,21 @@ public class NativeService extends Service {
 	       		default:
 	       			Log.i("ipsec-tools", "Unhandled " + msg.obj);
 	       			break;
-	       		}
-	       		
+	       		}	       		
 	    	}
 	    };
 
 	    // Display a notification about us starting.  We put an icon in the status bar.
 		showNotification();
-	}
+   	}
    	   
 	@Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("LocalService", "Received start id " + startId + ": " + intent);
         
         if (intent == null || intent.getAction() == null ) {
-			mAdmin = new Admin();
-			mAdminCmd = new Admin();
+			mAdmin = new Admin(mSocketPath);
+			mAdminCmd = new Admin(mSocketPath);
 			/*
 			try {
 				// FIXME DEBUG
@@ -148,8 +148,7 @@ public class NativeService extends Service {
     public void onDestroy() {
 		mWorkerHandler.getLooper().quit();
 		try {
-			mAdmin.stop();
-			mAdminCmd.stop();
+			mAdmin.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -189,29 +188,41 @@ public class NativeService extends Service {
 	}
 	
 	protected void onDumpIsakmpSA() {
-		// FIXME
-//		final Admin adminCmd = null;
-//		final BlockingQueue<Command> queue = new LinkedBlockingQueue<Command>();
 		try {
-			//final Command result = null;
-/*
-			adminCmd.setOnCommandListener(new Admin.OnCommandListener() {
-				public void onCommand(Command cmd) {
-					Log.i("ipsec-tools", "Response received " + cmd);
-					try {
-						queue.put(cmd);
-					} catch (InterruptedException e) {
-						throw new RuntimeException(e);
-					}
+			Command cmd = mAdminCmd.dumpIsakmpSA();
+			Ph1Dump pd = (Ph1Dump)cmd;
+			Iterator<Item> iter = pd.getItems().iterator();
+				
+			while (iter.hasNext()) {
+				Item dump = iter.next();
+
+				Log.i("ipsec-tools", "onDumpIsakmpSA " + dump.mRemote);
+		
+				if (mListener == null) {
+					Log.i("ipsec-tools", "No listener " + this);			
+					return;
 				}
-		    });
-		    */
-			mAdminCmd.dumpIsakmpSA();
-			//Command cmd = queue.poll(2000, TimeUnit.MILLISECONDS);
-			//Log.i("ipsec-tools", "onDumpIsakmpSA result: " + cmd);
+		
+				// FIXME
+				final int INITIATOR = 0;
+				final int RESPONDER = 1; 
+				InetSocketAddress ph1src;
+				InetSocketAddress ph1dst;
+				
+				if (dump.mSide == INITIATOR) {
+					ph1src = dump.mLocal;
+					ph1dst = dump.mRemote;
+				} else {
+					ph1src = dump.mRemote;
+					ph1dst = dump.mLocal;
+				}
+				
+				Event evt = new Event(Command.ADMIN_PROTO_ISAKMP, -1, Event.EVT_PHASE1_UP,
+						dump.mTimeCreated, ph1src, ph1dst, -1);
+				mListener.onCommand(evt);
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
-		} finally {
 		}
 	}
 
@@ -226,13 +237,8 @@ public class NativeService extends Service {
 		try {
 			InetAddress addr = InetAddress.getByName(gw);
 			mAdminCmd.vpnConnect(addr);
-			// TODO wait for acknowledge
-			Thread.sleep(1000);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		} finally {
 		}
 	}
 	
@@ -247,13 +253,8 @@ public class NativeService extends Service {
 		try {
 			InetAddress addr = InetAddress.getByName(gw);
 			mAdminCmd.vpnDisconnect(addr);
-			// TODO wait for acknowledge
-			Thread.sleep(1000);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		} finally {
 		}
 	}
 	
@@ -386,22 +387,14 @@ public class NativeService extends Service {
     private void foo() {
     	try {
 			mAdmin.setOnCommandListener(mListener);
-    		mAdmin.open(mSocketPath);
-    		mAdmin.start();
 			mAdmin.showEvt();
 			
-			// FIXME change to mResultListener
-			mAdminCmd.setOnCommandListener(mListener);
-			mAdminCmd.open(mSocketPath);
-			mAdminCmd.start();
-
 			Intent broadcastIntent = new Intent();
 			broadcastIntent.setAction(ACTION_SERVICE_READY);
 			sendBroadcast(broadcastIntent);
     	} catch (IOException e) {
     		throw new RuntimeException(e);
-/*    	} catch (InterruptedException e) {
-    		throw new RuntimeException(e);*/
-		}
+    	}
     }
+
 }
