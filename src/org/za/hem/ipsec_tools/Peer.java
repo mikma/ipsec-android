@@ -54,6 +54,10 @@ public class Peer implements OnSharedPreferenceChangeListener {
 		return mShared.getBoolean(PeerPreferences.ENABLED_PREFERENCE, true);
 	}
 
+	public boolean isConnected() {
+		return mStatus == STATUS_CONNECTED;
+	}
+	
 	public boolean isDisconnected() {
 		return mStatus == STATUS_DISCONNECTED || mStatus == STATUS_DISABLED;
 	}
