@@ -345,11 +345,16 @@ public class IPsecToolsActivity extends PreferenceActivity
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getMenuInflater();
 	    inflater.inflate(R.menu.options_menu, menu);
+	    return true;
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu (Menu menu) {
 	    menu.findItem(R.id.start_service).setVisible(!mIsBound);
 	    menu.findItem(R.id.stop_service).setVisible(mIsBound);
 	    return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    // Handle item selection
@@ -398,6 +403,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     		if (action.equals(NativeService.ACTION_SERVICE_READY)) {
     			mPeers.dumpIsakmpSA();
     			return;
+     		} else if (action.equals(NativeService.ACTION_DESTROYED)) {
+     			return;
      		}
     		
     		InetSocketAddress remote_address = (InetSocketAddress)intent.getSerializableExtra("remote_addr");
@@ -423,6 +430,14 @@ public class IPsecToolsActivity extends PreferenceActivity
     	}  	
     };
     
+    private void onServiceUnbound() {
+        mBoundService = null;
+        output("Disconnected");
+        mPeers.setService(null);
+  	  //      Toast.makeText(Binding.this, R.string.native_service_disconnected,
+	    //            Toast.LENGTH_SHORT).show();    	
+    }
+    
 	private ServiceConnection mConnection = new ServiceConnection() {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
 	        // This is called when the connection with the service has been
@@ -443,11 +458,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        // unexpectedly disconnected -- that is, its process crashed.
 	        // Because it is running in our same process, we should never
 	        // see this happen.
-	        mBoundService = null;
-	        output("Disconnected");
-	        mPeers.setService(null);
-	  //      Toast.makeText(Binding.this, R.string.native_service_disconnected,
-	    //            Toast.LENGTH_SHORT).show();
+	    	onServiceUnbound();
 	    }
 	};
 	
@@ -457,6 +468,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    // we know will be running in our own process (and thus won't be
 	    // supporting component replacement by other applications).
 		// FIXME handle start errors
+		Log.i("ipsec-tools", "doBindService");
 		startService(new Intent(IPsecToolsActivity.this, 
 	            NativeService.class));
 	    bindService(new Intent(IPsecToolsActivity.this, 
@@ -466,12 +478,15 @@ public class IPsecToolsActivity extends PreferenceActivity
 	
 	void doUnbindService() {
 	    if (mIsBound) {
+			Log.i("ipsec-tools", "doUnBindService");
 	        // Detach our existing connection.
 	        unbindService(mConnection);
         	stopService(new Intent(IPsecToolsActivity.this, 
         			NativeService.class));
+	        onServiceUnbound();
 	        mIsBound = false;
-	    }
+	    } else
+			Log.i("ipsec-tools", "not bound");
 	}
 	
     private void output(final String str) {

@@ -154,7 +154,7 @@ public class NativeService extends Service {
 		broadcastIntent.setAction(ACTION_DESTROYED);
 		sendBroadcast(broadcastIntent);
 		
-        Log.i("LocalService", "Destroyed");
+        Log.i("ipsec-tools", "Destroyed");
 
         // Cancel the persistent notification.
         mNM.cancel(NOTIFICATION);
