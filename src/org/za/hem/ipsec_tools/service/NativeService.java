@@ -170,6 +170,10 @@ public class NativeService extends Service {
 		
 	}
 	
+	public int reloadConf() {
+		return mAdminCmd.reloadConf();
+	}
+	
 	public void dumpIsakmpSA() {
 		Log.i("ipsec-tools", "dumpIsakmpSA");
 		Message msg = mWorkerHandler.obtainMessage(HANDLER_DUMP_ISAKMP_SA);

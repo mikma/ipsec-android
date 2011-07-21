@@ -257,6 +257,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		if (mBoundService != null)
+			mBoundService.reloadConf();
 		mEditID = null;
     }
     
@@ -313,7 +315,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 				MenuInflater inflater = getMenuInflater();
 				inflater.inflate(R.menu.peer_menu, menu);
 				menu.setHeaderTitle(selectedPeer.getName());
-				menu.findItem(R.id.edit_peer).setVisible(selectedPeer.isDisconnected());
+				menu.findItem(R.id.edit_peer).setEnabled(selectedPeer.isDisconnected());
 			} else {
 				selectedPeer = null;
 				Log.i("ipsec-tools", "onCreateContextMenu item not found");

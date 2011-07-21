@@ -265,6 +265,13 @@ public class Command {
 		return header;
 	}
 
+	public static ByteBuffer buildReloadConf() {
+		ByteBuffer header = buildHeader(ADMIN_RELOAD_CONF,
+										0,
+										0);
+		return header;
+	}
+
 	protected static ByteBuffer buildHeader(int cmd,
 											int proto, int len) {
 		int totalLen = len + 8;

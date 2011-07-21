@@ -119,6 +119,11 @@ public class Admin {
 		}
 	}
 	
+	public int reloadConf() {
+		Command cmd = call(Command.buildReloadConf());
+		return cmd.getErrno();
+	}
+	
 	public Command dumpIsakmpSA() {
 		return call(Command.buildDumpIsakmpSA());
 	}
