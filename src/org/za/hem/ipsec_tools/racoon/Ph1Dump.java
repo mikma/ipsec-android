@@ -31,7 +31,7 @@ public class Ph1Dump extends Command {
 				InetSocketAddress local,
 				short version,
 				short eType,
-				long timeCreated, // TODO change to time?
+				long timeCreated,
 				int ph2Cnt) {
 			mInitiatorCookie = icookie;
 			mResponderCookie = rcookie;

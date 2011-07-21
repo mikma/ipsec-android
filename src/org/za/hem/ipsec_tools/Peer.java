@@ -8,14 +8,23 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.Preference;
 import android.util.Log;
 
-public class Peer {
+public class Peer implements OnSharedPreferenceChangeListener {
 	public static final int STATUS_DISCONNECTED = 0;
 	public static final int STATUS_CONNECTED = 1;
 	public static final int STATUS_PROGRESS = 2;
 	public static final int STATUS_DISABLED = 3;
+	public static final int STATUS_NUM = 4;
+	
+	public static final int[] STATUS_SUMMARY = {
+		R.string.connect_peer,
+		R.string.disconnect_peer,
+		R.string.progress_peer,
+		R.string.connect_peer,
+	};
 	
 	private PeerID mID;
 	private StatePreference mPref;
@@ -87,8 +96,11 @@ public class Peer {
 	}
 
 	public void setStatus(int status) {
-		mStatus = status;
-		mPref.setIconLevel(mStatus);
+		if (mStatus != status && mStatus < STATUS_NUM) {
+			mStatus = status;
+			mPref.setIconLevel(mStatus);
+			mPref.setSummary(STATUS_SUMMARY[mStatus]);
+		}
 	}
 
 	public void onPhase1Up() {
@@ -97,6 +109,27 @@ public class Peer {
 
 	public void onPhase1Down() {
 		setStatus(STATUS_DISCONNECTED);
+	}
+	
+	public void onPreferenceActivityResume() {
+		mShared.registerOnSharedPreferenceChangeListener(this);
+		updatePreferenceName();
+	}
+	
+	public void onPreferenceActivityPause() {
+		mShared.unregisterOnSharedPreferenceChangeListener(this);
+	}
+	
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		//Called when a shared preference is changed, added, or removed.
+		if (key.equals(PeerPreferences.NAME_PREFERENCE)) {
+			updatePreferenceName();
+		}
+	}
+	
+	protected void updatePreferenceName() {
+		getPreference().setTitle(getName());		
 	}
 	
 	public String toString() {

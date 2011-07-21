@@ -227,10 +227,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 
     		if (sharedPreferences.getBoolean(id.toString(), true)
     				&& mPeers.get(i) != null ) {
-    			// FIXME move to Peer?
     			Peer peer = mPeers.get(i);
-    			String name = peer.getName();
-    			peer.getPreference().setTitle(name);
+    			peer.onPreferenceActivityResume();
     		}
     	}
 
@@ -241,10 +239,6 @@ public class IPsecToolsActivity extends PreferenceActivity
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
- 
-        // Set up a listener whenever a key changes
-    	// TODO register all peer listeners
-        //sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
     
     protected void onPause()
@@ -255,9 +249,18 @@ public class IPsecToolsActivity extends PreferenceActivity
 		unregisterForContextMenu(getListView());
 		mNM = null;
 
-    	// Unregister the listener whenever a key changes
-    	// TODO unregister all peer listeners
-    	//getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);    
+		SharedPreferences sharedPreferences =
+        	getPreferenceScreen().getSharedPreferences();
+
+		for (int i=0; i < mPeers.size(); i++) {
+    		PeerID id = new PeerID(i);
+
+    		if (sharedPreferences.getBoolean(id.toString(), true)
+    				&& mPeers.get(i) != null ) {
+    			Peer peer = mPeers.get(i);
+    			peer.onPreferenceActivityPause();
+    		}
+    	}
     }
     
     @Override

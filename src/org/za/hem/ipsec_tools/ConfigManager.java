@@ -75,7 +75,6 @@ public class ConfigManager {
 		
 	public void build(AbstractCollection<Peer> peers) throws IOException {
 		Iterator<Peer> iter = peers.iterator();
-		// FIXME don't hardcode directory
 		Writer out = new FileWriter(new File(mBinDir, PEERS_CONFIG));
 		Reader inHead = new InputStreamReader(mContext.getAssets().open(RACOON_HEAD));
 		substitute(inHead, out);

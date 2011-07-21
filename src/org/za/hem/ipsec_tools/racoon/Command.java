@@ -102,7 +102,6 @@ public class Command {
 		
 		res = is.read(buf, 0, HEADER_LEN);
 		if (res < 0)
-			// TODO handle graceful, stream closed by Admin.
 			throw new IOException("Bad data");
 		if (res != HEADER_LEN)
 			throw new IOException("Expected " + HEADER_LEN + " bytes, got " + res);

@@ -144,8 +144,6 @@ public class NativeService extends Service {
 		try {
 			mAdmin.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		mAdmin = null;
 		mAdminCmd = null;
@@ -195,7 +193,6 @@ public class NativeService extends Service {
 				return;
 			}
 	
-			// FIXME
 			final int INITIATOR = 0;
 			//final int RESPONDER = 1; 
 			InetSocketAddress ph1src;
