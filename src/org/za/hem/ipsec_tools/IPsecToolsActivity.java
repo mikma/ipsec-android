@@ -312,6 +312,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 		
 				MenuInflater inflater = getMenuInflater();
 				inflater.inflate(R.menu.peer_menu, menu);
+				menu.setHeaderTitle(selectedPeer.getName());
+				menu.findItem(R.id.edit_peer).setVisible(selectedPeer.isDisconnected());
 			} else {
 				selectedPeer = null;
 				Log.i("ipsec-tools", "onCreateContextMenu item not found");
