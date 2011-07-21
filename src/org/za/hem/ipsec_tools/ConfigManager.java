@@ -35,6 +35,7 @@ public class ConfigManager {
 	public static final String VAR_LOCAL_ADDR = "local_addr";
 	public static final String VAR_UID = "uid";
 	public static final String VAR_GID = "gid";
+	public static final String VAR_NAME = "name";
 	
 
 	private Pattern mPat;
@@ -53,11 +54,16 @@ public class ConfigManager {
 		mContext = context;
 	}
 	
+	protected File getPeerConfigFile(Peer peer) {
+		return new File(mBinDir, peer.getPeerID().key + CONFIG_PREFIX);
+	}
+	
 	protected void buildPeerConfig(Peer peer, Writer os) {
 		InetAddress addr = peer.getRemoteAddr();
 		if (addr != null)
 			mVariables.put(VAR_REMOTE_ADDR, addr.getHostAddress());
 		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
+		mVariables.put(VAR_NAME, peer.getName());
 		File input = peer.getTemplateFile();
 		if (input == null)
 			return;
@@ -66,14 +72,15 @@ public class ConfigManager {
 	
 	protected File buildPeerConfig(Peer peer) throws IOException {
  		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
-		File output = new File(mBinDir, peer.getPeerID().key + CONFIG_PREFIX);
+		File output = getPeerConfigFile(peer);
 		FileWriter os = new FileWriter(output);
 		buildPeerConfig(peer, os);
 		os.close();
 		return output;
 	}
-		
-	public void build(AbstractCollection<Peer> peers) throws IOException {
+	
+	public void build(AbstractCollection<Peer> peers,
+			boolean updateAllPeers) throws IOException {
 		Iterator<Peer> iter = peers.iterator();
 		Writer out = new FileWriter(new File(mBinDir, PEERS_CONFIG));
 		Reader inHead = new InputStreamReader(mContext.getAssets().open(RACOON_HEAD));
@@ -86,8 +93,13 @@ public class ConfigManager {
 				continue;
 			mVariables.remove(VAR_REMOTE_ADDR);
 			mVariables.remove(VAR_LOCAL_ADDR);
+			mVariables.remove(VAR_NAME);
 			try {
-				File output = buildPeerConfig(peer);
+				File output;
+				if (updateAllPeers)
+					output = buildPeerConfig(peer);
+				else
+					output = getPeerConfigFile(peer);
 				out.write("include \"" + output.getAbsolutePath() + "\";\n");
 			} catch (IOException e){
 			}

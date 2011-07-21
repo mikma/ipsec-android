@@ -62,16 +62,24 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private NotificationManager mNM;
 	private NativeService mBoundService;
 	private NativeCommand mNative;
+	private ConfigManager mCM;
 	private static final String ADD_PREFERENCE = "addPref";
 	private static final String PEERS_PREFERENCE = "peersPref";
 	private static final String COUNT_PREFERENCE = "countPref";
 	private PeerList mPeers;
 	private PeerID selectedID;
 	private Peer selectedPeer;
+	private PeerID mEditID;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
+    	
+    	selectedID = null;
+    	selectedPeer = null;
+    	mEditID = null;
+
+    	mCM = new ConfigManager(this);
 
         if (DEBUG) {
         	NativeCommand.system("killall racoon");
@@ -130,6 +138,12 @@ public class IPsecToolsActivity extends PreferenceActivity
         	}
     		id = id.next();
         }
+		
+        try {
+			mCM.build(mPeers, true);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
         
         if (DEBUG) {
         	doBindService();
@@ -232,13 +246,18 @@ public class IPsecToolsActivity extends PreferenceActivity
     		}
     	}
 
-		// TODO move
-		ConfigManager cm = new ConfigManager(this);
-        try {
-			cm.build(mPeers);
+		try {
+			if (mEditID != null && mEditID.isValid()) {
+				Peer peer = mPeers.get(mEditID);
+				if (peer != null) {
+					mCM.buildPeerConfig(peer);
+				}
+				mCM.build(mPeers, false);
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		mEditID = null;
     }
     
     protected void onPause()
@@ -318,6 +337,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 			return true;
 		case R.id.edit_peer:
 			mPeers.edit(this, selectedID);
+			mEditID = selectedID;
 			return true;
 		case R.id.delete_peer:
 			mPeers.deletePeer(selectedID, this);

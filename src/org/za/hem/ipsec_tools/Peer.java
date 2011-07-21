@@ -123,6 +123,7 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		//Called when a shared preference is changed, added, or removed.
+		Log.i("ipsec-tools", "peer pref " + key + " changed");
 		if (key.equals(PeerPreferences.NAME_PREFERENCE)) {
 			updatePreferenceName();
 		}
