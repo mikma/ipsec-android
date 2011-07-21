@@ -17,13 +17,28 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	public static final int STATUS_CONNECTED = 1;
 	public static final int STATUS_PROGRESS = 2;
 	public static final int STATUS_DISABLED = 3;
-	public static final int STATUS_NUM = 4;
+	public static final int STATUS_BUSY = 4;
+	public static final int STATUS_NUM = 5;
 	
 	public static final int[] STATUS_SUMMARY = {
 		R.string.connect_peer,
 		R.string.disconnect_peer,
 		R.string.progress_peer,
 		R.string.connect_peer,
+	};
+	
+	/* 
+	 * Icons
+	 * 
+	 * 0 - presence_invisible	grey dot
+     * 1 - presence_online		green dot
+     * 2 - presence_away		blue clock
+     * 3 - presence_offline		grey cross
+     * 4 - presence_busy		red dash
+	 */
+
+	public static final int[] STATUS_ICON = {
+		
 	};
 	
 	private PeerID mID;
@@ -59,7 +74,7 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	}
 	
 	public boolean isDisconnected() {
-		return mStatus == STATUS_DISCONNECTED || mStatus == STATUS_DISABLED;
+		return mStatus == STATUS_DISCONNECTED;
 	}
 	
 	public Preference getPreference() {

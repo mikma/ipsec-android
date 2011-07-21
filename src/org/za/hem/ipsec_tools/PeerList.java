@@ -149,7 +149,7 @@ public class PeerList extends ArrayList<Peer> {
 	
     protected void edit(Context context, final PeerID id) {
     	Peer peer = mPeers.get(id.intValue());
-       	if (peer.getStatus() == Peer.STATUS_CONNECTED) {
+       	if (peer.isConnected()) {
     		AlertDialog.Builder builder = new AlertDialog.Builder(context);
     		builder.setIcon(android.R.drawable.ic_dialog_alert);
     		builder.setTitle(peer.getName());
@@ -209,9 +209,9 @@ public class PeerList extends ArrayList<Peer> {
     protected void toggle(final PeerID id) {
     	Peer peer = get(id);
     	Log.i("ipsec-tools", "togglePeer " + id + " " + peer);
-    	if (peer.getStatus() == Peer.STATUS_CONNECTED)
+    	if (peer.isConnected())
     		disconnect(id);
-    	else
+    	else if (peer.isDisconnected())
     		connect(id);
     }
 }
