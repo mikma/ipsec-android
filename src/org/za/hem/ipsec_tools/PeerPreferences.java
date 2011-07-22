@@ -1,5 +1,6 @@
 package org.za.hem.ipsec_tools;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Iterator;
@@ -59,12 +60,21 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 
 		// Get the template preference
 		Preference customPref = findPreference(TEMPLATE_PREFERENCE);
+		SharedPreferences shared = getSharedPreferences(
+				getSharedPreferencesName(this, mID), Activity.MODE_PRIVATE);
+		String tmpl = shared.getString(TEMPLATE_PREFERENCE, null);
+		final String startPath;
+		if (tmpl != null) {
+			File tmplFile = new File(tmpl);
+			startPath = tmplFile.getParentFile().getAbsolutePath(); 
+		} else {
+			startPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		}
 		customPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			public boolean onPreferenceClick(Preference preference) {
 				Intent intent = new Intent(PeerPreferences.this.getBaseContext(),
 						FileDialog.class);
-				intent.putExtra(FileDialog.START_PATH,
-								Environment.getExternalStorageDirectory().getAbsolutePath());
+				intent.putExtra(FileDialog.START_PATH, startPath);
 				PeerPreferences.this.startActivityForResult(intent, REQUEST_TEMPLATE);
 				return true;
 			}

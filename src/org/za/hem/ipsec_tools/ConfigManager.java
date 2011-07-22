@@ -58,16 +58,17 @@ public class ConfigManager {
 		return new File(mBinDir, peer.getPeerID().key + CONFIG_PREFIX);
 	}
 	
-	protected void buildPeerConfig(Peer peer, Writer os) {
+	protected void buildPeerConfig(Peer peer, Writer os) throws IOException {
 		InetAddress addr = peer.getRemoteAddr();
 		if (addr != null)
 			mVariables.put(VAR_REMOTE_ADDR, addr.getHostAddress());
 		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
 		mVariables.put(VAR_NAME, peer.getName());
-		File input = peer.getTemplateFile();
-		if (input == null)
+		File tmpl = peer.getTemplateFile();
+		if (tmpl == null)
 			return;
-		substitute(input, os);
+		PolicyFile policy = new PolicyFile(tmpl);
+		substitute(policy.getRacoonConfStream(), os);
 	}
 	
 	protected File buildPeerConfig(Peer peer) throws IOException {
@@ -148,6 +149,10 @@ public class ConfigManager {
 			throw new RuntimeException(e);
 		} finally {
 		}
+	}
+
+	public void substitute(java.io.InputStream input, Writer os) {
+		substitute(new InputStreamReader(input), os);
 	}
 
 	public void substitute(File input, Writer os) {

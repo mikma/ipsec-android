@@ -253,12 +253,12 @@ public class IPsecToolsActivity extends PreferenceActivity
 					mCM.buildPeerConfig(peer);
 				}
 				mCM.build(mPeers, false);
+				if (mBoundService != null)
+					mBoundService.reloadConf();
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			// TODO display error
 		}
-		if (mBoundService != null)
-			mBoundService.reloadConf();
 		mEditID = null;
     }
     
