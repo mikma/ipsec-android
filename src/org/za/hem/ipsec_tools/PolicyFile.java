@@ -51,4 +51,8 @@ public class PolicyFile extends JarFile {
 	public InputStream getRacoonConfStream() throws IOException {
 		return getInputStream(getJarEntry(RACOON_NAME));
 	}
+
+	public InputStream getSetkeyConfStream() throws IOException {
+		return getInputStream(getJarEntry(SETKEY_NAME));
+	}
 }

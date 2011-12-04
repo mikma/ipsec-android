@@ -26,7 +26,9 @@ public class ConfigManager {
 	public static final String PATTERN = "\\$\\{([a-zA-Z0-9_]+)\\}";
 	public static final String CONFIG_PREFIX = ".conf";
 	public static final String PEERS_CONFIG = "peers.conf";
+	public static final String SETKEY_CONFIG = "setkey.conf";
 	public static final String RACOON_HEAD = "racoon.head";
+	public static final String SETKEY_HEAD = "setkey.head";
 	
 	// Variables
 	public static final String VAR_BINDIR = "bindir";
@@ -58,7 +60,7 @@ public class ConfigManager {
 		return new File(mBinDir, peer.getPeerID().key + CONFIG_PREFIX);
 	}
 	
-	protected void buildPeerConfig(Peer peer, Writer os) throws IOException {
+	protected void buildPeerConfig(Peer peer, Writer os, Writer setkeyOs) throws IOException {
 		InetAddress addr = peer.getRemoteAddr();
 		if (addr != null)
 			mVariables.put(VAR_REMOTE_ADDR, addr.getHostAddress());
@@ -68,14 +70,17 @@ public class ConfigManager {
 		if (tmpl == null)
 			return;
 		PolicyFile policy = new PolicyFile(tmpl);
-		substitute(policy.getRacoonConfStream(), os);
+		if (os != null)
+			substitute(policy.getRacoonConfStream(), os);
+		if (setkeyOs != null)
+			substitute(policy.getSetkeyConfStream(), setkeyOs);
 	}
 	
-	protected File buildPeerConfig(Peer peer) throws IOException {
+	protected File buildPeerConfig(Peer peer, Writer setkeyOut) throws IOException {
  		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
 		File output = getPeerConfigFile(peer);
 		FileWriter os = new FileWriter(output);
-		buildPeerConfig(peer, os);
+		buildPeerConfig(peer, os, setkeyOut);
 		os.close();
 		return output;
 	}
@@ -83,29 +88,50 @@ public class ConfigManager {
 	public void build(AbstractCollection<Peer> peers,
 			boolean updateAllPeers) throws IOException {
 		Iterator<Peer> iter = peers.iterator();
-		Writer out = new FileWriter(new File(mBinDir, PEERS_CONFIG));
-		Reader inHead = new InputStreamReader(mContext.getAssets().open(RACOON_HEAD));
-		substitute(inHead, out);
-		while (iter.hasNext()) {
-			Peer peer = iter.next();
-			if (peer == null)
-				continue;
-			if (!peer.isEnabled())
-				continue;
-			mVariables.remove(VAR_REMOTE_ADDR);
-			mVariables.remove(VAR_LOCAL_ADDR);
-			mVariables.remove(VAR_NAME);
-			try {
-				File output;
-				if (updateAllPeers)
-					output = buildPeerConfig(peer);
-				else
-					output = getPeerConfigFile(peer);
-				out.write("include \"" + output.getAbsolutePath() + "\";\n");
-			} catch (IOException e){
+		Writer out = null;
+		Writer setkeyOut = null;
+		Reader inHead = null;
+		Reader setkeyHead = null;
+
+		try {
+			out = new FileWriter(new File(mBinDir, PEERS_CONFIG));
+			inHead = new InputStreamReader(mContext.getAssets().open(RACOON_HEAD));
+			substitute(inHead, out);
+			
+			setkeyOut = new FileWriter(new File(mBinDir, SETKEY_CONFIG));
+			setkeyHead = new InputStreamReader(mContext.getAssets().open(SETKEY_HEAD));
+			substitute(setkeyHead, setkeyOut);
+			
+			while (iter.hasNext()) {
+				Peer peer = iter.next();
+				if (peer == null)
+					continue;
+				if (!peer.isEnabled())
+					continue;
+				mVariables.remove(VAR_REMOTE_ADDR);
+				mVariables.remove(VAR_LOCAL_ADDR);
+				mVariables.remove(VAR_NAME);
+				try {
+					File output;
+					if (updateAllPeers)
+						output = buildPeerConfig(peer, setkeyOut);
+					else {
+						output = buildPeerConfig(peer, null, setkeyOut);
+					}
+					out.write("include \"" + output.getAbsolutePath() + "\";\n");
+				} catch (IOException e){
+				}
 			}
+		} finally {
+			if (out != null)
+				out.close();
+			if (setkeyOut != null)
+				setkeyOut.close();
+			if (inHead != null)
+				inHead.close();
+			if (setkeyHead != null)
+				setkeyHead.close();
 		}
-		out.close();
 		// build peers.conf
 	}
 	
@@ -113,7 +139,7 @@ public class ConfigManager {
 		mVariables.put(key, value);
 	}
 
-	protected String substituteLine(String line) {
+	private String substituteLine(String line) {
 		StringBuffer buf = new StringBuffer();
 		Matcher m = mPat.matcher(line);
 
@@ -135,7 +161,7 @@ public class ConfigManager {
 		return buf.toString();
 	}
 	
-	public void substitute(Reader input, Writer os) {
+	private void substitute(Reader input, Writer os) {
 		BufferedReader is = new BufferedReader(input);
 			
 		try {
@@ -151,11 +177,11 @@ public class ConfigManager {
 		}
 	}
 
-	public void substitute(java.io.InputStream input, Writer os) {
+	private void substitute(java.io.InputStream input, Writer os) {
 		substitute(new InputStreamReader(input), os);
 	}
 
-	public void substitute(File input, Writer os) {
+	private void substitute(File input, Writer os) {
 		Reader is = null;
 		try {
 			is = new FileReader(input);
