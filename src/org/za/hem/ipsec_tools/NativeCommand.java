@@ -116,7 +116,7 @@ public class NativeCommand {
     		// NOTE: You can write to stdin of the command using
     		//       process.getOutputStream().
     		BufferedReader reader = new BufferedReader(
-    				new InputStreamReader(process.getInputStream()));
+    				new InputStreamReader(process.getInputStream()), 8192);
     		int read;
     		char[] buffer = new char[4096];
     		StringBuffer output = new StringBuffer();

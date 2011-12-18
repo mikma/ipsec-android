@@ -162,7 +162,7 @@ public class ConfigManager {
 	}
 	
 	private void substitute(Reader input, Writer os) {
-		BufferedReader is = new BufferedReader(input);
+		BufferedReader is = new BufferedReader(input, 8192);
 			
 		try {
 			String line;

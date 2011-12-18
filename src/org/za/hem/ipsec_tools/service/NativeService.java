@@ -298,7 +298,7 @@ public class NativeService extends Service {
     		OutputStream out = process.getOutputStream();
     		
     		BufferedReader reader = new BufferedReader(
-    				new InputStreamReader(in));
+    				new InputStreamReader(in), 8192);
     		int read;
     		char[] buffer = new char[4096];
     		while ((read = reader.read(buffer)) > 0) {
