@@ -60,7 +60,7 @@ public class ConfigManager {
 		return new File(mBinDir, peer.getPeerID().key + CONFIG_PREFIX);
 	}
 	
-	protected void buildPeerConfig(Peer peer, Writer os, Writer setkeyOs) throws IOException {
+	private void buildPeerConfig(Peer peer, Writer os, Writer setkeyOs) throws IOException {
 		InetAddress addr = peer.getRemoteAddr();
 		if (addr != null)
 			mVariables.put(VAR_REMOTE_ADDR, addr.getHostAddress());
@@ -116,7 +116,8 @@ public class ConfigManager {
 					if (updateAllPeers)
 						output = buildPeerConfig(peer, setkeyOut);
 					else {
-						output = buildPeerConfig(peer, null, setkeyOut);
+						buildPeerConfig(peer, null, setkeyOut);
+						output = getPeerConfigFile(peer);
 					}
 					out.write("include \"" + output.getAbsolutePath() + "\";\n");
 				} catch (IOException e){

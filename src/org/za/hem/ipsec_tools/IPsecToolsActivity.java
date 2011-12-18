@@ -27,6 +27,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -248,9 +249,11 @@ public class IPsecToolsActivity extends PreferenceActivity
 
 		try {
 			if (mEditID != null && mEditID.isValid()) {
+				// FIXME
+				Writer setKeyOs = null;
 				Peer peer = mPeers.get(mEditID);
 				if (peer != null) {
-					mCM.buildPeerConfig(peer);
+					mCM.buildPeerConfig(peer, setKeyOs);
 				}
 				mCM.build(mPeers, false);
 				if (mBoundService != null)
