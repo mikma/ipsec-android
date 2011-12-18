@@ -11,6 +11,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Iterator;
 
+import org.za.hem.ipsec_tools.ConfigManager;
 import org.za.hem.ipsec_tools.IPsecToolsActivity;
 import org.za.hem.ipsec_tools.R;
 import org.za.hem.ipsec_tools.racoon.Admin;
@@ -119,8 +120,8 @@ public class NativeService extends Service {
         	new Thread(new Runnable() {
         		public void run() {
         			// FIXME DEBUGing code
-        			//doRun();
-            		Message.obtain(mHandler, HANDLER_RACOON_STARTED).sendToTarget();
+        			startRacoon();
+            		//Message.obtain(mHandler, HANDLER_RACOON_STARTED).sendToTarget();
         		}
         	}).start();
         } else if (intent.getAction().equals(ACTION_NOTIFICATION)) {
