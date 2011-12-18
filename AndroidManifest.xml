@@ -3,20 +3,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.za.hem.ipsec_tools">
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
-
+	<uses-permission android:name="android.permission.INTERNET"></uses-permission>
+	<uses-sdk android:targetSdkVersion="7" android:minSdkVersion="7"></uses-sdk>
+    
     <application android:label="@string/app_name">
-
-      
         <activity android:name="IPsecToolsActivity">
-
-          
             <intent-filter>
-             
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
 
 		<activity
@@ -27,16 +22,14 @@
         	android:name=".PeerPreferences"
         	android:label="@string/set_preferences">
 		</activity>
+
 		<activity android:label="@string/app_name" android:name="com.lamerman.FileDialog">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- <category android:name="android.intent.category." /> -->
             </intent-filter>
         </activity>
 		<service android:name="org.za.hem.ipsec_tools.service.NativeService"></service>
     </application>
 
-
-<uses-permission android:name="android.permission.INTERNET"></uses-permission>
-<uses-sdk android:targetSdkVersion="7" android:minSdkVersion="7"></uses-sdk>
 </manifest>
