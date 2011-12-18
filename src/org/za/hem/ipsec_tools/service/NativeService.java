@@ -307,7 +307,7 @@ public class NativeService extends Service {
     		in.close();
     		out.close();
 
-    		// Wait for racoon to creat local unix domain socket
+    		// Wait for racoon to create local unix domain socket
     		for (int i=0; i < 10; i++) {
     			if (socketFile.exists())
     				break;
