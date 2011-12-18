@@ -289,7 +289,7 @@ public class NativeService extends Service {
 			process = new ProcessBuilder()
     		.command(new File(binDir, "racoon.sh").getAbsolutePath(),
     				"-v", "-d",
-    				"-f", new File(binDir, "racoon.conf").getAbsolutePath(),
+    				"-f", new File(binDir, ConfigManager.PEERS_CONFIG).getAbsolutePath(),
     				"-l", new File(ipsecDir, "racoon.log").getAbsolutePath())
     		.redirectErrorStream(true)
     		.start();
