@@ -29,6 +29,7 @@ public class ConfigManager {
 	public static final String SETKEY_CONFIG = "setkey.conf";
 	public static final String RACOON_HEAD = "racoon.head";
 	public static final String SETKEY_HEAD = "setkey.head";
+	public static final String PIDFILE = "racoon.pid";
 	
 	// Variables
 	public static final String VAR_BINDIR = "bindir";

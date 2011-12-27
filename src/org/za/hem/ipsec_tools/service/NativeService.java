@@ -2,6 +2,7 @@ package org.za.hem.ipsec_tools.service;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,6 +14,7 @@ import java.util.Iterator;
 
 import org.za.hem.ipsec_tools.ConfigManager;
 import org.za.hem.ipsec_tools.IPsecToolsActivity;
+import org.za.hem.ipsec_tools.NativeCommand;
 import org.za.hem.ipsec_tools.R;
 import org.za.hem.ipsec_tools.racoon.Admin;
 import org.za.hem.ipsec_tools.racoon.Command;
@@ -61,6 +63,7 @@ public class NativeService extends Service {
     // We use it on Notification start, and to cancel it.
     private int NOTIFICATION = R.string.native_service_started;
     private String mSocketPath;
+    private int mPid;
 
     public class NativeBinder extends Binder {
         public NativeService getService() {
@@ -279,12 +282,20 @@ public class NativeService extends Service {
 			Log.i("LocalService", "Start process");
 			File binDir = this.getDir("bin", 0);
 			
+			// Kill old racoon instances
+			NativeCommand.system(new File(binDir, "killracoon.sh").getAbsolutePath() + " all");
+			
 			// Remove racoon socket since we need to
 			// detect when the socket is created
     		File socketFile = new File(mSocketPath);
 			if (socketFile.exists())
 				socketFile.delete();
 			
+			// Remove racoon pid file
+    		File pidFile = new File(binDir, ConfigManager.PIDFILE);
+			if (pidFile.exists())
+				pidFile.delete();
+
 			// TODO check getExternalStorageState()
 			File ipsecDir = new File(Environment.getExternalStorageDirectory(), "ipsec");
 			process = new ProcessBuilder()
@@ -308,16 +319,26 @@ public class NativeService extends Service {
     		in.close();
     		out.close();
 
-    		// Wait for racoon to create local unix domain socket
+    		// Wait for racoon to create local unix domain socket and pid file
     		for (int i=0; i < 10; i++) {
-    			if (socketFile.exists())
+    			if (socketFile.exists() && pidFile.exists())
     				break;
     			try {
     				Thread.sleep(500);
     			} catch (InterruptedException e) {
     				break;
     			}
-    		}    		
+    		}
+    		
+    		// Read PID
+    		BufferedReader pidReader =
+    				new BufferedReader(new FileReader(pidFile), 128);
+    		String pidStr = pidReader.readLine();
+    		pidReader.close();
+    		if (pidStr == null)
+    			throw new RuntimeException("Failed to start racoon");
+    		mPid = Integer.parseInt(pidStr);
+    		Log.i("LocalService", "racoon pid '" + mPid + "'");
 
     		Message.obtain(mHandler, HANDLER_RACOON_STARTED).sendToTarget();
     	} catch (IOException e) {

@@ -54,7 +54,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 	final private String binaries[] = {
 			"racoon.sh",
 			"racoonctl.sh",
-			"setkey.sh"
+			"setkey.sh",
+			"killracoon.sh"
  	};
     // FIXME debugging
 	private final boolean DEBUG = true;
@@ -81,10 +82,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     	mEditID = null;
 
     	mCM = new ConfigManager(this);
-
-        if (DEBUG) {
-        	NativeCommand.system("killall racoon");
-        }
 
 		addPreferencesFromResource(R.xml.preferences);
 
