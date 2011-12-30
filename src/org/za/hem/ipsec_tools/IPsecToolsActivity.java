@@ -482,6 +482,9 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        output("Connected");
 			Log.i("ipsec-tools", "connected " + mBoundService);
 	        mPeers.setService(mBoundService);
+	        
+	        if (mBoundService.isRacoonRunning())
+	        	mPeers.dumpIsakmpSA();
 	        // Tell the user about this for our demo.
 //	        Toast.makeText(Binding.this, R.string.native_service_connected,
 	//                Toast.LENGTH_SHORT).show();

@@ -204,6 +204,10 @@ public class NativeService extends Service {
 		return mAdminCmd.reloadConf();
 	}
 	
+	public boolean isRacoonRunning() {
+		return mPid > 0;
+	}
+	
 	public void dumpIsakmpSA() {
 		Log.i("ipsec-tools", "dumpIsakmpSA");
 		Message msg = mWorkerHandler.obtainMessage(HANDLER_DUMP_ISAKMP_SA);
