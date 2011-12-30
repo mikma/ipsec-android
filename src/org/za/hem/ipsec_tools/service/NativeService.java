@@ -65,9 +65,19 @@ public class NativeService extends Service {
     private String mSocketPath;
     private int mPid = -1;
 
-    public class NativeBinder extends Binder {
+    static public class NativeBinder extends Binder {
+    	NativeService mService;
+    	
+    	protected void setService(NativeService service) {
+    		mService = service;
+    	}
+    	
+    	protected void clearService() {
+    		mService = null;
+    	}
+    	
         public NativeService getService() {
-            return NativeService.this;
+            return mService;
         }
     }
     
@@ -75,10 +85,12 @@ public class NativeService extends Service {
 
 	// This is the object that receives interactions from clients.  See
     // RemoteService for a more complete example.
-    private final IBinder mBinder = new NativeBinder();
+    private final NativeBinder mBinder = new NativeBinder();
     
    	@Override
     public void onCreate() {
+   		mBinder.setService(this);
+   		
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		mSocketPath = new File(getDir("bin", 0), "racoon.sock").getPath();
 		mWorker = new HandlerThread("NativeService");
@@ -171,6 +183,9 @@ public class NativeService extends Service {
 
         // Cancel the persistent notification.
         mNM.cancel(NOTIFICATION);
+        
+        // Clear service reference in binder
+        mBinder.clearService();
 
         // Tell the user we stopped.
         //Toast.makeText(this, R.string.native_service_stopped, Toast.LENGTH_SHORT).show();
