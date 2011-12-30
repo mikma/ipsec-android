@@ -61,7 +61,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     // FIXME debugging
 	private final boolean DEBUG = true;
 
-	private boolean mIsBound;
+	private boolean mIsBound; /** True if bound. */
 	private NotificationManager mNM;
 	private NativeService mBoundService;
 	private NativeCommand mNative;
@@ -148,17 +148,17 @@ public class IPsecToolsActivity extends PreferenceActivity
     }
     
     protected void startService() {
-    	if (mIsBound)
+    	if (mBoundService != null)
     		return;
 		startService(new Intent(IPsecToolsActivity.this, 
 	            NativeService.class));
-    	doBindService();
+    	//doBindService();
     }
     
     protected void stopService() {
-    	if (!mIsBound)
+    	if (mBoundService == null)
     		return;
-    	doUnbindService();
+    	//doUnbindService();
     	stopService(new Intent(IPsecToolsActivity.this, 
     			NativeService.class));
     }
@@ -296,7 +296,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     protected void onDestroy()
     {
     	Log.i("IPsecToolsActivity", "onDestroy:" + this);
-    	if (!mIsBound)
+    	if (mIsBound)
     		doUnbindService();
     	super.onDestroy();
     }
@@ -383,8 +383,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 
 	@Override
 	public boolean onPrepareOptionsMenu (Menu menu) {
-	    menu.findItem(R.id.start_service).setVisible(!mIsBound);
-	    menu.findItem(R.id.stop_service).setVisible(mIsBound);
+	    menu.findItem(R.id.start_service).setVisible(mBoundService == null);
+	    menu.findItem(R.id.stop_service).setVisible(mBoundService != null);
 	    return true;
 	}
 
@@ -480,6 +480,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        // cast its IBinder to a concrete class and directly access it.
 	        mBoundService = ((NativeService.NativeBinder)service).getService();
 	        output("Connected");
+			Log.i("ipsec-tools", "connected " + mBoundService);
 	        mPeers.setService(mBoundService);
 	        // Tell the user about this for our demo.
 //	        Toast.makeText(Binding.this, R.string.native_service_connected,
@@ -501,10 +502,9 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    // we know will be running in our own process (and thus won't be
 	    // supporting component replacement by other applications).
 		// FIXME handle start errors
-		Log.i("ipsec-tools", "doBindService");
-	    bindService(new Intent(IPsecToolsActivity.this, 
-	            NativeService.class), mConnection, 0);
-	    mIsBound = true;
+	    mIsBound = bindService(new Intent(IPsecToolsActivity.this, 
+	            	NativeService.class), mConnection, 0);
+		Log.i("ipsec-tools", "doBindService " + mIsBound);
 	}
 	
 	void doUnbindService() {
