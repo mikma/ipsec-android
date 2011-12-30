@@ -151,6 +151,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     protected void startService() {
     	if (mIsBound)
     		return;
+		startService(new Intent(IPsecToolsActivity.this, 
+	            NativeService.class));
     	doBindService();
     }
     
@@ -158,6 +160,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     	if (!mIsBound)
     		return;
     	doUnbindService();
+    	stopService(new Intent(IPsecToolsActivity.this, 
+    			NativeService.class));
     }
     
     /*
@@ -295,6 +299,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     protected void onDestroy()
     {
     	Log.i("IPsecToolsActivity", "onDestroy:" + this);
+    	if (!mIsBound)
+    		doUnbindService();
     	super.onDestroy();
     }
         
@@ -499,8 +505,6 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    // supporting component replacement by other applications).
 		// FIXME handle start errors
 		Log.i("ipsec-tools", "doBindService");
-		startService(new Intent(IPsecToolsActivity.this, 
-	            NativeService.class));
 	    bindService(new Intent(IPsecToolsActivity.this, 
 	            NativeService.class), mConnection, 0);
 	    mIsBound = true;
@@ -511,8 +515,6 @@ public class IPsecToolsActivity extends PreferenceActivity
 			Log.i("ipsec-tools", "doUnBindService");
 	        // Detach our existing connection.
 	        unbindService(mConnection);
-        	stopService(new Intent(IPsecToolsActivity.this, 
-        			NativeService.class));
 	        onServiceUnbound();
 	        mIsBound = false;
 	    } else
