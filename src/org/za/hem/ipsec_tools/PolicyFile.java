@@ -14,27 +14,22 @@ public class PolicyFile extends JarFile {
 
 	public PolicyFile(File file) throws IOException {
 		super(file);
-		// TODO Auto-generated constructor stub
 	}
 
 	public PolicyFile(String filename) throws IOException {
 		super(filename);
-		// TODO Auto-generated constructor stub
 	}
 
 	public PolicyFile(File file, boolean verify) throws IOException {
 		super(file, verify);
-		// TODO Auto-generated constructor stub
 	}
 
 	public PolicyFile(String filename, boolean verify) throws IOException {
 		super(filename, verify);
-		// TODO Auto-generated constructor stub
 	}
 
 	public PolicyFile(File file, boolean verify, int mode) throws IOException {
 		super(file, verify, mode);
-		// TODO Auto-generated constructor stub
 	}
 
 	public String getPolicyName() {
