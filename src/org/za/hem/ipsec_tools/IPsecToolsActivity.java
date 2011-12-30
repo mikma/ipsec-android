@@ -125,10 +125,8 @@ public class IPsecToolsActivity extends PreferenceActivity
         	if (sharedPreferences.getBoolean(key, true)) {
         		StatePreference peerPref = new StatePreference(this);
         		peerPref.setKey(key);
-        		peerPref.setSummary(R.string.connect_peer);
         		peerPref.setOnPreferenceClickListener(this);
         		peerPref.setWidgetLayoutResource(R.layout.peer_widget);
-        		peerPref.setIconLevel(0);
             	Log.i("ipsec-tools", "Add peerPref: " + key);
         		peersPref.addPreference(peerPref);
         		mPeers.add(new Peer(this, id, peerPref));
@@ -203,10 +201,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 
     	StatePreference peerPref = new StatePreference(this);
     	peerPref.setKey(key);
-    	peerPref.setSummary(R.string.connect_peer);
     	peerPref.setOnPreferenceClickListener(this);
     	peerPref.setWidgetLayoutResource(R.layout.peer_widget);
-    	peerPref.setIconLevel(0);
     	peersPref.addPreference(peerPref);
     	peer.setPreference(peerPref);
     

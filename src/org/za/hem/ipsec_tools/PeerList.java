@@ -155,7 +155,7 @@ public class PeerList extends ArrayList<Peer> {
 	
     protected void edit(Context context, final PeerID id) {
     	Peer peer = mPeers.get(id.intValue());
-       	if (!peer.isDisconnected()) {
+       	if (peer.isConnected()) {
     		AlertDialog.Builder builder = new AlertDialog.Builder(context);
     		builder.setIcon(android.R.drawable.ic_dialog_alert);
     		builder.setTitle(peer.getName());
@@ -187,7 +187,7 @@ public class PeerList extends ArrayList<Peer> {
     		// FIXME error message
     		return;
     	Log.i("ipsec-tools", "connectPeer " + addr);
-    	peer.setStatus(Peer.STATUS_PROGRESS);
+    	peer.onConnect();
 
     	Message msg = mHandler.obtainMessage(HANDLER_VPN_CONNECT);
     	msg.obj = addr.getHostAddress();
@@ -206,7 +206,7 @@ public class PeerList extends ArrayList<Peer> {
     		// FIXME error message
     		return;
     	Log.i("ipsec-tools", "disconnectPeer " + addr);
-    	peer.setStatus(Peer.STATUS_PROGRESS);
+    	peer.onDisconnect();
     	Message msg = mHandler.obtainMessage(HANDLER_VPN_DISCONNECT);
     	msg.obj = addr.getHostAddress();
     	msg.sendToTarget();

@@ -58,7 +58,8 @@ public class Peer implements OnSharedPreferenceChangeListener {
 		mShared = context.getSharedPreferences(
 					PeerPreferences.getSharedPreferencesName(context, id),
     				Activity.MODE_PRIVATE);
-		mStatus = STATUS_DISCONNECTED;
+		mStatus = -1;
+		setStatus(STATUS_DISCONNECTED);
 	}
 	
 	public void clear() {
@@ -76,7 +77,7 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	}
 
 	public boolean canConnect() {
-		return mStatus == STATUS_DISCONNECTED;
+		return isEnabled() && mStatus == STATUS_DISCONNECTED;
 	}
 
 	public boolean canDisconnect() {
@@ -133,21 +134,34 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	}
 
 	public void setStatus(int status) {
-		if (mStatus != status && mStatus < STATUS_NUM) {
+		if (mStatus != status && status < STATUS_NUM) {
 			mStatus = status;
 			mPref.setIconLevel(mStatus);
 			mPref.setSummary(STATUS_SUMMARY[mStatus]);
+			Log.i("ipsec-tools", "setStatus " + getName() + " "+ mStatus);
 		}
 	}
 
+	/** Called when Phase 1 goes up */
 	public void onPhase1Up() {
 		setStatus(STATUS_CONNECTED);
 	}
 
+	/** Called when Phase 1 goes down */
 	public void onPhase1Down() {
-		setStatus(STATUS_DISCONNECTED);
+		setStatus(isEnabled() ? STATUS_DISCONNECTED : STATUS_DISABLED);
 	}
 	
+	/** Called when initiating disconnect */
+	public void onConnect() {
+    	setStatus(STATUS_PROGRESS);
+	}
+	
+	/** Called when initiating disconnect */
+	public void onDisconnect() {
+    	setStatus(STATUS_PROGRESS);
+	}
+
 	public void onPreferenceActivityResume() {
 		mShared.registerOnSharedPreferenceChangeListener(this);
 		updatePreferenceName();
