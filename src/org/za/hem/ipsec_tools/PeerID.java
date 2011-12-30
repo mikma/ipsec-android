@@ -4,6 +4,12 @@ import java.lang.Exception;
 
 import android.util.Log;
 
+/**
+ * Peer Identity Name
+ *
+ * @author mikael
+ *
+ */
 class PeerID implements Comparable<PeerID> {
 	public static final String PREFIX = "peer_";
 	int id;

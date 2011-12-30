@@ -44,6 +44,7 @@ import org.za.hem.ipsec_tools.service.NativeService;
  */
 
 /**
+ * Main activity
  * 
  * @author mikael
  *

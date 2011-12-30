@@ -12,6 +12,12 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.Preference;
 import android.util.Log;
 
+/**
+ * Peer controller object
+ * 
+ * @author mikael
+ *
+ */
 public class Peer implements OnSharedPreferenceChangeListener {
 	public static final int STATUS_DISCONNECTED = 0;
 	public static final int STATUS_CONNECTED = 1;

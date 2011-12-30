@@ -16,6 +16,12 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 
+/**
+ * Peer List Controller
+ *
+ * @author mikael
+ *
+ */
 public class PeerList extends ArrayList<Peer> {
 
 	public static final int HANDLER_VPN_CONNECT = 1;

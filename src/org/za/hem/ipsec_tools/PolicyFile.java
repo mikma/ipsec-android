@@ -6,6 +6,11 @@ import java.io.InputStream;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 
+/**
+ * Policy jar file containing setkey.conf and racoon.conf
+ * @author mikael
+ *
+ */
 public class PolicyFile extends JarFile {
 	public static final String ATTR_NAME = "Name";
 	

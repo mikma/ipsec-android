@@ -32,8 +32,10 @@ import com.lamerman.FileDialog;
 // Order "public protected private static final transient volatile"
 
 /**
- * @author mikael
  * IPsec peer preference activity
+ * Managed by Peer object.
+ *
+ * @author mikael
  */
 public class PeerPreferences extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 	public static final String EXTRA_ID = "org.za.hem.ipsec_tools.ID";

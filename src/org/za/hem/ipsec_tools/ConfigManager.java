@@ -21,6 +21,12 @@ import android.content.Context;
 import android.os.Environment;
 import android.os.Process;
 
+/**
+ * Racoon and setkey config files builder.
+ * 
+ * @author mikael
+ *
+ */
 public class ConfigManager {
 	
 	public static final String PATTERN = "\\$\\{([a-zA-Z0-9_]+)\\}";
@@ -31,7 +37,7 @@ public class ConfigManager {
 	public static final String SETKEY_HEAD = "setkey.head";
 	public static final String PIDFILE = "racoon.pid";
 	
-	// Variables
+	// Variables usuable in config files
 	public static final String VAR_BINDIR = "bindir";
 	public static final String VAR_EXTDIR = "extdir";
 	public static final String VAR_REMOTE_ADDR = "remote_addr";
