@@ -1,6 +1,7 @@
 package org.za.hem.ipsec_tools;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -110,8 +111,15 @@ public class NativeCommand {
     public static String system(String cmd) {
     	try {
     		// Executes the command.
-    		Process process = Runtime.getRuntime().exec(cmd);
+    		Process process = Runtime.getRuntime().exec("su");
+    		
+    		DataOutputStream os = new DataOutputStream(process.getOutputStream());            
+			Log.i("ipsec-tools", "su command:" + cmd);   			
+            os.writeBytes(cmd+"\n");
         
+            os.writeBytes("exit\n");  
+            os.flush();
+
     		// Reads stdout.
     		// NOTE: You can write to stdin of the command using
     		//       process.getOutputStream().
@@ -135,7 +143,7 @@ public class NativeCommand {
     		}
     		errReader.close();
 
-    		// Waits for the command to finish.
+            // Waits for the command to finish.
     		process.waitFor();
     		
     		if (error.length() > 0)
