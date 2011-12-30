@@ -63,7 +63,7 @@ public class NativeService extends Service {
     // We use it on Notification start, and to cancel it.
     private int NOTIFICATION = R.string.native_service_started;
     private String mSocketPath;
-    private int mPid;
+    private int mPid = -1;
 
     public class NativeBinder extends Binder {
         public NativeService getService() {
@@ -151,6 +151,17 @@ public class NativeService extends Service {
 		}
 		mAdmin = null;
 		mAdminCmd = null;
+		
+		// Kill racoon instance
+		if (mPid > 0) {
+   			Log.i("ipsec-tools", "kill racoon  " + mPid);
+			File binDir = this.getDir("bin", 0);
+			String out = NativeCommand.system(new File(binDir, "killracoon.sh").getAbsolutePath() + " " + mPid);
+   			Log.i("ipsec-tools", "outt " + out);
+			mPid = -1;
+		}
+		
+		// TODO clear setkey?
 		
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(ACTION_DESTROYED);

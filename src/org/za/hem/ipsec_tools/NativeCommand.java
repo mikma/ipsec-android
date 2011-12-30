@@ -125,8 +125,21 @@ public class NativeCommand {
     		}
     		reader.close();
         
+    		BufferedReader errReader = new BufferedReader(
+    				new InputStreamReader(process.getErrorStream()), 8192);
+    		int errRead;
+    		char[] errBuffer = new char[4096];
+    		StringBuffer error = new StringBuffer();
+    		while ((errRead = errReader.read(errBuffer)) > 0) {
+    			error.append(errBuffer, 0, errRead);
+    		}
+    		errReader.close();
+
     		// Waits for the command to finish.
     		process.waitFor();
+    		
+    		if (error.length() > 0)
+    			Log.i("ipsec-tools", "System cmd error:" + error);   			
         
     		return output.toString();
     	} catch (IOException e) {

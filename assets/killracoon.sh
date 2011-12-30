@@ -1,7 +1,11 @@
 #!/system/bin/sh
 
+stdout=/proc/$$/fd/1
+
 if [ $1 = "all" ]; then
-    su -c "killall -INT racoon"
+    echo Killall > $stdout
+    su -c "killall racoon"
 else
-    su -c "kill -INT $1"
+    echo Kill $1 > $stdout
+    su -c "kill $1"
 fi
