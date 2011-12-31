@@ -136,8 +136,10 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	public void setStatus(int status) {
 		if (mStatus != status && status < STATUS_NUM) {
 			mStatus = status;
-			mPref.setIconLevel(mStatus);
-			mPref.setSummary(STATUS_SUMMARY[mStatus]);
+			if (mPref != null) {
+				mPref.setIconLevel(mStatus);
+				mPref.setSummary(STATUS_SUMMARY[mStatus]);
+			}
 			Log.i("ipsec-tools", "setStatus " + getName() + " "+ mStatus);
 		}
 	}
