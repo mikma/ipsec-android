@@ -22,10 +22,13 @@ import org.za.hem.ipsec_tools.racoon.Event;
 import org.za.hem.ipsec_tools.racoon.Ph1Dump;
 import org.za.hem.ipsec_tools.racoon.Ph1Dump.Item;
 
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.ActivityManager.RunningServiceInfo;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Environment;
@@ -46,6 +49,7 @@ public class NativeService extends Service {
 	public static final int HANDLER_DUMP_ISAKMP_SA = 4;
 	
 	public static final String PACKAGE = "org.za.hem.ipsec_tool.service";
+	public static final String SERVICE_NAME = PACKAGE + ".NativeService";
 	public static final String ACTION_NOTIFICATION = PACKAGE + ".NOTIFICATION";
 	public static final String ACTION_DESTROYED = PACKAGE + ".DESTROYED";
 	public static final String ACTION_PHASE1_UP = PACKAGE + ".PHASE1_UP";
@@ -81,6 +85,16 @@ public class NativeService extends Service {
         }
     }
     
+	public static boolean isServiceRunning(Context context) {
+	    ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+	    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+	        if (SERVICE_NAME.equals(service.service.getClassName())) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+   
     private Handler mWorkerHandler;
 
 	// This is the object that receives interactions from clients.  See
