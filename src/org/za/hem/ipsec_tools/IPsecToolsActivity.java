@@ -1,5 +1,7 @@
 package org.za.hem.ipsec_tools;
 
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -150,17 +152,19 @@ public class IPsecToolsActivity extends PreferenceActivity
     protected void startService() {
     	if (mBoundService != null)
     		return;
-		startService(new Intent(IPsecToolsActivity.this, 
-	            NativeService.class));
-    	//doBindService();
+    	if (!NativeService.isServiceRunning(this))
+    		startService(new Intent(IPsecToolsActivity.this, 
+    				NativeService.class));
+    	doBindService();
     }
     
     protected void stopService() {
     	if (mBoundService == null)
     		return;
-    	//doUnbindService();
-    	stopService(new Intent(IPsecToolsActivity.this, 
-    			NativeService.class));
+
+    	doUnbindService();
+   		stopService(new Intent(IPsecToolsActivity.this, 
+   				NativeService.class));
     }
     
     /*
@@ -434,7 +438,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     		String action = intent.getAction();
     		
     		if (action.equals(NativeService.ACTION_SERVICE_READY)) {
-    			mPeers.dumpIsakmpSA();
+    			if (mBoundService != null)
+    				mPeers.dumpIsakmpSA();
     			return;
      		} else if (action.equals(NativeService.ACTION_DESTROYED)) {
      			return;
@@ -466,7 +471,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     private void onServiceUnbound() {
         mBoundService = null;
         output("Disconnected");
-        mPeers.setService(null);
+        mPeers.clearService();
   	  //      Toast.makeText(Binding.this, R.string.native_service_disconnected,
 	    //            Toast.LENGTH_SHORT).show();    	
     }
