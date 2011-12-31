@@ -35,6 +35,7 @@ public class PeerList extends ArrayList<Peer> {
 	
 	private ArrayList<Peer> mPeers;
 	private OnPeerChangeListener mListener;
+	private HandlerThread mHandlerThread;
 	private Handler mHandler;
 	private NativeService mBoundService;
 	
@@ -42,8 +43,12 @@ public class PeerList extends ArrayList<Peer> {
 		super(capacity);
 		mBoundService = null;
 		mPeers = this;
-		// TODO stop thread
-		HandlerThread mHandlerThread = new HandlerThread("PeerList");
+		mHandler = null;
+		mHandlerThread = null;
+	}
+	
+	private void startHandler() {
+		mHandlerThread  = new HandlerThread("PeerList");
 		mHandlerThread.start();
 		mHandler = new Handler(mHandlerThread.getLooper()) {
 			public void handleMessage(Message msg) {
@@ -62,11 +67,26 @@ public class PeerList extends ArrayList<Peer> {
 				    break;
 				}	
 			}
-		};
+		};		
+	}
+	
+	private void stopHandler() {
+		mHandlerThread.quit();
+		mHandlerThread = null;
+		mHandler = null;
 	}
 	
 	protected void setService(NativeService service) {
-		mBoundService = service;
+		if (service == null)
+			throw new NullPointerException();
+
+		mBoundService = service;		
+		if (mHandlerThread == null)
+			startHandler();
+	}
+	
+	protected void clearService() {
+		mBoundService = null;
 	}
 	
 	protected Peer get(PeerID id) {
