@@ -425,7 +425,7 @@ public class IPsecToolsActivity extends PreferenceActivity
         CharSequence text = getString(id) + " " + peer.getName();
         Notification notification = new Notification(R.drawable.icon, text,
                 System.currentTimeMillis());
-        //notification.flags |= Notification.FLAG_AUTO_CANCEL; 
+        notification.flags |= Notification.FLAG_AUTO_CANCEL; 
         	
         Intent intent = new Intent(this, IPsecToolsActivity.class);
         //intent.setAction(ACTION_NOTIFICATION);
