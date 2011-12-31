@@ -28,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.InetSocketAddress;
@@ -140,6 +141,10 @@ public class IPsecToolsActivity extends PreferenceActivity
 		
         try {
 			mCM.build(mPeers, true);
+			// TODO refactor into new function
+			File binDir = this.getDir("bin", 0);
+			NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+					" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -258,7 +263,11 @@ public class IPsecToolsActivity extends PreferenceActivity
 					mCM.buildPeerConfig(peer, setKeyOs);
 				}
 				mCM.build(mPeers, false);
-				if (mBoundService != null)
+				// TODO exec setkey.sh
+				File binDir = this.getDir("bin", 0);
+				NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+						" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
+ 				if (mBoundService != null)
 					mBoundService.reloadConf();
 			}
 		} catch (IOException e) {
