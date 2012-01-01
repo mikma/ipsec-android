@@ -181,8 +181,7 @@ public class NativeService extends Service {
 		// Kill racoon instance
 		if (mPid > 0) {
    			Log.i("ipsec-tools", "kill racoon  " + mPid);
-			File binDir = this.getDir("bin", 0);
-			String out = NativeCommand.system(new File(binDir, "killracoon.sh").getAbsolutePath() + " " + mPid);
+			String out = NativeCommand.system("kill " + mPid);
    			Log.i("ipsec-tools", "outt " + out);
 			mPid = -1;
 		}
@@ -327,7 +326,7 @@ public class NativeService extends Service {
 			File binDir = this.getDir("bin", 0);
 			
 			// Kill old racoon instances
-			NativeCommand.system(new File(binDir, "killracoon.sh").getAbsolutePath() + " all");
+			NativeCommand.system("killall racoon");
 			
 			// Remove racoon socket since we need to
 			// detect when the socket is created

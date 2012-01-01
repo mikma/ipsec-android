@@ -59,7 +59,6 @@ public class IPsecToolsActivity extends PreferenceActivity
 			"racoon.sh",
 			"racoonctl.sh",
 			"setkey.sh",
-			"killracoon.sh"
  	};
     // FIXME debugging
 	private final boolean DEBUG = true;
