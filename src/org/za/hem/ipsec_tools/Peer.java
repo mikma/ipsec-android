@@ -123,7 +123,7 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	
 	public File getTemplateFile() {
 		String addr = mShared.getString(PeerPreferences.TEMPLATE_PREFERENCE, null);
-		Log.i("ipsec-tools", "getRemoteAddr " + addr);
+		Log.i("ipsec-tools", "getTemplateFile " + addr);
 		if (addr == null)
 			return null;
 		return new File(addr);

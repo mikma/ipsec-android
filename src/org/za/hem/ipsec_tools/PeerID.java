@@ -47,7 +47,7 @@ class PeerID implements Comparable<PeerID> {
 	
 	@Override
 	public int compareTo(PeerID arg0) {
-    	Log.i("IPsecToolsActivity", "Compare: " + arg0);
+    	Log.i("ipsec-tools", "Compare: " + arg0);
 
 		return id - arg0.id;
 	}

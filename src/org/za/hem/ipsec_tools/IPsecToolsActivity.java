@@ -119,7 +119,7 @@ public class IPsecToolsActivity extends PreferenceActivity
         mPeers = new PeerList(count);
         mPeers.setOnPeerChangeListener(this);
         
-    	Log.i("IPsecToolsActivity", "Count: " + count);
+    	Log.i("ipsec-tools", "Count: " + count);
         for (int i = 0; i < count; i++) {
         	PeerID id = new PeerID(i);
         	String key = id.toString();
@@ -185,7 +185,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 		PeerID id = peer.getPeerID();
 		PreferenceGroup peersPref = (PreferenceGroup)findPreference(PEERS_PREFERENCE);
 		Preference peerPref = peer.getPreference();
-		Log.i("IPsecToolsActivity", "Remove peerPref: " + mPeers.size() + " " + id + " " + peerPref);
+		Log.i("ipsec-tools", "Remove peerPref: " + mPeers.size() + " " + id + " " + peerPref);
 		peersPref.removePreference(peerPref);
 	
 		// Hide peer
@@ -222,13 +222,13 @@ public class IPsecToolsActivity extends PreferenceActivity
 
     protected void onStart()
     {
-    	Log.i("IPsecToolsActivity", "onStart:" + this);
+    	Log.i("ipsec-tools", "onStart:" + this);
     	super.onStart();
     }
     
     protected void onResume()
     {
-    	Log.i("IPsecToolsActivity", "onResume:" + this);
+    	Log.i("ipsec-tools", "onResume:" + this);
     	super.onResume();
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
@@ -277,7 +277,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     
     protected void onPause()
     {
-    	Log.i("IPsecToolsActivity", "onPause:" + this);
+    	Log.i("ipsec-tools", "onPause:" + this);
     	super.onPause();
     	unregisterReceiver(mReceiver);
 		unregisterForContextMenu(getListView());
@@ -300,14 +300,14 @@ public class IPsecToolsActivity extends PreferenceActivity
     @Override
     protected void onStop()
     {
-    	Log.i("IPsecToolsActivity", "onStop:" + this);
+    	Log.i("ipsec-tools", "onStop:" + this);
     	super.onStop();
     }
     
     @Override
     protected void onDestroy()
     {
-    	Log.i("IPsecToolsActivity", "onDestroy:" + this);
+    	Log.i("ipsec-tools", "onDestroy:" + this);
     	if (mIsBound)
     		doUnbindService();
     	super.onDestroy();

@@ -139,13 +139,13 @@ public class NativeService extends Service {
    	   
 	@Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i("LocalService", "Received start id " + startId + ": " + intent);
+        Log.i("ipsec-tools", "Received start id " + startId + ": " + intent);
         
         if (intent == null || intent.getAction() == null ) {
 			mAdmin = new Admin(mSocketPath);
 			mAdminCmd = new Admin(mSocketPath);
 
-        	Log.i("LocalService", "Start thread");
+        	Log.i("ipsec-tools", "Start thread");
         	new Thread(new Runnable() {
         		public void run() {
         			// FIXME DEBUGing code
@@ -322,7 +322,7 @@ public class NativeService extends Service {
 		Process process = null;
 		
 		try {
-			Log.i("LocalService", "Start process");
+			Log.i("ipsec-tools", "Start process");
 			File binDir = this.getDir("bin", 0);
 			
 			// Kill old racoon instances
@@ -381,7 +381,7 @@ public class NativeService extends Service {
     		if (pidStr == null)
     			throw new RuntimeException("Failed to start racoon");
     		mPid = Integer.parseInt(pidStr);
-    		Log.i("LocalService", "racoon pid '" + mPid + "'");
+    		Log.i("ipsec-tools", "racoon pid '" + mPid + "'");
 
     		Message.obtain(mHandler, HANDLER_RACOON_STARTED).sendToTarget();
     	} catch (IOException e) {
