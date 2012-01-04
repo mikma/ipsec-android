@@ -2,16 +2,19 @@ package org.za.hem.ipsec_tools;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.Preference;
@@ -29,7 +32,12 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.util.logging.Level;
@@ -71,6 +79,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private static final String ADD_PREFERENCE = "addPref";
 	private static final String PEERS_PREFERENCE = "peersPref";
 	private static final String COUNT_PREFERENCE = "countPref";
+	private static final String COPYRIGHT_FILE = "COPYRIGHT";
 	private PeerList mPeers;
 	private PeerID selectedID;
 	private Peer selectedPeer;
@@ -414,6 +423,38 @@ public class IPsecToolsActivity extends PreferenceActivity
             Intent settingsActivity = new Intent(getBaseContext(),
             		Preferences.class);
             startActivity(settingsActivity);
+	    	return true;
+	    case R.id.show_about:
+	    	StringBuffer str = new StringBuffer();
+			try {
+		    	Reader input;
+				input = new InputStreamReader(getAssets().open(COPYRIGHT_FILE));
+	    		int read;
+	    		char[] buffer = new char[4096];
+	    		
+	    		while ((read = input.read(buffer)) > 0) {
+	    			str.append(buffer, 0, read);
+	    		}
+	    		input.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				str.append(e.getStackTrace());
+			}
+	    	
+			Resources res = getResources();
+	    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	    	builder.setCancelable(true)
+	        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+	            public void onClick(DialogInterface dialog, int id) {
+	                 dialog.cancel();
+	            }
+	        })
+	        .setTitle(res.getString(R.string.about_title,
+	        			res.getString(R.string.app_name)))
+	        .setMessage(str);
+	    	
+	    	AlertDialog alert = builder.create();
+	    	alert.show();
 	    	return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
