@@ -30,7 +30,7 @@ import android.os.Process;
 public class ConfigManager {
 	
 	public static final String PATTERN = "\\$\\{([a-zA-Z0-9_]+)\\}";
-	public static final String CONFIG_PREFIX = ".conf";
+	public static final String CONFIG_POSTFIX = ".conf";
 	public static final String PEERS_CONFIG = "peers.conf";
 	public static final String SETKEY_CONFIG = "setkey.conf";
 	public static final String RACOON_HEAD = "racoon.head";
@@ -64,7 +64,7 @@ public class ConfigManager {
 	}
 	
 	protected File getPeerConfigFile(Peer peer) {
-		return new File(mBinDir, peer.getPeerID().key + CONFIG_PREFIX);
+		return new File(mBinDir, peer.getPeerID().key + CONFIG_POSTFIX);
 	}
 	
 	private void buildPeerConfig(Peer peer, Writer os, Writer setkeyOs) throws IOException {
