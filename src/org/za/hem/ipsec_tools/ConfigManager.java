@@ -38,13 +38,14 @@ public class ConfigManager {
 	public static final String PIDFILE = "racoon.pid";
 	
 	// Variables usuable in config files
-	public static final String VAR_BINDIR = "bindir";
-	public static final String VAR_EXTDIR = "extdir";
-	public static final String VAR_REMOTE_ADDR = "remote_addr";
-	public static final String VAR_LOCAL_ADDR = "local_addr";
-	public static final String VAR_UID = "uid";
-	public static final String VAR_GID = "gid";
-	public static final String VAR_NAME = "name";
+	private static final String VAR_BINDIR = "bindir";
+	private static final String VAR_EXTDIR = "extdir";
+	private static final String VAR_REMOTE_ADDR = "remote_addr";
+	private static final String VAR_LOCAL_ADDR = "local_addr";
+	private static final String VAR_UID = "uid";
+	private static final String VAR_GID = "gid";
+	private static final String VAR_NAME = "name";
+	private static final String VAR_ACTION = "action";
 	
 
 	private Pattern mPat;
