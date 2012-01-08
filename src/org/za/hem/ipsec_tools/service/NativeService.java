@@ -132,8 +132,6 @@ public class NativeService extends Service {
 	    	}
 	    };
 
-	    // Display a notification about us starting.  We put an icon in the status bar.
-		showNotification();
    	}
    	   
 	@Override
@@ -141,17 +139,6 @@ public class NativeService extends Service {
         Log.i("ipsec-tools", "Received start id " + startId + ": " + intent);
         
         if (intent == null || intent.getAction() == null ) {
-			mAdmin = new Admin(mSocketPath);
-			mAdminCmd = new Admin(mSocketPath);
-
-        	Log.i("ipsec-tools", "Start thread");
-        	new Thread(new Runnable() {
-        		public void run() {
-        			// FIXME DEBUGing code
-        			startRacoon();
-            		//Message.obtain(mHandler, HANDLER_RACOON_STARTED).sendToTarget();
-        		}
-        	}).start();
         } else if (intent.getAction().equals(ACTION_NOTIFICATION)) {
         	Log.i("ipsec-tools", "Notification");
         } else {
@@ -169,8 +156,53 @@ public class NativeService extends Service {
 	
 	@Override
     public void onDestroy() {
-		mWorkerHandler.getLooper().quit();
-		try {
+		// Clear service reference in binder
+        mBinder.clearService();
+
+        mWorkerHandler.getLooper().quit();
+		
+		if (isRacoonRunning())
+			stopRacoon();
+    }
+	
+	@Override
+	public IBinder onBind(Intent arg0) {
+    	Log.i("ipsec-tools", "onBind " + mBinder);
+		return mBinder;
+	}
+	
+	protected void onHandleIntent(Intent intent) {
+		
+	}
+	
+	public void startRacoon() {
+    	Log.i("ipsec-tools", "Start racoon");
+    	if (isRacoonRunning())
+    		return;
+	    // Display a notification about us starting.  We put an icon in the status bar.
+		//showNotification();
+		startForeground(NOTIFICATION, createNotification());
+		
+		mAdmin = new Admin(mSocketPath);
+		mAdminCmd = new Admin(mSocketPath);
+
+    	Log.i("ipsec-tools", "Start thread");
+    	new Thread(new Runnable() {
+    		public void run() {
+    			// FIXME DEBUGing code
+    			runRacoon();
+        		//Message.obtain(mHandler, HANDLER_RACOON_STARTED).sendToTarget();
+    		}
+    	}).start();
+	}
+	
+	public void stopRacoon() {
+    	Log.i("ipsec-tools", "Stop racoon");
+
+    	if (!isRacoonRunning())
+    		return;
+
+    	try {
 			mAdmin.close();
 		} catch (IOException e) {
 		}
@@ -194,22 +226,13 @@ public class NativeService extends Service {
         Log.i("ipsec-tools", "Destroyed");
 
         // Cancel the persistent notification.
-        mNM.cancel(NOTIFICATION);
+        //mNM.cancel(NOTIFICATION);
         
-        // Clear service reference in binder
-        mBinder.clearService();
+		stopForeground(true);
 
-        // Tell the user we stopped.
+		// Tell the user we stopped.
         //Toast.makeText(this, R.string.native_service_stopped, Toast.LENGTH_SHORT).show();
-    }
-	
-	@Override
-	public IBinder onBind(Intent arg0) {
-		return mBinder;
-	}
-	
-	protected void onHandleIntent(Intent intent) {
-		
+
 	}
 	
 	public int reloadConf() {
@@ -292,7 +315,7 @@ public class NativeService extends Service {
 		}
 	}
 	
-	private void showNotification() {
+	private Notification createNotification() {
         // In this sample, we'll use the same text for the ticker and the expanded notification
         CharSequence text = getText(R.string.native_service_started);
 
@@ -312,12 +335,14 @@ public class NativeService extends Service {
         // Set the info for the views that show in the notification panel.
         notification.setLatestEventInfo(this, getText(R.string.native_service_label),
                        text, contentIntent);
+        
+        return notification;
 
         // Send the notification.
-        mNM.notify(NOTIFICATION, notification);
+        //mNM.notify(NOTIFICATION, notification);
     }
 
-    private void startRacoon() {
+    private void runRacoon() {
 		Process process = null;
 		
 		try {

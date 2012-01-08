@@ -166,7 +166,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 		}
         
         if (DEBUG) {
-        	doBindService();
+        	//doBindService();
+        	startService();
         }
     }
     
@@ -433,8 +434,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 
 	@Override
 	public boolean onPrepareOptionsMenu (Menu menu) {
-	    menu.findItem(R.id.start_service).setVisible(mBoundService == null);
-	    menu.findItem(R.id.stop_service).setVisible(mBoundService != null);
+	    menu.findItem(R.id.start_service).setVisible(!mBoundService.isRacoonRunning());
+	    menu.findItem(R.id.stop_service).setVisible(mBoundService.isRacoonRunning());
 	    return true;
 	}
 
@@ -443,10 +444,10 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    // Handle item selection
 	    switch (item.getItemId()) {
 	    case R.id.start_service:
-	        startService();
+	    	mBoundService.startRacoon();
 	        return true;
 	    case R.id.stop_service:
-	        stopService();
+	        mBoundService.stopRacoon();
 	        return true;
 	    case R.id.preferences:
             Intent settingsActivity = new Intent(getBaseContext(),
