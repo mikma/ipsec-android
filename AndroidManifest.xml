@@ -30,6 +30,12 @@
             </intent-filter>
         </activity>
 		<service android:name="org.za.hem.ipsec_tools.service.NativeService"></service>
+		
+		<receiver android:name="org.za.hem.ipsec_tools.service.ConnectivityReceiver">
+		   	<intent-filter>
+		      	<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+	      	</intent-filter>
+		</receiver>
     </application>
 
 </manifest>
