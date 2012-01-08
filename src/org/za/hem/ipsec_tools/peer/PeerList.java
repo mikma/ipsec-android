@@ -1,10 +1,11 @@
-package org.za.hem.ipsec_tools;
+package org.za.hem.ipsec_tools.peer;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.za.hem.ipsec_tools.R;
 import org.za.hem.ipsec_tools.service.NativeService;
 
 import android.app.AlertDialog;
@@ -76,7 +77,7 @@ public class PeerList extends ArrayList<Peer> {
 		mHandler = null;
 	}
 	
-	protected void setService(NativeService service) {
+	public void setService(NativeService service) {
 		if (service == null)
 			throw new NullPointerException();
 
@@ -85,11 +86,11 @@ public class PeerList extends ArrayList<Peer> {
 			startHandler();
 	}
 	
-	protected void clearService() {
+	public void clearService() {
 		mBoundService = null;
 	}
 	
-	protected Peer get(PeerID id) {
+	public Peer get(PeerID id) {
 		int i = id.intValue();
 		return mPeers.get(i);
 	}
@@ -98,11 +99,11 @@ public class PeerList extends ArrayList<Peer> {
 		mPeers.set(id.intValue(), peer);
 	}
 	
-	protected void setOnPeerChangeListener(OnPeerChangeListener listener) {
+	public void setOnPeerChangeListener(OnPeerChangeListener listener) {
 		mListener = listener;
 	}
 
-	protected Peer findForRemote(final InetSocketAddress sa) {
+	public Peer findForRemote(final InetSocketAddress sa) {
     	InetAddress addr = sa.getAddress();
     	Iterator<Peer> iter = iterator();
     	
@@ -120,7 +121,7 @@ public class PeerList extends ArrayList<Peer> {
     	return null;
     }
 	
-    protected PeerID createPeer(Context context)
+    public PeerID createPeer(Context context)
     {
         int empty = mPeers.indexOf(null);
         if (empty == -1) {
@@ -143,7 +144,7 @@ public class PeerList extends ArrayList<Peer> {
         return newId;
     }
     	
-    protected void deletePeer(final PeerID id, Context context) {
+    public void deletePeer(final PeerID id, Context context) {
     	final Peer peer = get(id);
     	
 		Log.i("ipsec-tools", "deletePeer");
@@ -174,7 +175,7 @@ public class PeerList extends ArrayList<Peer> {
     
 
 	
-    protected void edit(Context context, final PeerID id) {
+    public void edit(Context context, final PeerID id) {
     	Peer peer = mPeers.get(id.intValue());
        	if (peer.isConnected()) {
     		AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -193,12 +194,12 @@ public class PeerList extends ArrayList<Peer> {
         context.startActivity(settingsActivity);
     }
 
-    protected void dumpIsakmpSA() {
+    public void dumpIsakmpSA() {
     	Message msg = mHandler.obtainMessage(HANDLER_DUMP_ISAKMP_SA);
     	msg.sendToTarget();
     }
     
-    protected void connect(final PeerID id) {
+    public void connect(final PeerID id) {
     	if (mBoundService == null)
     		return;
     	
@@ -215,7 +216,7 @@ public class PeerList extends ArrayList<Peer> {
     	msg.sendToTarget();
     }
     
-    protected void disconnect(final PeerID id) {
+    public void disconnect(final PeerID id) {
     	if (mBoundService == null) {
     		Log.i("ipsec-tools", "No service");
     		return;
@@ -233,7 +234,7 @@ public class PeerList extends ArrayList<Peer> {
     	msg.sendToTarget();
     }
     
-    protected void toggle(final PeerID id) {
+    public void toggle(final PeerID id) {
     	Peer peer = get(id);
     	Log.i("ipsec-tools", "togglePeer " + id + " " + peer);
     	if (peer.canDisconnect())

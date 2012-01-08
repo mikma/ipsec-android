@@ -19,7 +19,7 @@
         	android:label="@string/set_preferences">
 		</activity>
 		<activity
-        	android:name=".PeerPreferences"
+        	android:name=".peer.PeerPreferences"
         	android:label="@string/set_preferences">
 		</activity>
 

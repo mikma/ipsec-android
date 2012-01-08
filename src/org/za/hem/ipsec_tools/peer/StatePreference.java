@@ -1,4 +1,6 @@
-package org.za.hem.ipsec_tools;
+package org.za.hem.ipsec_tools.peer;
+
+import org.za.hem.ipsec_tools.R;
 
 import android.content.Context;
 import android.preference.Preference;

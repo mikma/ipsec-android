@@ -1,4 +1,4 @@
-package org.za.hem.ipsec_tools;
+package org.za.hem.ipsec_tools.peer;
 
 import java.lang.Exception;
 
@@ -10,7 +10,7 @@ import android.util.Log;
  * @author mikael
  *
  */
-class PeerID implements Comparable<PeerID> {
+public class PeerID implements Comparable<PeerID> {
 	public static final String PREFIX = "peer_";
 	int id;
 	String key;

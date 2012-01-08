@@ -44,6 +44,12 @@ import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.za.hem.ipsec_tools.peer.OnPeerChangeListener;
+import org.za.hem.ipsec_tools.peer.Peer;
+import org.za.hem.ipsec_tools.peer.PeerID;
+import org.za.hem.ipsec_tools.peer.PeerList;
+import org.za.hem.ipsec_tools.peer.PeerPreferences;
+import org.za.hem.ipsec_tools.peer.StatePreference;
 import org.za.hem.ipsec_tools.service.ConfigManager;
 import org.za.hem.ipsec_tools.service.NativeService;
 

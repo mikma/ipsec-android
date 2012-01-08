@@ -1,8 +1,11 @@
-package org.za.hem.ipsec_tools;
+package org.za.hem.ipsec_tools.peer;
 
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
+import org.za.hem.ipsec_tools.R;
+import org.za.hem.ipsec_tools.Utils;
 
 import android.app.Activity;
 import android.content.Context;

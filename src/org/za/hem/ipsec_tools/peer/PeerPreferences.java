@@ -1,4 +1,4 @@
-package org.za.hem.ipsec_tools;
+package org.za.hem.ipsec_tools.peer;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Map;
+
+import org.za.hem.ipsec_tools.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;

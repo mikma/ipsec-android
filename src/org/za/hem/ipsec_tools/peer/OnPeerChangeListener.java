@@ -1,4 +1,5 @@
-package org.za.hem.ipsec_tools;
+package org.za.hem.ipsec_tools.peer;
+
 
 public interface OnPeerChangeListener {
 	public abstract void onDeletePeer(Peer peer);
