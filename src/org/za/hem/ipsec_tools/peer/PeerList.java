@@ -72,7 +72,11 @@ public class PeerList extends ArrayList<Peer> {
 	}
 	
 	private void stopHandler() {
-		mHandlerThread.quit();
+        mHandler.getLooper().quit();
+		try {
+			mHandlerThread.join(1000);
+		} catch (InterruptedException e) {
+		}
 		mHandlerThread = null;
 		mHandler = null;
 	}
@@ -87,6 +91,7 @@ public class PeerList extends ArrayList<Peer> {
 	}
 	
 	public void clearService() {
+		stopHandler();
 		mBoundService = null;
 	}
 	
