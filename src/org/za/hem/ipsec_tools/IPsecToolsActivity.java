@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -264,18 +265,19 @@ public class IPsecToolsActivity extends PreferenceActivity
 
 		try {
 			if (mEditID != null && mEditID.isValid()) {
-				// FIXME
-				Writer setKeyOs = null;
-				Peer peer = mPeers.get(mEditID);
-				if (peer != null) {
-					mCM.buildPeerConfig(peer, setKeyOs);
-				}
 				mCM.build(mPeers, false);
-				// TODO exec setkey.sh
-				File binDir = this.getDir("bin", 0);
-				NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
-						" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
- 				if (mBoundService != null)
+				Peer peer = mPeers.get(mEditID);
+				if (peer.isEnabled()) {
+					File binDir = getDir("bin", Context.MODE_PRIVATE);
+					FileWriter setKeyOs = new FileWriter(new File(binDir, ConfigManager.SETKEY_CONFIG));
+					if (peer != null) {
+						mCM.buildPeerConfig(ConfigManager.Action.ADD, peer, setKeyOs);
+					}
+					setKeyOs.close();
+					NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+							" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
+				}
+				if (mBoundService != null)
 					mBoundService.reloadConf();
 			}
 		} catch (IOException e) {
@@ -367,6 +369,26 @@ public class IPsecToolsActivity extends PreferenceActivity
 			mPeers.disconnect(selectedID);
 			return true;
 		case R.id.edit_peer:
+			// TODO refactor
+			try {
+				mCM.build(mPeers, false);
+				Peer peer = mPeers.get(selectedID);
+				if (peer.isEnabled()) {
+					File binDir = getDir("bin", Context.MODE_PRIVATE);
+					FileWriter setKeyOs = new FileWriter(new File(binDir, ConfigManager.SETKEY_CONFIG));
+					if (peer != null) {
+						mCM.buildPeerConfig(ConfigManager.Action.DELETE, peer, setKeyOs);
+					}
+					setKeyOs.close();
+					NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+							" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
+				}
+				if (mBoundService != null)
+					mBoundService.reloadConf();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+
 			mPeers.edit(this, selectedID);
 			mEditID = selectedID;
 			return true;

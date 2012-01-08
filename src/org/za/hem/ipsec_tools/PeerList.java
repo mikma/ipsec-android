@@ -90,7 +90,8 @@ public class PeerList extends ArrayList<Peer> {
 	}
 	
 	protected Peer get(PeerID id) {
-		return mPeers.get(id.intValue());
+		int i = id.intValue();
+		return mPeers.get(i);
 	}
 	
 	protected void set(PeerID id, Peer peer) {

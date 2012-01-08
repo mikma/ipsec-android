@@ -1,4 +1,4 @@
-package org.za.hem.ipsec_tools;
+ package org.za.hem.ipsec_tools;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -37,6 +37,8 @@ public class ConfigManager {
 	public static final String SETKEY_HEAD = "setkey.head";
 	public static final String PIDFILE = "racoon.pid";
 	
+	public enum Action {NONE, ADD, DELETE, UPDATE};
+	
 	// Variables usuable in config files
 	private static final String VAR_BINDIR = "bindir";
 	private static final String VAR_EXTDIR = "extdir";
@@ -68,33 +70,74 @@ public class ConfigManager {
 		return new File(mBinDir, peer.getPeerID().key + CONFIG_POSTFIX);
 	}
 	
-	private void buildPeerConfig(Peer peer, Writer os, Writer setkeyOs) throws IOException {
+	/**
+	 * Build racoon config for one peer and setkey portion
+	 * @param peer
+	 * @param racoonOs
+	 * @param setkeyUpOs
+	 * @param setkeyDownOs
+	 * @throws IOException
+	 */
+	private void buildPeerConfig(Action action, Peer peer, Writer racoonOs,
+			Writer setkeyOs) throws IOException {
 		InetAddress addr = peer.getRemoteAddr();
 		if (addr != null)
 			mVariables.put(VAR_REMOTE_ADDR, addr.getHostAddress());
 		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
 		mVariables.put(VAR_NAME, peer.getName());
+		mVariables.put(VAR_ACTION, actionToString(action));
 		File tmpl = peer.getTemplateFile();
 		if (tmpl == null)
 			return;
 		PolicyFile policy = new PolicyFile(tmpl);
-		if (os != null)
-			substitute(policy.getRacoonConfStream(), os);
-		if (setkeyOs != null)
+		if (racoonOs != null)
+			substitute(policy.getRacoonConfStream(), racoonOs);
+		if (action != Action.NONE && setkeyOs != null)
 			substitute(policy.getSetkeyConfStream(), setkeyOs);
 	}
 	
-	protected File buildPeerConfig(Peer peer, Writer setkeyOut) throws IOException {
+	private static String actionToString(Action action) {
+		switch (action) {
+		case NONE:
+			return "none";
+		case ADD:
+			return "add";
+		case DELETE:
+			return "delete";
+		case UPDATE:
+			return "update";
+		default:
+			throw new RuntimeException("Unknown action: " + action);
+		}
+	}
+
+	/**
+	 * Build racoon config for one peer and setkey portion
+	 * @param action
+	 * @param peer
+	 * @param setkeyOs
+	 * @return racoon config file
+	 * @throws IOException
+	 */
+	protected File buildPeerConfig(Action action, Peer peer, Writer setkeyOs) throws IOException {
  		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
-		File output = getPeerConfigFile(peer);
-		FileWriter os = new FileWriter(output);
-		buildPeerConfig(peer, os, setkeyOut);
-		os.close();
-		return output;
+		
+ 		File racoonFile = getPeerConfigFile(peer);
+		FileWriter racoonOs = new FileWriter(racoonFile);
+		
+		buildPeerConfig(action, peer, racoonOs, setkeyOs);
+		racoonOs.close();
+		return racoonFile;
 	}
 	
+	/**
+	 * 
+	 * @param peers
+	 * @param updateAllPeers
+	 * @throws IOException
+	 */
 	public void build(AbstractCollection<Peer> peers,
-			boolean updateAllPeers) throws IOException {
+			boolean addAllPeers) throws IOException {
 		Iterator<Peer> iter = peers.iterator();
 		Writer out = null;
 		Writer setkeyOut = null;
@@ -121,10 +164,10 @@ public class ConfigManager {
 				mVariables.remove(VAR_NAME);
 				try {
 					File output;
-					if (updateAllPeers)
-						output = buildPeerConfig(peer, setkeyOut);
+					if (addAllPeers)
+						output = buildPeerConfig(Action.ADD, peer, setkeyOut);
 					else {
-						buildPeerConfig(peer, null, setkeyOut);
+						buildPeerConfig(Action.NONE, peer, null, setkeyOut);
 						output = getPeerConfigFile(peer);
 					}
 					out.write("include \"" + output.getAbsolutePath() + "\";\n");
