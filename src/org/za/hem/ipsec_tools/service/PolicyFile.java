@@ -1,4 +1,4 @@
-package org.za.hem.ipsec_tools;
+package org.za.hem.ipsec_tools.service;
 
 import java.io.File;
 import java.io.IOException;

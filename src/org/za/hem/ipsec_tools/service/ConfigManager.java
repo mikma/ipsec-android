@@ -1,4 +1,4 @@
- package org.za.hem.ipsec_tools;
+ package org.za.hem.ipsec_tools.service;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.za.hem.ipsec_tools.peer.Peer;
 
 import android.content.Context;
 import android.os.Environment;
@@ -67,7 +69,7 @@ public class ConfigManager {
 	}
 	
 	protected File getPeerConfigFile(Peer peer) {
-		return new File(mBinDir, peer.getPeerID().key + CONFIG_POSTFIX);
+		return new File(mBinDir, peer.getPeerID().toString() + CONFIG_POSTFIX);
 	}
 	
 	/**
@@ -119,7 +121,7 @@ public class ConfigManager {
 	 * @return racoon config file
 	 * @throws IOException
 	 */
-	protected File buildPeerConfig(Action action, Peer peer, Writer setkeyOs) throws IOException {
+	public File buildPeerConfig(Action action, Peer peer, Writer setkeyOs) throws IOException {
  		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
 		
  		File racoonFile = getPeerConfigFile(peer);

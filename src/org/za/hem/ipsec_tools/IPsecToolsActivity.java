@@ -44,6 +44,7 @@ import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.za.hem.ipsec_tools.service.ConfigManager;
 import org.za.hem.ipsec_tools.service.NativeService;
 
 /*

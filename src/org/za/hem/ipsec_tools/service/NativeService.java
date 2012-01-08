@@ -12,7 +12,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Iterator;
 
-import org.za.hem.ipsec_tools.ConfigManager;
 import org.za.hem.ipsec_tools.IPsecToolsActivity;
 import org.za.hem.ipsec_tools.NativeCommand;
 import org.za.hem.ipsec_tools.R;
