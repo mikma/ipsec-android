@@ -329,7 +329,7 @@ public class NativeService extends Service {
         Intent intent = new Intent(this, IPsecToolsActivity.class);
         
         // The PendingIntent to launch our activity if the user selects this notification
-        PendingIntent contentIntent = PendingIntent.getService(this, 0,
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
                 intent, 0);
 
         // Set the info for the views that show in the notification panel.
