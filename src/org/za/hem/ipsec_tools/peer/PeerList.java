@@ -206,8 +206,7 @@ public class PeerList extends ArrayList<Peer> {
     	Peer peer = get(id);
     	InetAddress addr = peer.getRemoteAddr();
     	if (addr == null)
-    		// FIXME error message
-    		return;
+    		throw new NullPointerException();
     	Log.i("ipsec-tools", "connectPeer " + addr);
     	peer.onConnect();
 
@@ -225,8 +224,7 @@ public class PeerList extends ArrayList<Peer> {
     	Peer peer = get(id);
     	InetAddress addr = peer.getRemoteAddr();
     	if (addr == null)
-    		// FIXME error message
-    		return;
+    		throw new NullPointerException();
     	Log.i("ipsec-tools", "disconnectPeer " + addr);
     	peer.onDisconnect();
     	Message msg = mHandler.obtainMessage(HANDLER_VPN_DISCONNECT);
