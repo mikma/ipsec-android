@@ -1,6 +1,6 @@
 [submodule "external/openssl"]
 	path = external/openssl
-	url = https://mikma@github.com/mikma/openssl-android.git
+	url = https://github.com/mikma/openssl-android.git
 [submodule "external/ipsec-tools"]
 	path = external/ipsec-tools
-	url = https://mikma@github.com/mikma/ipsec-tools-android.git
+	url = https://github.com/mikma/ipsec-tools-android.git
