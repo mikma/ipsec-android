@@ -6,3 +6,18 @@ and setkey from ipsec-tools. Configured with racoon.conf and
 setkey.conf templates.
 
 Root is required to run this Android App 
+
+VPN policy
+----------
+A VPN policy is a JAR file containing racoon.conf and setkey.conf
+
+Variables usuable in racoon.conf and setkey.conf
+------------------------------------------------
+${bindir} - Absolute path to bin directory of the App.
+${extdir} - Absolute path to the external storage directory.
+${remote_addr} - IP address of remote peer.
+${local_addr} - Local IP address.
+${uid} - UID of the java process.
+${gid} - GID of the java process.
+${name} - Name of the peer.
+${action} - One of "none", "add", "delete" or "update".
