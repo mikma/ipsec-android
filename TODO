@@ -1,0 +1,40 @@
+* Rename racoon binary to appname.racoon or racoon.appname
+
+* Improve certificate handling
+
+* Allow psk passwords
+
+* Flush setkey SAs for changed peers.
+
+* Disable ipsec tunnel when disabled doh
+
+
+Policy handling
+---------------
+
+Startup: Build all peer configs, Flush all SPDs
+
+Before editing: Delete peer config, Delete SPD for peer
+
+After editing: Build peer config, Add SPD for peer
+
+Flush SPD at startup of service.
+
+Flush SPD at stop of service.
+
+
+Don't add if disabled.
+
+
+Notifications
+-------------
+
+Remove notification sent during startup
+
+Remove a notification after touching it
+
+
+DNS
+---
+
+Set DNS, refer to http://hi-android.info/src/com/android/server/vpn/VpnService.java.html
