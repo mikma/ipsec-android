@@ -1,0 +1,8 @@
+ipsec-android
+=============
+
+IPsec VPN for Android which uses IPsec in the Linux kernel and racoon
+and setkey from ipsec-tools. Configured with racoon.conf and
+setkey.conf templates.
+
+Root is required to run this Android App 
