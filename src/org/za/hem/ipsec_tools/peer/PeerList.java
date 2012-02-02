@@ -239,10 +239,11 @@ public class PeerList extends ArrayList<Peer> {
     
     public void toggle(final PeerID id) {
     	Peer peer = get(id);
+    	Boolean isRacoonRunning = mBoundService.isRacoonRunning();
     	Log.i("ipsec-tools", "togglePeer " + id + " " + peer);
-    	if (peer.canDisconnect())
+    	if (isRacoonRunning && peer.canDisconnect())
     		disconnect(id);
-    	else if (peer.canConnect())
+    	else if (isRacoonRunning && peer.canConnect())
     		connect(id);
     }
 }

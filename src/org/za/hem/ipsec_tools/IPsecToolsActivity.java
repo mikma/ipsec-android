@@ -338,13 +338,14 @@ public class IPsecToolsActivity extends PreferenceActivity
 		
 			if (selectedID.isValid()) {
 				selectedPeer = mPeers.get(selectedID);
+				boolean isRacoonRunning = mBoundService.isRacoonRunning();
 				Log.i("ipsec-tools", "onCreateContextMenu " + info.id + " " + info.position + " " + pref + " " + selectedPeer);
 		
 				MenuInflater inflater = getMenuInflater();
 				inflater.inflate(R.menu.peer_menu, menu);
 				menu.setHeaderTitle(selectedPeer.getName());
-				menu.findItem(R.id.connect_peer).setEnabled(selectedPeer.canConnect());
-				menu.findItem(R.id.disconnect_peer).setEnabled(selectedPeer.canDisconnect());
+				menu.findItem(R.id.connect_peer).setEnabled(isRacoonRunning && selectedPeer.canConnect());
+				menu.findItem(R.id.disconnect_peer).setEnabled(isRacoonRunning && selectedPeer.canDisconnect());
 				menu.findItem(R.id.edit_peer).setEnabled(!selectedPeer.isConnected());
 				menu.findItem(R.id.delete_peer).setEnabled(!selectedPeer.isConnected());
 			} else {
@@ -428,8 +429,9 @@ public class IPsecToolsActivity extends PreferenceActivity
 
 	@Override
 	public boolean onPrepareOptionsMenu (Menu menu) {
-	    menu.findItem(R.id.start_service).setVisible(!mBoundService.isRacoonRunning());
-	    menu.findItem(R.id.stop_service).setVisible(mBoundService.isRacoonRunning());
+		boolean isRacoonRunning = mBoundService.isRacoonRunning();
+	    menu.findItem(R.id.start_service).setVisible(!isRacoonRunning);
+	    menu.findItem(R.id.stop_service).setVisible(isRacoonRunning);
 	    return true;
 	}
 
