@@ -151,10 +151,6 @@ public class IPsecToolsActivity extends PreferenceActivity
 		
         try {
 			mCM.build(mPeers, true);
-			// TODO refactor into new function
-			File binDir = this.getDir("bin", 0);
-			NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
-					" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -285,7 +281,9 @@ public class IPsecToolsActivity extends PreferenceActivity
 			if (peer != null) {
 				mCM.buildPeerConfig(action, peer, setKeyOs);
 			}
-			setKeyOs.close();
+			if (mBoundService.isRacoonRunning()) {
+				setKeyOs.close();
+			}
 			runSetKey();
 		}
 		if (mBoundService != null)
@@ -298,7 +296,20 @@ public class IPsecToolsActivity extends PreferenceActivity
     			" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
     }
 
-	protected void onPause()
+    private void flushAllSAD() {
+		File binDir = getDir("bin", Context.MODE_PRIVATE);
+    	NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+    			" -F");
+    }
+    
+    private void flushAllSPD() {
+		File binDir = getDir("bin", Context.MODE_PRIVATE);
+    	NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+    			" -FP");
+    	flushAllSAD();
+    }
+
+    protected void onPause()
     {
     	Log.i("ipsec-tools", "onPause:" + this);
     	super.onPause();
@@ -436,10 +447,12 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    // Handle item selection
 	    switch (item.getItemId()) {
 	    case R.id.start_service:
+	    	runSetKey();
 	    	mBoundService.startRacoon();
 	        return true;
 	    case R.id.stop_service:
 	        mBoundService.stopRacoon();
+	        flushAllSPD();
 	        return true;
 	    case R.id.preferences:
             Intent settingsActivity = new Intent(getBaseContext(),
