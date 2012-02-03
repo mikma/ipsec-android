@@ -265,27 +265,32 @@ public class IPsecToolsActivity extends PreferenceActivity
     		}
     	}
 
-		try {
-			if (mEditID != null && mEditID.isValid()) {
-				mCM.build(mPeers, false);
-				Peer peer = mPeers.get(mEditID);
-				if (peer.isEnabled()) {
-					File binDir = getDir("bin", Context.MODE_PRIVATE);
-					FileWriter setKeyOs = new FileWriter(new File(binDir, ConfigManager.SETKEY_CONFIG));
-					if (peer != null) {
-						mCM.buildPeerConfig(ConfigManager.Action.ADD, peer, setKeyOs);
-					}
-					setKeyOs.close();
-					NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
-							" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
-				}
-				if (mBoundService != null)
-					mBoundService.reloadConf();
+		if (mEditID != null && mEditID.isValid()) {
+			try {
+				updateConfig(mEditID, ConfigManager.Action.ADD);
+			} catch (IOException e) {
+				// TODO display error
 			}
-		} catch (IOException e) {
-			// TODO display error
 		}
 		mEditID = null;
+    }
+    
+    private void updateConfig(PeerID id, ConfigManager.Action action) throws IOException
+    {
+		mCM.build(mPeers, false);
+		Peer peer = mPeers.get(id);
+		if (peer.isEnabled()) {
+			File binDir = getDir("bin", Context.MODE_PRIVATE);
+			FileWriter setKeyOs = new FileWriter(new File(binDir, ConfigManager.SETKEY_CONFIG));
+			if (peer != null) {
+				mCM.buildPeerConfig(action, peer, setKeyOs);
+			}
+			setKeyOs.close();
+			NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+					" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
+		}
+		if (mBoundService != null)
+			mBoundService.reloadConf();
     }
     
     protected void onPause()
@@ -372,28 +377,14 @@ public class IPsecToolsActivity extends PreferenceActivity
 			mPeers.disconnect(selectedID);
 			return true;
 		case R.id.edit_peer:
-			// TODO refactor
 			try {
-				mCM.build(mPeers, false);
-				Peer peer = mPeers.get(selectedID);
-				if (peer.isEnabled()) {
-					File binDir = getDir("bin", Context.MODE_PRIVATE);
-					FileWriter setKeyOs = new FileWriter(new File(binDir, ConfigManager.SETKEY_CONFIG));
-					if (peer != null) {
-						mCM.buildPeerConfig(ConfigManager.Action.DELETE, peer, setKeyOs);
-					}
-					setKeyOs.close();
-					NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
-							" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
-				}
-				if (mBoundService != null)
-					mBoundService.reloadConf();
+				updateConfig(selectedID, ConfigManager.Action.DELETE);
+				mPeers.edit(this, selectedID);
+				mEditID = selectedID;
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 
-			mPeers.edit(this, selectedID);
-			mEditID = selectedID;
 			return true;
 		case R.id.delete_peer:
 			mPeers.deletePeer(selectedID, this);
