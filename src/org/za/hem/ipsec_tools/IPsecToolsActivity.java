@@ -286,14 +286,19 @@ public class IPsecToolsActivity extends PreferenceActivity
 				mCM.buildPeerConfig(action, peer, setKeyOs);
 			}
 			setKeyOs.close();
-			NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
-					" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
+			runSetKey();
 		}
 		if (mBoundService != null)
 			mBoundService.reloadConf();
     }
     
-    protected void onPause()
+    private void runSetKey() {
+		File binDir = getDir("bin", Context.MODE_PRIVATE);
+    	NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+    			" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
+    }
+
+	protected void onPause()
     {
     	Log.i("ipsec-tools", "onPause:" + this);
     	super.onPause();
