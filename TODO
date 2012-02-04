@@ -18,10 +18,6 @@ Before editing: Delete peer config, Delete SPD for peer
 
 After editing: Build peer config, Add SPD for peer
 
-Flush SPD at startup of service.
-
-Flush SPD at stop of service.
-
 
 Don't add if disabled.
 
