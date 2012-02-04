@@ -102,6 +102,8 @@ public class NativeService extends Service {
     
    	@Override
     public void onCreate() {
+        flushAllSPD();
+
    		mBinder.setService(this);
    		
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
