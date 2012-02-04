@@ -206,8 +206,6 @@ public class NativeService extends Service {
     	if (!isRacoonRunning())
     		return;
     	
-        flushAllSPD();
-
     	try {
 			mAdmin.close();
 		} catch (IOException e) {
@@ -225,6 +223,8 @@ public class NativeService extends Service {
 		
 		// TODO clear setkey?
 		
+        flushAllSPD();
+
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(ACTION_DESTROYED);
 		sendBroadcast(broadcastIntent);

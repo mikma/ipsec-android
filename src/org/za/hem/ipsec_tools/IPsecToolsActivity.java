@@ -505,6 +505,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     				mPeers.dumpIsakmpSA();
     			return;
      		} else if (action.equals(NativeService.ACTION_DESTROYED)) {
+     			mPeers.onDestroy();
      			return;
      		}
     		
@@ -526,8 +527,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     			showNotification(peer, R.string.notify_peer_down);
     			peer.onPhase1Down();
     		}
-
-    		//output("Receive destroyed");
     	}  	
     };
     

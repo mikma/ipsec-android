@@ -246,4 +246,18 @@ public class PeerList extends ArrayList<Peer> {
     	else if (isRacoonRunning && peer.canConnect())
     		connect(id);
     }
+
+    /**
+     * Racoon destroyed. Notify all peers on phase1 down.
+     */
+    public void onDestroy() {
+    	Iterator<Peer> iter = iterator();
+    	
+    	while (iter.hasNext()) {
+    		Peer peer = iter.next();
+    		if (peer == null)
+    			continue;
+    		peer.onPhase1Down();
+    	}
+    }
 }
