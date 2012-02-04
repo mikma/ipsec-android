@@ -62,7 +62,7 @@ public class Peer implements OnSharedPreferenceChangeListener {
 					PeerPreferences.getSharedPreferencesName(context, id),
     				Activity.MODE_PRIVATE);
 		mStatus = -1;
-		setStatus(STATUS_DISCONNECTED);
+		setStatus(isEnabled() ? STATUS_DISCONNECTED : STATUS_DISABLED);
 	}
 	
 	public void clear() {
