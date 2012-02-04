@@ -179,6 +179,8 @@ public class NativeService extends Service {
     	Log.i("ipsec-tools", "Start racoon");
     	if (isRacoonRunning())
     		return;
+    	runSetKey();
+
 	    // Display a notification about us starting.  We put an icon in the status bar.
 		//showNotification();
 		startForeground(NOTIFICATION, createNotification());
@@ -201,6 +203,8 @@ public class NativeService extends Service {
 
     	if (!isRacoonRunning())
     		return;
+    	
+        flushAllSPD();
 
     	try {
 			mAdmin.close();

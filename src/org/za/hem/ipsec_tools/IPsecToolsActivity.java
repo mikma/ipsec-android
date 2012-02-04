@@ -284,7 +284,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 			if (mBoundService.isRacoonRunning()) {
 				setKeyOs.close();
 			}
-			mBoundService.runSetKey(this);
+			mBoundService.runSetKey();
 		}
 		if (mBoundService != null)
 			mBoundService.reloadConf();
@@ -428,12 +428,10 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    // Handle item selection
 	    switch (item.getItemId()) {
 	    case R.id.start_service:
-	    	mBoundService.runSetKey(this);
 	    	mBoundService.startRacoon();
 	        return true;
 	    case R.id.stop_service:
 	        mBoundService.stopRacoon();
-	        mBoundService.flushAllSPD(this);
 	        return true;
 	    case R.id.preferences:
             Intent settingsActivity = new Intent(getBaseContext(),
