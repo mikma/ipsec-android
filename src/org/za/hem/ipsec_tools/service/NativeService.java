@@ -471,4 +471,23 @@ public class NativeService extends Service {
     	}
     }
 
+	public void flushAllSAD() {
+		File binDir = getDir("bin", Context.MODE_PRIVATE);
+		NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+				" -F");
+	}
+
+	public void flushAllSPD() {
+		File binDir = getDir("bin", Context.MODE_PRIVATE);
+		NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+				" -FP");
+		flushAllSAD();
+	}
+
+	public void runSetKey() {
+		File binDir = getDir("bin", Context.MODE_PRIVATE);
+		NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+				" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
+	}
+
 }

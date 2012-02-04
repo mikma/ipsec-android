@@ -284,31 +284,12 @@ public class IPsecToolsActivity extends PreferenceActivity
 			if (mBoundService.isRacoonRunning()) {
 				setKeyOs.close();
 			}
-			runSetKey();
+			mBoundService.runSetKey(this);
 		}
 		if (mBoundService != null)
 			mBoundService.reloadConf();
     }
     
-    private void runSetKey() {
-		File binDir = getDir("bin", Context.MODE_PRIVATE);
-    	NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
-    			" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
-    }
-
-    private void flushAllSAD() {
-		File binDir = getDir("bin", Context.MODE_PRIVATE);
-    	NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
-    			" -F");
-    }
-    
-    private void flushAllSPD() {
-		File binDir = getDir("bin", Context.MODE_PRIVATE);
-    	NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
-    			" -FP");
-    	flushAllSAD();
-    }
-
     protected void onPause()
     {
     	Log.i("ipsec-tools", "onPause:" + this);
@@ -447,12 +428,12 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    // Handle item selection
 	    switch (item.getItemId()) {
 	    case R.id.start_service:
-	    	runSetKey();
+	    	mBoundService.runSetKey(this);
 	    	mBoundService.startRacoon();
 	        return true;
 	    case R.id.stop_service:
 	        mBoundService.stopRacoon();
-	        flushAllSPD();
+	        mBoundService.flushAllSPD(this);
 	        return true;
 	    case R.id.preferences:
             Intent settingsActivity = new Intent(getBaseContext(),
