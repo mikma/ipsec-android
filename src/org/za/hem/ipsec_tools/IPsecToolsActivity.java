@@ -285,6 +285,10 @@ public class IPsecToolsActivity extends PreferenceActivity
 				setKeyOs.close();
 			}
 			mBoundService.runSetKey();
+			peer.setStatus(Peer.STATUS_DISCONNECTED);
+		}
+		else {
+			peer.setStatus(Peer.STATUS_DISABLED);
 		}
 		if (mBoundService != null)
 			mBoundService.reloadConf();
