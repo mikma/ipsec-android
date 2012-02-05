@@ -29,6 +29,7 @@ public class Event extends Command {
 	private InetSocketAddress mPh1src;
 	private InetSocketAddress mPh1dst;
 	private long mPh2MsgId;
+	private boolean mSynthetic;
 	
 	public int getType() {
 		return mType;
@@ -49,6 +50,14 @@ public class Event extends Command {
 	public long getPh2MsgId() {
 		return mPh2MsgId;
 	}
+	
+	public boolean getSynthetic() {
+		return mSynthetic;
+	}
+	
+	public void setSynthetic(boolean synthetic) {
+		mSynthetic = synthetic;
+	}
 
 	public Event(int proto, int len,
 					int type, long timeStamp,
@@ -59,6 +68,7 @@ public class Event extends Command {
 		mPh1src = ph1src;
 		mPh1dst = ph1dst;
 		mPh2MsgId = ph2MsgId;
+		mSynthetic = false;
 	}
 	
 	protected static Event create(int proto, int len, byte[] data) {

@@ -242,7 +242,10 @@ public class NativeService extends Service {
 	}
 	
 	public int reloadConf() {
-		return mAdminCmd.reloadConf();
+		if (isRacoonRunning())
+			return mAdminCmd.reloadConf();
+		else
+			return -1;
 	}
 	
 	public boolean isRacoonRunning() {
@@ -287,6 +290,7 @@ public class NativeService extends Service {
 			
 			Event evt = new Event(Command.ADMIN_PROTO_ISAKMP, -1, Event.EVT_PHASE1_UP,
 					dump.mTimeCreated, ph1src, ph1dst, -1);
+			evt.setSynthetic(true);
 			mListener.onCommand(evt);
 		}
 	}
@@ -454,6 +458,9 @@ public class NativeService extends Service {
 					Intent broadcastIntent = new Intent();
 					broadcastIntent.setAction(action);
 					broadcastIntent.putExtra("remote_addr", evt.getPh1dst());
+					if (evt.getSynthetic()) {
+						broadcastIntent.putExtra("synthetic", true);
+					}
 					sendBroadcast(broadcastIntent);
 				}
 			} else {

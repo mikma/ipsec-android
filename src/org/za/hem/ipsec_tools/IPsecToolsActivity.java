@@ -524,12 +524,17 @@ public class IPsecToolsActivity extends PreferenceActivity
     			return;
     		}
   
+    		int notifyType = -1;
+    		
     		if (action.equals(NativeService.ACTION_PHASE1_UP)) {
-    			showNotification(peer, R.string.notify_peer_up);
+    			notifyType = R.string.notify_peer_up;
     			peer.onPhase1Up();
     		} else if (action.equals(NativeService.ACTION_PHASE1_DOWN)) {
-    			showNotification(peer, R.string.notify_peer_down);
+    			notifyType = R.string.notify_peer_down;
     			peer.onPhase1Down();
+    		}
+    		if (!intent.getBooleanExtra("synthetic", false) && notifyType >= 0) {
+    			showNotification(peer, notifyType);
     		}
     	}  	
     };

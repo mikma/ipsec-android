@@ -22,14 +22,6 @@ After editing: Build peer config, Add SPD for peer
 Don't add if disabled.
 
 
-Notifications
--------------
-
-Remove notification sent during startup
-
-Remove a notification after touching it
-
-
 DNS
 ---
 
