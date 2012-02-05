@@ -132,6 +132,14 @@ public class Peer implements OnSharedPreferenceChangeListener {
 		return new File(addr);
 	}
 	
+	public String getDns1() {
+		return mShared.getString(PeerPreferences.DNS1_PREFERENCE, null);		
+	}
+	
+	public String getDns2() {
+		return mShared.getString(PeerPreferences.DNS2_PREFERENCE, null);		
+	}
+
 	public int getStatus() {
 		return mStatus;
 	}

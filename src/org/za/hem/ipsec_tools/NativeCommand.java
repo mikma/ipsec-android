@@ -19,11 +19,15 @@ public class NativeCommand {
 	private File mBinDir;
 	private File mSystemBin;
 	private Context mContext;
+	private File mBinGetProp;
+	private File mBinSetProp;
 	
 	public NativeCommand(Context context) {
 		mContext = context;
 	    mBinDir = context.getDir("bin", Context.MODE_PRIVATE);
 	    mSystemBin = new File(Environment.getRootDirectory(), "bin");
+	    mBinGetProp = new File(mSystemBin, "getprop");
+	    mBinSetProp = new File(mSystemBin, "setprop");
 	}
 
 	
@@ -147,8 +151,9 @@ public class NativeCommand {
     		process.waitFor();
     		
     		if (error.length() > 0)
-    			Log.i("ipsec-tools", "System cmd error:" + error);   			
+    			Log.i("ipsec-tools", "System cmd error:" + error);
         
+			Log.i("ipsec-tools", "System cmd output:" + output);
     		return output.toString();
     	} catch (IOException e) {
     		throw new RuntimeException(e);
@@ -172,5 +177,14 @@ public class NativeCommand {
 
     public String ls(String[] parameters) {
     	return system(new File(mSystemBin, "ls").getAbsolutePath(), parameters);
+    }
+
+    public String getprop(String name) {
+    	String value = system(mBinGetProp.getAbsolutePath() + " " + name);
+    	return value.trim();
+    }
+
+    public void setprop(String name, String value) {
+    	system(mBinSetProp.getAbsolutePath() + " " + name + " \"" + value + "\"");
     }
  }

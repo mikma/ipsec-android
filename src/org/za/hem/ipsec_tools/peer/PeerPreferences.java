@@ -47,6 +47,8 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	static final String ENABLED_PREFERENCE = "enabledPref";
 	static final String REMOTE_ADDR_PREFERENCE = "remoteAddrPref";
 	static final String REMOTE_ADDR_IP_PREFERENCE = "remoteAddrIpPref";
+	static final String DNS1_PREFERENCE = "dns1Pref";
+	static final String DNS2_PREFERENCE = "dns2Pref";
 	
 	static final int REQUEST_TEMPLATE = 1;
 	

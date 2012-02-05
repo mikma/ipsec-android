@@ -57,7 +57,11 @@ public class NativeService extends Service {
 	public static final String ACTION_VPN_DISCONNECT = PACKAGE + ".VPN_DISCONNECT";
 	public static final String ACTION_SERVICE_READY = PACKAGE + ".SERVICE_READY";
 	
-	private HandlerThread mWorker;
+    private static final String PROP_NET_DNS1 = "net.dns1";
+    private static final String PROP_NET_DNS2 = "net.dns2";
+    private static final String PROP_NET_DNSCHANGE = "net.dnschange";
+
+    private HandlerThread mWorker;
 	private NotificationManager mNM;
 	private Admin mAdmin;
 	private Admin mAdminCmd;
@@ -67,6 +71,10 @@ public class NativeService extends Service {
     private int NOTIFICATION = R.string.native_service_started;
     private String mSocketPath;
     private int mPid = -1;
+    
+    private NativeCommand mNative;
+    private String mSaveDns1;
+    private String mSaveDns2;
 
     static public class NativeBinder extends Binder {
     	NativeService mService;
@@ -102,6 +110,7 @@ public class NativeService extends Service {
     
    	@Override
     public void onCreate() {
+   		mNative = new NativeCommand(this);
         flushAllSPD();
 
    		mBinder.setService(this);
@@ -301,6 +310,36 @@ public class NativeService extends Service {
 		msg.sendToTarget();
 	}
 	
+	private void increaseDnsChange() {
+		int change = Integer.parseInt(mNative.getprop(PROP_NET_DNSCHANGE));
+		mNative.setprop(PROP_NET_DNSCHANGE, Integer.toString(change + 1));
+	}
+	
+	private void storeDns(String dns1, String dns2) {
+		if (mSaveDns1 == null) {
+			mSaveDns1 = mNative.getprop(PROP_NET_DNS1);
+		}
+		if (mSaveDns2 == null) {
+			mSaveDns2 = mNative.getprop(PROP_NET_DNS2);
+		}
+		mNative.setprop(PROP_NET_DNS1, dns1);
+		mNative.setprop(PROP_NET_DNS2, dns2);
+		increaseDnsChange();
+		Log.i("ipsec-tools", "VPN save " + mSaveDns1 + " " + mSaveDns2 + " " + dns1 + " " + dns2);
+	}
+	
+	private void restoreDns() {
+		if (mSaveDns1 != null) {
+			mNative.setprop(PROP_NET_DNS1, mSaveDns1);
+			mSaveDns1 = null;
+		}
+		if (mSaveDns2 != null) {
+			mNative.setprop(PROP_NET_DNS2, mSaveDns2);
+			mSaveDns2 = null;
+		}		
+		increaseDnsChange();
+	}
+	
 	protected void onVpnConnect(String gw) {
 		try {
 			InetAddress addr = InetAddress.getByName(gw);
@@ -446,9 +485,16 @@ public class NativeService extends Service {
 				switch (evt.getType()) {
 				case Event.EVT_PHASE1_UP:
 					action = ACTION_PHASE1_UP;
+					if (!evt.getSynthetic()) {
+						// FIXME read from peer
+						storeDns("8.8.8.8", "");
+					}
 					break;
 				case Event.EVT_PHASE1_DOWN:
 					action = ACTION_PHASE1_DOWN;
+					if (!evt.getSynthetic()) {
+						restoreDns();
+					}
 					break;
 				default:
 					Log.i("ipsec-tools", "Unhandled event type");
