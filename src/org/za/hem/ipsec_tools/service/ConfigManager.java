@@ -1,4 +1,4 @@
- package org.za.hem.ipsec_tools.service;
+package org.za.hem.ipsec_tools.service;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,7 +41,7 @@ public class ConfigManager {
 	
 	public enum Action {NONE, ADD, DELETE, UPDATE};
 	
-	// Variables usuable in config files
+	// Variables usable in config files
 	private static final String VAR_BINDIR = "bindir";
 	private static final String VAR_EXTDIR = "extdir";
 	private static final String VAR_REMOTE_ADDR = "remote_addr";
