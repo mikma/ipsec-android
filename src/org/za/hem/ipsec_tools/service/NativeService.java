@@ -333,15 +333,21 @@ public class NativeService extends Service {
 	}
 	
 	public void restoreDns() {
+		boolean isChanged = false;
+		
 		if (mSaveDns1 != null) {
 			mNative.setprop(PROP_NET_DNS1, mSaveDns1);
 			mSaveDns1 = null;
+			isChanged = true;
 		}
 		if (mSaveDns2 != null) {
 			mNative.setprop(PROP_NET_DNS2, mSaveDns2);
 			mSaveDns2 = null;
-		}		
-		increaseDnsChange();
+			isChanged = true;
+		}
+		if (isChanged) {
+			increaseDnsChange();
+		}
 	}
 	
 	protected void onVpnConnect(String gw) {

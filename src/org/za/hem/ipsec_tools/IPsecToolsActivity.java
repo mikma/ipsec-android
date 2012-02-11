@@ -532,7 +532,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     			peer.onPhase1Up();
 				if (!isSynthetic) {
 					String dns1 = peer.getDns1();
-					if (dns1 != null) {
+					if (dns1 != null && dns1.length() > 0) {
 						mBoundService.storeDns(dns1, peer.getDns2());
 					}
 				}
