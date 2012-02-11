@@ -22,7 +22,3 @@ After editing: Build peer config, Add SPD for peer
 Don't add if disabled.
 
 
-DNS
----
-
-Set DNS, refer to http://hi-android.info/src/com/android/server/vpn/VpnService.java.html

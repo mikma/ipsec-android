@@ -315,20 +315,24 @@ public class NativeService extends Service {
 		mNative.setprop(PROP_NET_DNSCHANGE, Integer.toString(change + 1));
 	}
 	
-	private void storeDns(String dns1, String dns2) {
+	public void storeDns(String dns1, String dns2) {
 		if (mSaveDns1 == null) {
 			mSaveDns1 = mNative.getprop(PROP_NET_DNS1);
 		}
 		if (mSaveDns2 == null) {
 			mSaveDns2 = mNative.getprop(PROP_NET_DNS2);
 		}
-		mNative.setprop(PROP_NET_DNS1, dns1);
-		mNative.setprop(PROP_NET_DNS2, dns2);
+		if (dns1 != null) {
+			mNative.setprop(PROP_NET_DNS1, dns1);
+		}
+		if (dns2 != null) {
+			mNative.setprop(PROP_NET_DNS2, dns2);
+		}
 		increaseDnsChange();
 		Log.i("ipsec-tools", "VPN save " + mSaveDns1 + " " + mSaveDns2 + " " + dns1 + " " + dns2);
 	}
 	
-	private void restoreDns() {
+	public void restoreDns() {
 		if (mSaveDns1 != null) {
 			mNative.setprop(PROP_NET_DNS1, mSaveDns1);
 			mSaveDns1 = null;
@@ -485,16 +489,9 @@ public class NativeService extends Service {
 				switch (evt.getType()) {
 				case Event.EVT_PHASE1_UP:
 					action = ACTION_PHASE1_UP;
-					if (!evt.getSynthetic()) {
-						// FIXME read from peer
-						storeDns("8.8.8.8", "");
-					}
 					break;
 				case Event.EVT_PHASE1_DOWN:
 					action = ACTION_PHASE1_DOWN;
-					if (!evt.getSynthetic()) {
-						restoreDns();
-					}
 					break;
 				default:
 					Log.i("ipsec-tools", "Unhandled event type");

@@ -525,15 +525,25 @@ public class IPsecToolsActivity extends PreferenceActivity
     		}
   
     		int notifyType = -1;
+    		boolean isSynthetic = intent.getBooleanExtra("synthetic", false);
     		
     		if (action.equals(NativeService.ACTION_PHASE1_UP)) {
     			notifyType = R.string.notify_peer_up;
     			peer.onPhase1Up();
+				if (!isSynthetic) {
+					String dns1 = peer.getDns1();
+					if (dns1 != null) {
+						mBoundService.storeDns(dns1, peer.getDns2());
+					}
+				}
     		} else if (action.equals(NativeService.ACTION_PHASE1_DOWN)) {
     			notifyType = R.string.notify_peer_down;
     			peer.onPhase1Down();
+				if (!isSynthetic) {
+					mBoundService.restoreDns();
+				}
     		}
-    		if (!intent.getBooleanExtra("synthetic", false) && notifyType >= 0) {
+    		if (!isSynthetic && notifyType >= 0) {
     			showNotification(peer, notifyType);
     		}
     	}  	
