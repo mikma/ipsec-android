@@ -229,6 +229,23 @@ public class PeerList extends ArrayList<Peer> {
     	msg.obj = addr.getHostAddress();
     	msg.sendToTarget();
     }
+
+    // TODO add return value
+    public void enableAndConnect(PeerID id)
+    {
+    	try {
+    		Peer peer = get(id);
+    		if (!peer.isEnabled()) {
+    			Log.i("ipsec-tools", "Enable " + id);
+    			peer.setEnabled(true);
+    			updateConfig(id, ConfigManager.Action.ADD);
+    		}
+    		connect(id);
+    	} catch (IOException e) {
+    		// TODO display error
+    	}
+    }
+
     
     public void disconnect(final PeerID id) {
     	if (mBoundService == null) {
@@ -247,14 +264,18 @@ public class PeerList extends ArrayList<Peer> {
     	msg.sendToTarget();
     }
     
+    public void disconnectAndDisable(final PeerID id) {
+    	disconnect(id);
+    }
+        
     public void toggle(final PeerID id) {
     	Peer peer = get(id);
     	Boolean isRacoonRunning = mBoundService.isRacoonRunning();
     	Log.i("ipsec-tools", "togglePeer " + id + " " + peer);
     	if (isRacoonRunning && peer.canDisconnect())
-    		disconnect(id);
+    		disconnectAndDisable(id);
     	else if (isRacoonRunning && peer.canConnect())
-    		connect(id);
+    		enableAndConnect(id);
     }
 
     /**

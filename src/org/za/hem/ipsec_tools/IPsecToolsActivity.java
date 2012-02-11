@@ -338,10 +338,10 @@ public class IPsecToolsActivity extends PreferenceActivity
 		
 		switch (item.getItemId()) {
 		case R.id.connect_peer:
-			mPeers.connect(selectedID);
+			mPeers.enableAndConnect(selectedID);
 			return true;
 		case R.id.disconnect_peer:
-			mPeers.disconnect(selectedID);
+			mPeers.disconnectAndDisable(selectedID);
 			return true;
 		case R.id.edit_peer:
 			try {
