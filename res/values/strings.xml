@@ -57,5 +57,7 @@
     <string name="about">About</string>
     <string name="about_title">About %s</string>
     <string name="ok">Ok</string>
+    <string name="dns1">DNS Server 1</string>
+    <string name="dns2">DNS Server 2</string>
 </resources>
 

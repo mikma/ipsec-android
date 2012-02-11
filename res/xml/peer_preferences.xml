@@ -11,6 +11,12 @@
                 <EditTextPreference
                 		android:title="@string/remote_address"
                 		android:key="remoteAddrPref" />
+                <EditTextPreference
+                		android:title="@string/dns1"
+                		android:key="dns1Pref" />
+                <EditTextPreference
+                		android:title="@string/dns2"
+                		android:key="dns2Pref" />
  				<Preference
         		        android:title="@string/template_file"
                 		android:key="templatePref" />
