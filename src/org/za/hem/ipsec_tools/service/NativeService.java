@@ -57,6 +57,9 @@ public class NativeService extends Service {
 	public static final String ACTION_VPN_DISCONNECT = PACKAGE + ".VPN_DISCONNECT";
 	public static final String ACTION_SERVICE_READY = PACKAGE + ".SERVICE_READY";
 	
+	public static final String RACOON_EXEC_NAME = "racoon.sh";
+	public static final String SETKEY_EXEC_NAME = "setkey.sh";
+	
     private static final String PROP_NET_DNS1 = "net.dns1";
     private static final String PROP_NET_DNS2 = "net.dns2";
     private static final String PROP_NET_DNSCHANGE = "net.dnschange";
@@ -535,20 +538,20 @@ public class NativeService extends Service {
 
 	public void flushAllSAD() {
 		File binDir = getDir("bin", Context.MODE_PRIVATE);
-		NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+		NativeCommand.system(new File(binDir, SETKEY_EXEC_NAME).getAbsolutePath() +
 				" -F");
 	}
 
 	public void flushAllSPD() {
 		File binDir = getDir("bin", Context.MODE_PRIVATE);
-		NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+		NativeCommand.system(new File(binDir, SETKEY_EXEC_NAME).getAbsolutePath() +
 				" -FP");
 		flushAllSAD();
 	}
 
 	public void runSetKey() {
 		File binDir = getDir("bin", Context.MODE_PRIVATE);
-		NativeCommand.system(new File(binDir, "setkey.sh").getAbsolutePath() +
+		NativeCommand.system(new File(binDir, SETKEY_EXEC_NAME).getAbsolutePath() +
 				" -f " + new File(binDir, ConfigManager.SETKEY_CONFIG).getAbsolutePath());
 	}
 

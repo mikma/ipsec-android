@@ -66,9 +66,9 @@ import org.za.hem.ipsec_tools.service.NativeService;
 public class IPsecToolsActivity extends PreferenceActivity
 		implements OnPreferenceClickListener, OnPeerChangeListener {
 	final private String binaries[] = {
-			"racoon.sh",
+			NativeService.RACOON_EXEC_NAME,
 			"racoonctl.sh",
-			"setkey.sh",
+			NativeService.SETKEY_EXEC_NAME,
  	};
     // FIXME debugging
 	private final boolean DEBUG = true;
