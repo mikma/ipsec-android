@@ -29,8 +29,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -127,7 +125,7 @@ public class IPsecToolsActivity extends PreferenceActivity
         SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
         int count = sharedPreferences.getInt(COUNT_PREFERENCE,0);
-        mPeers = new PeerList(count);
+        mPeers = new PeerList(getApplicationContext(), mCM, count);
         mPeers.setOnPeerChangeListener(this);
         
     	Log.i("ipsec-tools", "Count: " + count);
@@ -260,38 +258,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     			peer.onPreferenceActivityResume();
     		}
     	}
-
-		if (mEditID != null && mEditID.isValid()) {
-			try {
-				updateConfig(mEditID, ConfigManager.Action.ADD);
-			} catch (IOException e) {
-				// TODO display error
-			}
-		}
-		mEditID = null;
-    }
-    
-    private void updateConfig(PeerID id, ConfigManager.Action action) throws IOException
-    {
-		mCM.build(mPeers, false);
-		Peer peer = mPeers.get(id);
-		if (peer.isEnabled()) {
-			File binDir = getDir("bin", Context.MODE_PRIVATE);
-			FileWriter setKeyOs = new FileWriter(new File(binDir, ConfigManager.SETKEY_CONFIG));
-			if (peer != null) {
-				mCM.buildPeerConfig(action, peer, setKeyOs);
-			}
-			if (mBoundService.isRacoonRunning()) {
-				setKeyOs.close();
-			}
-			mBoundService.runSetKey();
-			peer.setStatus(Peer.STATUS_DISCONNECTED);
-		}
-		else {
-			peer.setStatus(Peer.STATUS_DISABLED);
-		}
-		if (mBoundService != null)
-			mBoundService.reloadConf();
     }
     
     protected void onPause()
@@ -379,7 +345,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 			return true;
 		case R.id.edit_peer:
 			try {
-				updateConfig(selectedID, ConfigManager.Action.DELETE);
+				mPeers.updateConfig(selectedID, ConfigManager.Action.DELETE);
 				mPeers.edit(this, selectedID);
 				mEditID = selectedID;
 			} catch (IOException e) {

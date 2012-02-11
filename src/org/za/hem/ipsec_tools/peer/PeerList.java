@@ -1,11 +1,17 @@
 package org.za.hem.ipsec_tools.peer;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.za.hem.ipsec_tools.IPsecToolsActivity;
 import org.za.hem.ipsec_tools.R;
+import org.za.hem.ipsec_tools.service.ConfigManager;
+import org.za.hem.ipsec_tools.service.ConfigManager.Action;
 import org.za.hem.ipsec_tools.service.NativeService;
 
 import android.app.AlertDialog;
@@ -39,9 +45,13 @@ public class PeerList extends ArrayList<Peer> {
 	private HandlerThread mHandlerThread;
 	private Handler mHandler;
 	private NativeService mBoundService;
+	private Context mContext;
+	private ConfigManager mConfigManager;
 	
-	public PeerList(int capacity) {
+	public PeerList(Context context, ConfigManager configManager, int capacity) {
 		super(capacity);
+		mContext = context;
+		mConfigManager = configManager;
 		mBoundService = null;
 		mPeers = this;
 		mHandler = null;
@@ -260,4 +270,31 @@ public class PeerList extends ArrayList<Peer> {
     		peer.onPhase1Down();
     	}
     }
+
+    // TODO add return value
+	public void updateConfig(PeerID id, Action action) throws IOException
+	{
+		mConfigManager.build(this, false);
+		Peer peer = get(id);
+		if (peer.isEnabled()) {
+			Log.i("ipsec-tools", "updateConfig peer enabled " + id);
+	
+			File binDir = mContext.getDir("bin", Context.MODE_PRIVATE);
+			FileWriter setKeyOs = new FileWriter(new File(binDir, ConfigManager.SETKEY_CONFIG));
+			if (peer != null) {
+				mConfigManager.buildPeerConfig(action, peer, setKeyOs);
+			}
+			if (mBoundService.isRacoonRunning()) {
+				setKeyOs.close();
+			}
+			mBoundService.runSetKey();
+			peer.setStatus(Peer.STATUS_DISCONNECTED);
+		}
+		else {
+			Log.i("ipsec-tools", "updateConfig peer disabled " + id);
+			peer.setStatus(Peer.STATUS_DISABLED);
+		}
+		if (mBoundService != null)
+			mBoundService.reloadConf();
+	}
 }
