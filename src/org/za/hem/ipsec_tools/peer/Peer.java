@@ -54,6 +54,7 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	private StatePreference mPref;
 	private SharedPreferences mShared;
 	private int mStatus;
+	private boolean mEnabled;
 
 	public Peer(Context context, PeerID id, StatePreference pref) {
 		mID = id;
@@ -62,6 +63,7 @@ public class Peer implements OnSharedPreferenceChangeListener {
 					PeerPreferences.getSharedPreferencesName(context, id),
     				Activity.MODE_PRIVATE);
 		mStatus = -1;
+		mEnabled = false;
 		setStatus(isEnabled() ? STATUS_DISCONNECTED : STATUS_DISABLED);
 	}
 	
@@ -76,11 +78,16 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	}
 	
 	public boolean isEnabled() {
-		return mShared.getBoolean(PeerPreferences.ENABLED_PREFERENCE, true);
+		return mEnabled;
+		//Shared.getBoolean(PeerPreferences.ENABLED_PREFERENCE, true);
+	}
+	
+	public void setEnabled(boolean enabled) {
+		mEnabled = enabled;
 	}
 
 	public boolean canConnect() {
-		return isEnabled() && mStatus == STATUS_DISCONNECTED;
+		return mStatus == STATUS_DISCONNECTED || mStatus == STATUS_DISABLED;
 	}
 
 	public boolean canDisconnect() {
@@ -92,7 +99,7 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	}
 	
 	public boolean isDisconnected() {
-		return mStatus == STATUS_DISCONNECTED;
+		return mStatus == STATUS_DISCONNECTED || mStatus == STATUS_DISABLED;
 	}
 	
 	public Preference getPreference() {
