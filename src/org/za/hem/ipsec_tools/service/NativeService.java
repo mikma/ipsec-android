@@ -429,7 +429,7 @@ public class NativeService extends Service {
 			File ipsecDir = new File(Environment.getExternalStorageDirectory(), "ipsec");
 			process = new ProcessBuilder()
     		.command(new File(binDir, "racoon.sh").getAbsolutePath(),
-    				"-v", "-d",
+    				"-v",
     				"-f", new File(binDir, ConfigManager.PEERS_CONFIG).getAbsolutePath(),
     				"-l", new File(ipsecDir, "racoon.log").getAbsolutePath())
     		.redirectErrorStream(true)
