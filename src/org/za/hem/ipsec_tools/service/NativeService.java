@@ -319,18 +319,22 @@ public class NativeService extends Service {
 	}
 	
 	public void storeDns(String dns1, String dns2) {
+		if (dns1 == null) {
+			return;
+		}
+		if (dns2 == null) {
+			dns2 = "";
+		}
+
 		if (mSaveDns1 == null) {
 			mSaveDns1 = mNative.getprop(PROP_NET_DNS1);
+
+			if (mSaveDns2 == null) {
+				mSaveDns2 = mNative.getprop(PROP_NET_DNS2);
+			}
 		}
-		if (mSaveDns2 == null) {
-			mSaveDns2 = mNative.getprop(PROP_NET_DNS2);
-		}
-		if (dns1 != null) {
-			mNative.setprop(PROP_NET_DNS1, dns1);
-		}
-		if (dns2 != null) {
-			mNative.setprop(PROP_NET_DNS2, dns2);
-		}
+		mNative.setprop(PROP_NET_DNS1, dns1);
+		mNative.setprop(PROP_NET_DNS2, dns2);
 		increaseDnsChange();
 		Log.i("ipsec-tools", "VPN save " + mSaveDns1 + " " + mSaveDns2 + " " + dns1 + " " + dns2);
 	}
