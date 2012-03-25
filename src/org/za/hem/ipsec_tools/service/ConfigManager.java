@@ -189,6 +189,34 @@ public class ConfigManager {
 		// build peers.conf
 	}
 	
+	public void buildSPDAction(Peer peer, Action action) throws IOException {
+		Writer setkeyOut = null;
+		Reader setkeyHead = null;
+
+		setkeyOut = new FileWriter(new File(mBinDir, SETKEY_CONFIG));
+		setkeyHead = new InputStreamReader(mContext.getAssets().open(SETKEY_HEAD));
+		substitute(setkeyHead, setkeyOut);
+			
+		mVariables.remove(VAR_REMOTE_ADDR);
+		mVariables.remove(VAR_LOCAL_ADDR);
+		mVariables.remove(VAR_NAME);
+
+		writePeerConfig(action, peer, null, setkeyOut);
+
+		if (setkeyOut != null)
+			setkeyOut.close();
+		if (setkeyHead != null)
+			setkeyHead.close();
+	}
+
+	public void buildAddSPD(Peer peer) throws IOException {
+		buildSPDAction(peer, Action.ADD);
+	}
+
+	public void buildDeleteSPD(Peer peer) throws IOException {
+		buildSPDAction(peer, Action.DELETE);
+	}
+
 	public void addVariable(String key, String value) {
 		mVariables.put(key, value);
 	}

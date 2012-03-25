@@ -315,4 +315,26 @@ public class PeerList extends ArrayList<Peer> {
 		if (mBoundService != null)
 			mBoundService.reloadConf();
 	}
+	
+	public void addSPD(Peer peer) {
+		try {
+			mConfigManager.buildAddSPD(peer);
+		} catch (IOException e) {
+			// TODO handle error
+		}
+		File binDir = mContext.getDir("bin", Context.MODE_PRIVATE);
+		NativeCommand.system(new File(binDir, NativeService.SETKEY_EXEC_NAME).getAbsolutePath() +
+				" -FP");
+	}
+
+	public void deleteSPD(Peer peer) {
+		try {
+			mConfigManager.buildDeleteSPD(peer);
+		} catch (IOException e) {
+			// TODO handle error
+		}
+		File binDir = mContext.getDir("bin", Context.MODE_PRIVATE);
+		NativeCommand.system(new File(binDir, NativeService.SETKEY_EXEC_NAME).getAbsolutePath() +
+				" -FP");
+	}
 }
