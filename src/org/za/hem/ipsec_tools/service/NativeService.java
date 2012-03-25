@@ -448,7 +448,9 @@ public class NativeService extends Service {
     		.redirectErrorStream(true)
     		.start();
 
-    		InputStream in = process.getInputStream();
+			Log.i("ipsec-tools", "Process " + process.toString());
+
+			InputStream in = process.getInputStream();
     		OutputStream out = process.getOutputStream();
     		
     		BufferedReader reader = new BufferedReader(
