@@ -80,7 +80,7 @@ public class ConfigManager {
 	 * @param setkeyDownOs
 	 * @throws IOException
 	 */
-	private void buildPeerConfig(Action action, Peer peer, Writer racoonOs,
+	private void writePeerConfig(Action action, Peer peer, Writer racoonOs,
 			Writer setkeyOs) throws IOException {
 		InetAddress addr = peer.getRemoteAddr();
 		if (addr != null)
@@ -127,7 +127,7 @@ public class ConfigManager {
  		File racoonFile = getPeerConfigFile(peer);
 		FileWriter racoonOs = new FileWriter(racoonFile);
 		
-		buildPeerConfig(action, peer, racoonOs, setkeyOs);
+		writePeerConfig(action, peer, racoonOs, setkeyOs);
 		racoonOs.close();
 		return racoonFile;
 	}
@@ -169,7 +169,7 @@ public class ConfigManager {
 					if (addAllPeers)
 						output = buildPeerConfig(Action.ADD, peer, setkeyOut);
 					else {
-						buildPeerConfig(Action.NONE, peer, null, setkeyOut);
+						writePeerConfig(Action.NONE, peer, null, setkeyOut);
 						output = getPeerConfigFile(peer);
 					}
 					out.write("include \"" + output.getAbsolutePath() + "\";\n");
