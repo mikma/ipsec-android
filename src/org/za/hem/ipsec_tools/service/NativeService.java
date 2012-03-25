@@ -3,23 +3,30 @@ package org.za.hem.ipsec_tools.service;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.AbstractCollection;
 import java.util.Iterator;
 
 import org.za.hem.ipsec_tools.IPsecToolsActivity;
 import org.za.hem.ipsec_tools.NativeCommand;
 import org.za.hem.ipsec_tools.R;
+import org.za.hem.ipsec_tools.peer.Peer;
+import org.za.hem.ipsec_tools.peer.PeerList;
 import org.za.hem.ipsec_tools.racoon.Admin;
 import org.za.hem.ipsec_tools.racoon.Command;
 import org.za.hem.ipsec_tools.racoon.Event;
 import org.za.hem.ipsec_tools.racoon.Ph1Dump;
 import org.za.hem.ipsec_tools.racoon.Ph1Dump.Item;
+import org.za.hem.ipsec_tools.service.ConfigManager.Action;
 
 import android.app.ActivityManager;
 import android.app.Notification;
@@ -29,12 +36,14 @@ import android.app.Service;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.os.IBinder;
+import android.preference.PreferenceGroup;
 import android.util.Log;
 
 
