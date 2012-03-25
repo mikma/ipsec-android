@@ -297,22 +297,19 @@ public class PeerList extends ArrayList<Peer> {
 	{
 		mConfigManager.build(this, false);
 		Peer peer = get(id);
-		if (peer.isEnabled()) {
-			Log.i("ipsec-tools", "updateConfig peer enabled " + id);
+		Log.i("ipsec-tools", "updateConfig peer " + id);
 	
-			File binDir = mContext.getDir("bin", Context.MODE_PRIVATE);
-			FileWriter setKeyOs = new FileWriter(new File(binDir, ConfigManager.SETKEY_CONFIG));
-			if (peer != null) {
-				mConfigManager.buildPeerConfig(action, peer, setKeyOs);
-			}
-			if (mBoundService.isRacoonRunning()) {
-				setKeyOs.close();
-			}
-			mBoundService.runSetKey();
-			peer.setStatus(Peer.STATUS_DISCONNECTED);
+		File binDir = mContext.getDir("bin", Context.MODE_PRIVATE);
+		FileWriter setKeyOs = new FileWriter(new File(binDir, ConfigManager.SETKEY_CONFIG));
+		if (peer != null) {
+			mConfigManager.buildPeerConfig(action, peer, setKeyOs);
 		}
-		else {
-			Log.i("ipsec-tools", "updateConfig peer disabled " + id);
+		setKeyOs.close();
+		if (mBoundService != null)
+			mBoundService.runSetKey();
+		if (peer.isEnabled()) {
+			peer.setStatus(Peer.STATUS_DISCONNECTED);
+		} else {
 			peer.setStatus(Peer.STATUS_DISABLED);
 		}
 		if (mBoundService != null)
