@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.za.hem.ipsec_tools.IPsecToolsActivity;
+import org.za.hem.ipsec_tools.NativeCommand;
 import org.za.hem.ipsec_tools.R;
 import org.za.hem.ipsec_tools.service.ConfigManager;
 import org.za.hem.ipsec_tools.service.ConfigManager.Action;
@@ -247,13 +248,12 @@ public class PeerList extends ArrayList<Peer> {
     }
 
     
-    public void disconnect(final PeerID id) {
+    public void disconnect(Peer peer) {
     	if (mBoundService == null) {
     		Log.i("ipsec-tools", "No service");
     		return;
     	}
     	
-    	Peer peer = get(id);
     	InetAddress addr = peer.getRemoteAddr();
     	if (addr == null)
     		throw new NullPointerException();
@@ -265,7 +265,17 @@ public class PeerList extends ArrayList<Peer> {
     }
     
     public void disconnectAndDisable(final PeerID id) {
-    	disconnect(id);
+    	Peer peer = get(id);
+    	deleteSPD(peer);
+    	disconnect(peer);
+		Log.i("ipsec-tools", "Disable " + id);
+		peer.setEnabled(false);
+    	try {
+    		// TODO Remove at disconnect
+    		updateConfig(id, ConfigManager.Action.DELETE);
+    	} catch (IOException e) {
+    		// TODO handle error
+    	}
     }
         
     public void toggle(final PeerID id) {
