@@ -12,11 +12,15 @@ clean: clean-rec
 
 clean-rec:
 	ndk-build -C external/openssl clean
-	ndk-build -C external/ipsec-tools
+	ndk-build -C external/ipsec-tools clean
 
-build:
-	touch --date="2011-03-06" external/openssl/Android.mk && ndk-build -C external/openssl
-	touch --date="2011-03-06" external/ipsec-tools/Android.mk && OPENSSL_INC=$(PWD)/external/openssl/include OPENSSL_LIB=$(PWD)/external/openssl/libs/armeabi ndk-build -C external/ipsec-tools
+build: build-openssl build-ipsec-tools
+
+build-openssl:
+	ndk-build -C external/openssl
+
+build-ipsec-tools:
+	OPENSSL_INC=$(PWD)/external/openssl/include OPENSSL_LIB=$(PWD)/external/openssl/libs/armeabi ndk-build -C external/ipsec-tools
 
 install: build
 	zip -j assets/ipsec-tools.zip $(FILES)
