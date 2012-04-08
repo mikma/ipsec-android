@@ -1,4 +1,4 @@
 #!/system/bin/sh
 
 dir=`dirname $0`
-LD_LIBRARY_PATH=$dir $dir/setkey "$@"
+su -c "LD_LIBRARY_PATH=$dir $dir/setkey $*" 0:0
