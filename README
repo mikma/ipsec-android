@@ -7,6 +7,17 @@ setkey.conf templates.
 
 Root is required to run this Android App 
 
+Get the source
+--------------
+$ git clone https://github.com/mikma/ipsec-tools-android.git
+$ git submodule init
+$ git submodule update
+
+Get external library
+--------------------
+Download "Android File Dialog" from
+https://code.google.com/p/android-file-dialog/
+
 VPN policy
 ----------
 A VPN policy is a JAR file containing racoon.conf and setkey.conf
