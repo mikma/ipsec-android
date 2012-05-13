@@ -9,7 +9,7 @@ Root is required to run this Android App
 
 Get the source
 --------------
-$ git clone https://github.com/mikma/ipsec-tools-android.git
+$ git clone https://github.com/mikma/ipsec-android.git
 $ git submodule init
 $ git submodule update
 
