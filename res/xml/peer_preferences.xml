@@ -5,9 +5,6 @@
 		        <EditTextPreference
                 		android:title="@string/name"
                 		android:key="namePref" />
-                <CheckBoxPreference
-                		android:title="@string/enabled"
-                		android:key="enabledPref" />
                 <EditTextPreference
                 		android:title="@string/remote_address"
                 		android:key="remoteAddrPref" />

@@ -241,6 +241,8 @@ public class PeerList extends ArrayList<Peer> {
     			peer.setEnabled(true);
     			updateConfig(id, ConfigManager.Action.ADD);
     		}
+		else
+		    Log.i("ipsec-tools", "Already enabled " + id);
     		connect(id);
     	} catch (IOException e) {
     		// TODO display error
@@ -268,8 +270,8 @@ public class PeerList extends ArrayList<Peer> {
     	Peer peer = get(id);
     	deleteSPD(peer);
     	disconnect(peer);
-		Log.i("ipsec-tools", "Disable " + id);
-		peer.setEnabled(false);
+	Log.i("ipsec-tools", "Disable " + id);
+	peer.setEnabled(false);
     	try {
     		// TODO Remove at disconnect
     		updateConfig(id, ConfigManager.Action.DELETE);
