@@ -2,3 +2,4 @@ assets/ipsec-tools.zip
 bin/
 external/tarballs/
 gen/
+local.properties
