@@ -1,12 +1,6 @@
 * Rename racoon binary to appname.racoon or racoon.appname
 
-* Improve certificate handling
-
-* Allow psk passwords
-
 * Flush setkey SAs for changed peers.
-
-* Disable ipsec tunnel when disabled doh
 
 
 Policy handling
