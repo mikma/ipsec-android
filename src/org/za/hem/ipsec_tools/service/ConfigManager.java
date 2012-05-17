@@ -52,6 +52,8 @@ public class ConfigManager {
 	private static final String VAR_GID = "gid";
 	private static final String VAR_NAME = "name";
 	private static final String VAR_ACTION = "action";
+	private static final String VAR_CERT = "cert";
+	private static final String VAR_KEY = "key";
 	
 
 	private Pattern mPat;
@@ -91,6 +93,8 @@ public class ConfigManager {
 			mVariables.put(VAR_REMOTE_ADDR, addr.getHostAddress());
 		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
 		mVariables.put(VAR_NAME, peer.getName());
+		mVariables.put(VAR_CERT, peer.getCert());
+		mVariables.put(VAR_KEY, peer.getKey());
 		mVariables.put(VAR_ACTION, actionToString(action));
 		File tmpl = peer.getTemplateFile();
 		if (tmpl == null)

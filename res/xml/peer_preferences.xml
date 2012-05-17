@@ -21,5 +21,11 @@
                 <Preference
 				android:title="@string/template_file"
 				android:key="templatePref" />
+                <Preference
+				android:title="@string/cert_file"
+				android:key="certPref" />
+                <Preference
+				android:title="@string/key_file"
+				android:key="keyPref" />
         </PreferenceCategory>
 </PreferenceScreen>

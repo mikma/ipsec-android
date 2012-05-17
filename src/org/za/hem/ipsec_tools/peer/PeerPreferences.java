@@ -43,6 +43,8 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	public static final String EXTRA_ID = "org.za.hem.ipsec_tools.ID";
 	
 	static final String TEMPLATE_PREFERENCE = "templatePref";
+	static final String CERT_PREFERENCE = "certPref";
+	static final String KEY_PREFERENCE = "keyPref";
 	static final String NAME_PREFERENCE = "namePref";
 	static final String ENABLED_PREFERENCE = "enabledPref";
 	static final String REMOTE_ADDR_PREFERENCE = "remoteAddrPref";
@@ -52,6 +54,8 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	static final String PSK_PREFERENCE = "pskPref";
 	
 	static final int REQUEST_TEMPLATE = 1;
+	static final int REQUEST_CERT = 2;
+	static final int REQUEST_KEY = 3;
 	
 	private PeerID mID;
 	
@@ -65,28 +69,10 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		manager.setSharedPreferencesName(getSharedPreferencesName(this, mID));
 		addPreferencesFromResource(R.xml.peer_preferences);
 
-		// Get the template preference
-		Preference customPref = findPreference(TEMPLATE_PREFERENCE);
-		SharedPreferences shared = getSharedPreferences(
-				getSharedPreferencesName(this, mID), Activity.MODE_PRIVATE);
-		String tmpl = shared.getString(TEMPLATE_PREFERENCE, null);
-		final String startPath;
-		if (tmpl != null) {
-			File tmplFile = new File(tmpl);
-			startPath = tmplFile.getParentFile().getAbsolutePath(); 
-		} else {
-			startPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-		}
-		customPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			public boolean onPreferenceClick(Preference preference) {
-				Intent intent = new Intent(PeerPreferences.this.getBaseContext(),
-						FileDialog.class);
-				intent.putExtra(FileDialog.START_PATH, startPath);
-				PeerPreferences.this.startActivityForResult(intent, REQUEST_TEMPLATE);
-				return true;
-			}
-		});
-		
+		setFilePathListener(TEMPLATE_PREFERENCE, REQUEST_TEMPLATE);
+		setFilePathListener(CERT_PREFERENCE, REQUEST_CERT);
+		setFilePathListener(KEY_PREFERENCE, REQUEST_KEY);
+
 		Preference remoteAddrPref = findPreference(REMOTE_ADDR_PREFERENCE);
 		remoteAddrPref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			public boolean onPreferenceChange (Preference preference, Object newValue) {
@@ -113,18 +99,44 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 			}
 		});
 	}
-	
+
+	private void setFilePathListener(String pref, final int requestCode) {
+		Preference customPref = findPreference(pref);
+		SharedPreferences shared = getSharedPreferences(
+				getSharedPreferencesName(this, mID), Activity.MODE_PRIVATE);
+		String tmpl = shared.getString(pref, null);
+		final String startPath;
+		if (tmpl != null) {
+			File tmplFile = new File(tmpl);
+			startPath = tmplFile.getParentFile().getAbsolutePath(); 
+		} else {
+			startPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		}
+		customPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			public boolean onPreferenceClick(Preference preference) {
+				Intent intent = new Intent(PeerPreferences.this.getBaseContext(),
+						FileDialog.class);
+				intent.putExtra(FileDialog.START_PATH, startPath);
+				PeerPreferences.this.startActivityForResult(intent, requestCode);
+				return true;
+			}
+		});
+	}
+		
+
 	@Override
 	protected void onActivityResult (int requestCode, int resultCode, final Intent data) {
 		if (resultCode == Activity.RESULT_OK) {
-			if (requestCode == REQUEST_TEMPLATE) {
-				String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
-	
-				SharedPreferences templatePreference = getSharedPreferences(
-						getSharedPreferencesName(this, mID), Activity.MODE_PRIVATE);
-				SharedPreferences.Editor editor = templatePreference.edit();
-				editor.putString(TEMPLATE_PREFERENCE, filePath);
-				editor.commit();
+			switch (requestCode) {
+			case REQUEST_TEMPLATE:
+				putFilePath(TEMPLATE_PREFERENCE, data);
+				break;
+			case REQUEST_CERT:
+				putFilePath(CERT_PREFERENCE, data);
+				break;
+			case REQUEST_KEY:
+				putFilePath(KEY_PREFERENCE, data);
+				break;
 			}
 		} else if (resultCode == Activity.RESULT_CANCELED) {
 			Logger.getLogger(PeerPreferences.class.getName()).log(
@@ -132,7 +144,17 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	    }
 
 	}
+
+	private void putFilePath(String pref, final Intent data) {
+		String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
 	
+		SharedPreferences preference = getSharedPreferences(
+			getSharedPreferencesName(this, mID), Activity.MODE_PRIVATE);
+		SharedPreferences.Editor editor = preference.edit();
+		editor.putString(pref, filePath);
+		editor.commit();
+	}
+
 	@Override
     protected void onResume() {
         super.onResume();
@@ -190,7 +212,9 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
         SharedPreferences sharedPreferences = getPreferenceScreen()
     	.getSharedPreferences();
 
-    	if (key.equals(TEMPLATE_PREFERENCE)) {
+    	if (key.equals(TEMPLATE_PREFERENCE) ||
+	    key.equals(CERT_PREFERENCE) ||
+	    key.equals(KEY_PREFERENCE)) {
     		pref.setSummary(val.toString());
     	} else if (key.equals(REMOTE_ADDR_PREFERENCE)) {
     		String host = (String)val;

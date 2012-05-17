@@ -113,6 +113,14 @@ public class Peer implements OnSharedPreferenceChangeListener {
 		return mShared.getString(PeerPreferences.NAME_PREFERENCE, "");
 	}
 	
+	public String getCert() {
+		return mShared.getString(PeerPreferences.CERT_PREFERENCE, "");
+	}
+
+	public String getKey() {
+		return mShared.getString(PeerPreferences.KEY_PREFERENCE, "");
+	}
+
 	public InetAddress getRemoteAddr() {
 		String host = mShared.getString(PeerPreferences.REMOTE_ADDR_PREFERENCE, null);
 		String ip = mShared.getString(PeerPreferences.REMOTE_ADDR_IP_PREFERENCE, null);
