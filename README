@@ -32,3 +32,5 @@ ${uid} - UID of the java process.
 ${gid} - GID of the java process.
 ${name} - Name of the peer.
 ${action} - One of "none", "add", "delete" or "update".
+${cert} - Certificate file path
+${key} - Private key file path

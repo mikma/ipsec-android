@@ -40,8 +40,6 @@
     <string name="stop_service">Stop service</string>
     <string name="name">Name</string>
     <string name="template_file">Template file</string>
-    <string name="cert_file">Certificate file</string>
-    <string name="key_file">Key file</string>
     <string name="remote_address">Remote address</string>
     <string name="notify_peer_up">IPsec VPN peer up</string>
     <string name="notify_peer_down">IPsec VPN peer down</string>
@@ -62,5 +60,7 @@
     <string name="dns1">DNS Server 1</string>
     <string name="dns2">DNS Server 2</string>
     <string name="psk">Pre shared key (PSK)</string>
+    <string name="cert_file">Certificate file</string>
+    <string name="key_file">Private key file</string>
 </resources>
 
