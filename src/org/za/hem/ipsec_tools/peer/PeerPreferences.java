@@ -49,6 +49,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	static final String REMOTE_ADDR_IP_PREFERENCE = "remoteAddrIpPref";
 	static final String DNS1_PREFERENCE = "dns1Pref";
 	static final String DNS2_PREFERENCE = "dns2Pref";
+	static final String PSK_PREFERENCE = "pskPref";
 	
 	static final int REQUEST_TEMPLATE = 1;
 	
@@ -198,6 +199,13 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
     			pref.setSummary(host + "/" + ip);
     		else
     			pref.setSummary(host);
+	} else if (key.equals(PSK_PREFERENCE)) {
+		String psk = (String)val;
+		if (psk.length() <= 0) {
+			pref.setSummary("");
+		} else {
+			pref.setSummary("********");
+		}
     	} else if (pref instanceof EditTextPreference) {
 			pref.setSummary(val.toString());
 		} else if (pref instanceof CheckBoxPreference) {

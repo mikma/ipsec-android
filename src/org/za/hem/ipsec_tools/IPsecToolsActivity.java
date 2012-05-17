@@ -93,11 +93,11 @@ public class IPsecToolsActivity extends PreferenceActivity
     	selectedPeer = null;
     	mEditID = null;
 
-    	mCM = new ConfigManager(this);
+        mNative = new NativeCommand(this);
+    	mCM = new ConfigManager(this, mNative);
 
 		addPreferencesFromResource(R.xml.preferences);
 
-        mNative = new NativeCommand(this);
         for (int i=0; i < binaries.length; i++) {
         	mNative.putBinary(binaries[i]);
         }

@@ -59,5 +59,6 @@
     <string name="ok">Ok</string>
     <string name="dns1">DNS Server 1</string>
     <string name="dns2">DNS Server 2</string>
+    <string name="psk">Pre shared key (PSK)</string>
 </resources>
 

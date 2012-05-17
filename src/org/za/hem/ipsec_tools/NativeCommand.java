@@ -107,6 +107,24 @@ public class NativeCommand {
     }
 
 
+	/**
+	 * Set file owner
+	 * @param file File to modify
+	 * @param user New file user
+	 * @param group New file group (or null)
+	 */
+	public void chown(File file, String user, String group) {
+		String param;
+
+		if (group == null)
+			param = user;
+		else
+			param = user + "." + group;
+
+		system(new File(mSystemBin, "chown").getAbsolutePath() + " " + param + " " + file.getAbsolutePath());
+	}
+
+
     /**
      * Run system command wait for and return result
      * @param cmd System command to run

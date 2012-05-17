@@ -146,6 +146,10 @@ public class Peer implements OnSharedPreferenceChangeListener {
 		return mShared.getString(PeerPreferences.DNS2_PREFERENCE, null);		
 	}
 
+	public String getPsk() {
+		return mShared.getString(PeerPreferences.PSK_PREFERENCE, null);
+	}
+
 	public int getStatus() {
 		return mStatus;
 	}

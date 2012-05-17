@@ -14,8 +14,12 @@
                 <EditTextPreference
                 		android:title="@string/dns2"
                 		android:key="dns2Pref" />
- 				<Preference
-        		        android:title="@string/template_file"
-                		android:key="templatePref" />
+ 		<EditTextPreference
+        		        android:title="@string/psk"
+                		android:key="pskPref"
+				android:password="true" />
+                <Preference
+				android:title="@string/template_file"
+				android:key="templatePref" />
         </PreferenceCategory>
 </PreferenceScreen>

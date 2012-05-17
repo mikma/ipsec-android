@@ -3,6 +3,7 @@ package org.za.hem.ipsec_tools.peer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -313,8 +314,9 @@ public class PeerList extends ArrayList<Peer> {
 	
 		File binDir = mContext.getDir("bin", Context.MODE_PRIVATE);
 		FileWriter setKeyOs = new FileWriter(new File(binDir, ConfigManager.SETKEY_CONFIG));
+		Writer pskOs = null;
 		if (peer != null) {
-			mConfigManager.buildPeerConfig(action, peer, setKeyOs);
+			mConfigManager.buildPeerConfig(action, peer, setKeyOs, pskOs);
 		}
 		setKeyOs.close();
 		if (mBoundService != null)

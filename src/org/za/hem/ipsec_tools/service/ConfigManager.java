@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.za.hem.ipsec_tools.NativeCommand;
 import org.za.hem.ipsec_tools.peer.Peer;
 
 import android.content.Context;
@@ -35,6 +36,7 @@ public class ConfigManager {
 	public static final String CONFIG_POSTFIX = ".conf";
 	public static final String PEERS_CONFIG = "peers.conf";
 	public static final String SETKEY_CONFIG = "setkey.conf";
+	public static final String PSK_CONFIG = "psk.txt";
 	public static final String RACOON_HEAD = "racoon.head";
 	public static final String SETKEY_HEAD = "setkey.head";
 	public static final String PIDFILE = "racoon.pid";
@@ -55,9 +57,10 @@ public class ConfigManager {
 	private Pattern mPat;
 	private Map<String,String> mVariables;
 	private Context mContext;
+	private NativeCommand mNative;
 	private File mBinDir;
 	
-	public ConfigManager(Context context) {
+	public ConfigManager(Context context, NativeCommand nativeCmd) {
 		mBinDir = context.getDir("bin", Context.MODE_PRIVATE);
 		mVariables = new HashMap<String,String>();
 		mVariables.put(VAR_BINDIR, mBinDir.getAbsolutePath());
@@ -66,6 +69,7 @@ public class ConfigManager {
 		mVariables.put(VAR_GID, "" + Process.myUid());
 		mPat = Pattern.compile(PATTERN);
 		mContext = context;
+		mNative = nativeCmd;
 	}
 	
 	protected File getPeerConfigFile(Peer peer) {
@@ -81,7 +85,7 @@ public class ConfigManager {
 	 * @throws IOException
 	 */
 	private void writePeerConfig(Action action, Peer peer, Writer racoonOs,
-			Writer setkeyOs) throws IOException {
+				     Writer setkeyOs, Writer pskOs) throws IOException {
 		InetAddress addr = peer.getRemoteAddr();
 		if (addr != null)
 			mVariables.put(VAR_REMOTE_ADDR, addr.getHostAddress());
@@ -96,6 +100,10 @@ public class ConfigManager {
 			substitute(policy.getRacoonConfStream(), racoonOs);
 		if (action != Action.NONE && setkeyOs != null)
 			substitute(policy.getSetkeyConfStream(), setkeyOs);
+		if (pskOs != null && addr != null) {
+			pskOs.write("# Peer " + peer.getName() + "\n");
+			pskOs.write(mVariables.get(VAR_REMOTE_ADDR) + " " + peer.getPsk() + "\n");
+		}
 	}
 	
 	private static String actionToString(Action action) {
@@ -121,13 +129,13 @@ public class ConfigManager {
 	 * @return racoon config file
 	 * @throws IOException
 	 */
-	public File buildPeerConfig(Action action, Peer peer, Writer setkeyOs) throws IOException {
+	public File buildPeerConfig(Action action, Peer peer, Writer setkeyOs, Writer pskOs) throws IOException {
  		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
 		
  		File racoonFile = getPeerConfigFile(peer);
 		FileWriter racoonOs = new FileWriter(racoonFile);
 		
-		writePeerConfig(action, peer, racoonOs, setkeyOs);
+		writePeerConfig(action, peer, racoonOs, setkeyOs, pskOs);
 		racoonOs.close();
 		return racoonFile;
 	}
@@ -141,8 +149,10 @@ public class ConfigManager {
 	public void build(AbstractCollection<Peer> peers,
 			boolean addAllPeers) throws IOException {
 		Iterator<Peer> iter = peers.iterator();
+		File pskFile = new File(mBinDir, PSK_CONFIG);
 		Writer out = null;
 		Writer setkeyOut = null;
+		Writer pskOut = null;
 		Reader inHead = null;
 		Reader setkeyHead = null;
 
@@ -154,6 +164,9 @@ public class ConfigManager {
 			setkeyOut = new FileWriter(new File(mBinDir, SETKEY_CONFIG));
 			setkeyHead = new InputStreamReader(mContext.getAssets().open(SETKEY_HEAD));
 			substitute(setkeyHead, setkeyOut);
+
+			pskFile.delete();
+			pskOut = new FileWriter(pskFile);
 			
 			while (iter.hasNext()) {
 				Peer peer = iter.next();
@@ -167,20 +180,24 @@ public class ConfigManager {
 				try {
 					File output;
 					if (addAllPeers)
-						output = buildPeerConfig(Action.ADD, peer, setkeyOut);
+						output = buildPeerConfig(Action.ADD, peer, setkeyOut, pskOut);
 					else {
-						writePeerConfig(Action.NONE, peer, null, setkeyOut);
+						writePeerConfig(Action.NONE, peer, null, setkeyOut, pskOut);
 						output = getPeerConfigFile(peer);
 					}
 					out.write("include \"" + output.getAbsolutePath() + "\";\n");
 				} catch (IOException e){
 				}
 			}
+
+			mNative.chown(pskFile, "root", "root");
 		} finally {
 			if (out != null)
 				out.close();
 			if (setkeyOut != null)
 				setkeyOut.close();
+			if (pskOut != null)
+				pskOut.close();
 			if (inHead != null)
 				inHead.close();
 			if (setkeyHead != null)
@@ -196,12 +213,12 @@ public class ConfigManager {
 		setkeyOut = new FileWriter(new File(mBinDir, SETKEY_CONFIG));
 		setkeyHead = new InputStreamReader(mContext.getAssets().open(SETKEY_HEAD));
 		substitute(setkeyHead, setkeyOut);
-			
+
 		mVariables.remove(VAR_REMOTE_ADDR);
 		mVariables.remove(VAR_LOCAL_ADDR);
 		mVariables.remove(VAR_NAME);
 
-		writePeerConfig(action, peer, null, setkeyOut);
+		writePeerConfig(action, peer, null, setkeyOut, null);
 
 		if (setkeyOut != null)
 			setkeyOut.close();
