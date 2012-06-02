@@ -536,6 +536,9 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        
 	        if (mBoundService.isRacoonRunning())
 	        	mPeers.dumpIsakmpSA();
+		else
+		    mBoundService.startRacoon();
+
 	        // Tell the user about this for our demo.
 //	        Toast.makeText(Binding.this, R.string.native_service_connected,
 	//                Toast.LENGTH_SHORT).show();
