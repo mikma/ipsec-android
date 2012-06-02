@@ -400,11 +400,11 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    case R.id.stop_service:
 	        mBoundService.stopRacoon();
 	        return true;
-	    case R.id.preferences:
-            Intent settingsActivity = new Intent(getBaseContext(),
-            		Preferences.class);
-            startActivity(settingsActivity);
-	    	return true;
+	    // case R.id.preferences:
+	    // 	    Intent settingsActivity = new Intent(getBaseContext(),
+	    // 						 Preferences.class);
+	    // 	    startActivity(settingsActivity);
+	    // 	    return true;
 	    case R.id.show_about:
 	    	StringBuffer str = new StringBuffer();
 			try {
