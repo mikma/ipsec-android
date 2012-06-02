@@ -80,6 +80,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private static final String PEERS_PREFERENCE = "peersPref";
 	private static final String COUNT_PREFERENCE = "countPref";
 	private static final String COPYRIGHT_FILE = "COPYRIGHT";
+	private static final String ZIP_FILE = "ipsec-tools.zip";
 	private PeerList mPeers;
 	private PeerID selectedID;
 	private Peer selectedPeer;
@@ -102,7 +103,13 @@ public class IPsecToolsActivity extends PreferenceActivity
         	mNative.putBinary(binaries[i]);
         }
         try {
-			mNative.putZipBinaries("ipsec-tools.zip");
+		if (mNative.areModifiedZipBinaries(ZIP_FILE)) {
+			// Kill any old racoon instances before trying to write
+			NativeCommand.system("killall "
+					     + NativeService.RACOON_BIN_NAME);
+			// TODO add a few seconds delay to allow racoon to exit
+			mNative.putZipBinaries(ZIP_FILE);
+		}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}        

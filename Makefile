@@ -26,6 +26,7 @@ build-ipsec-tools:
 	OPENSSL_INC=$(PWD)/external/openssl/include OPENSSL_LIB=$(PWD)/external/openssl/libs/armeabi ndk-build -C external/ipsec-tools
 
 install: build
+	test -e bin || mkdir bin
 	test -e bin/ipsec-tools || mkdir bin/ipsec-tools
 	cp $(FILES) bin/ipsec-tools
 	mv bin/ipsec-tools/racoon bin/ipsec-tools/racoon.mikma

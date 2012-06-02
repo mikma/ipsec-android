@@ -67,6 +67,7 @@ public class NativeService extends Service {
 	public static final String ACTION_SERVICE_READY = PACKAGE + ".SERVICE_READY";
 	
 	public static final String RACOON_EXEC_NAME = "racoon.sh";
+	public static final String RACOON_BIN_NAME = "racoon.mikma";
 	public static final String SETKEY_EXEC_NAME = "setkey.sh";
 	
     private static final String PROP_NET_DNS1 = "net.dns1";
@@ -426,7 +427,7 @@ public class NativeService extends Service {
 			File binDir = this.getDir("bin", 0);
 			
 			// Kill old racoon instances
-			NativeCommand.system("killall racoon");
+			NativeCommand.system("killall " + RACOON_BIN_NAME);
 			
 			// Remove racoon socket since we need to
 			// detect when the socket is created

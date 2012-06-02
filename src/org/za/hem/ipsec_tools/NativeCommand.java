@@ -97,6 +97,34 @@ public class NativeCommand {
 		}		 
     }
 
+
+	public boolean isModifiedZipBinary(ZipInputStream zis, ZipEntry ze) throws IOException {
+		String fileName = ze.getName();
+		File file = new File(mBinDir, fileName);
+		
+		if (file.lastModified() >= ze.getTime()) {
+			return false;
+		} else {
+			return true;
+		}
+    }
+
+	public boolean areModifiedZipBinaries(String zipName) throws IOException {
+		ZipInputStream zis =
+			new ZipInputStream(mContext.getAssets().open(zipName));
+		
+		try {
+			ZipEntry ze;
+			while ((ze = zis.getNextEntry()) != null) {
+				if (isModifiedZipBinary(zis, ze)) return true;
+			}
+		} finally {
+			zis.close();
+		}
+
+		return false;
+	}
+
     /**
      * Set file mode
      * @param file File to modify
