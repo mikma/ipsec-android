@@ -199,7 +199,7 @@ public class PeerList extends ArrayList<Peer> {
 	
     public void edit(Context context, final PeerID id) {
     	Peer peer = mPeers.get(id.intValue());
-       	if (peer.canEdit()) {
+       	if (!peer.canEdit()) {
     		AlertDialog.Builder builder = new AlertDialog.Builder(context);
     		builder.setIcon(android.R.drawable.ic_dialog_alert);
     		builder.setTitle(peer.getName());

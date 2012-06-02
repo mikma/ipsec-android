@@ -322,8 +322,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 				menu.setHeaderTitle(selectedPeer.getName());
 				menu.findItem(R.id.connect_peer).setEnabled(isRacoonRunning && selectedPeer.canConnect());
 				menu.findItem(R.id.disconnect_peer).setEnabled(isRacoonRunning && selectedPeer.canDisconnect());
-				menu.findItem(R.id.edit_peer).setEnabled(!selectedPeer.canEdit());
-				menu.findItem(R.id.delete_peer).setEnabled(!selectedPeer.canEdit());
+				menu.findItem(R.id.edit_peer).setEnabled(selectedPeer.canEdit());
+				menu.findItem(R.id.delete_peer).setEnabled(selectedPeer.canEdit());
 			} else {
 				selectedPeer = null;
 				Log.i("ipsec-tools", "onCreateContextMenu item not found");
