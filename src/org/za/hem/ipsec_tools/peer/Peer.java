@@ -22,18 +22,27 @@ import android.util.Log;
  *
  */
 public class Peer implements OnSharedPreferenceChangeListener {
+	/** Peer is down but enabled. */
 	public static final int STATUS_DISCONNECTED = 0;
+	/** Peer is up. */
 	public static final int STATUS_CONNECTED = 1;
-	public static final int STATUS_PROGRESS = 2;
-	public static final int STATUS_DISABLED = 3;
-	public static final int STATUS_BUSY = 4;
-	public static final int STATUS_NUM = 5;
+	/** Peer is up, and disconnection has been initiated.  */
+	public static final int STATUS_DISCONNECTING = 2;
+	/** Peer is down, and connection has been initiated. */
+	public static final int STATUS_CONNECTING = 3;
+	/** Peer is down, and disabled. */
+	public static final int STATUS_DISABLED = 4;
+	/** Peer is faulty. Unused */
+	public static final int STATUS_BUSY = 5;
+	public static final int STATUS_NUM = 6;
 	
 	public static final int[] STATUS_SUMMARY = {
 		R.string.connect_peer,
 		R.string.disconnect_peer,
-		R.string.progress_peer,
 		R.string.connect_peer,
+		R.string.disconnect_peer,
+		R.string.connect_peer,
+		-1,
 	};
 	
 	/* 
@@ -42,8 +51,9 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	 * 0 - presence_invisible	grey dot
      * 1 - presence_online		green dot
      * 2 - presence_away		blue clock
-     * 3 - presence_offline		grey cross
-     * 4 - presence_busy		red dash
+     * 3 - presence_away		blue clock
+     * 4 - presence_offline		grey cross
+     * 5 - presence_busy		red dash
 	 */
 
 	public static final int[] STATUS_ICON = {
@@ -90,15 +100,23 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	}
 
 	public boolean canDisconnect() {
-		return mStatus == STATUS_CONNECTED || mStatus == STATUS_PROGRESS;
+		return mStatus == STATUS_CONNECTED || mStatus == STATUS_DISCONNECTING || mStatus == STATUS_CONNECTING;
 	}
 	
 	public boolean isConnected() {
-		return mStatus == STATUS_CONNECTED;
+		return mStatus == STATUS_CONNECTED
+			|| mStatus == STATUS_DISCONNECTING;
 	}
 	
 	public boolean isDisconnected() {
-		return mStatus == STATUS_DISCONNECTED || mStatus == STATUS_DISABLED;
+		return mStatus == STATUS_DISCONNECTED
+			|| mStatus == STATUS_CONNECTING
+			|| mStatus == STATUS_DISABLED;
+	}
+
+	public boolean canEdit() {
+		return mStatus == STATUS_DISCONNECTED
+			|| mStatus == STATUS_DISABLED;
 	}
 	
 	public Preference getPreference() {
@@ -185,12 +203,12 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	
 	/** Called when initiating disconnect */
 	public void onConnect() {
-    	setStatus(STATUS_PROGRESS);
+    	setStatus(STATUS_CONNECTING);
 	}
 	
 	/** Called when initiating disconnect */
 	public void onDisconnect() {
-    	setStatus(STATUS_PROGRESS);
+    	setStatus(STATUS_DISCONNECTING);
 	}
 
 	public void onPreferenceActivityResume() {

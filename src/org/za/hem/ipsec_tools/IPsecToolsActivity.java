@@ -315,8 +315,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 				menu.setHeaderTitle(selectedPeer.getName());
 				menu.findItem(R.id.connect_peer).setEnabled(isRacoonRunning && selectedPeer.canConnect());
 				menu.findItem(R.id.disconnect_peer).setEnabled(isRacoonRunning && selectedPeer.canDisconnect());
-				menu.findItem(R.id.edit_peer).setEnabled(!selectedPeer.isConnected());
-				menu.findItem(R.id.delete_peer).setEnabled(!selectedPeer.isConnected());
+				menu.findItem(R.id.edit_peer).setEnabled(!selectedPeer.canEdit());
+				menu.findItem(R.id.delete_peer).setEnabled(!selectedPeer.canEdit());
 			} else {
 				selectedPeer = null;
 				Log.i("ipsec-tools", "onCreateContextMenu item not found");
@@ -483,16 +483,18 @@ public class IPsecToolsActivity extends PreferenceActivity
             Log.i("ipsec-tools", "onReceive remote_addr:" + remote_address);
     		if (remote_address == null)
     			throw new RuntimeException("No remote_addr in broadcastintent");
-    		Peer peer = mPeers.findForRemote(remote_address);
-   		
-    		if (peer == null) {
-                Log.i("ipsec-tools", "Unknown peer " + remote_address);
-    			return;
-    		}
-  
+    		Peer peer = null;
+
     		int notifyType = -1;
     		
     		if (action.equals(NativeService.ACTION_PHASE1_UP)) {
+			peer = mPeers.findForRemote(remote_address, false);
+			if (peer == null) {
+				Log.i("ipsec-tools",
+				      "Unknown peer up " + remote_address);
+				return;
+			}
+
     			notifyType = R.string.notify_peer_up;
     			peer.onPhase1Up();
 				if (!isSynthetic) {
@@ -502,13 +504,25 @@ public class IPsecToolsActivity extends PreferenceActivity
 					}
 				}
     		} else if (action.equals(NativeService.ACTION_PHASE1_DOWN)) {
+			peer = mPeers.findForRemote(remote_address, true);
+			if (peer == null) {
+				Log.i("ipsec-tools",
+				      "Unknown peer down " + remote_address);
+				return;
+			}
+
     			notifyType = R.string.notify_peer_down;
     			peer.onPhase1Down();
 				if (!isSynthetic) {
 					mBoundService.restoreDns();
 				}
     		}
+
+    		if (peer == null) {
+    		}
+
     		if (!isSynthetic && notifyType >= 0 && !hasWindowFocus()) {
+			//if (!isSynthetic && notifyType >= 0) {
     			showNotification(peer, notifyType);
     		}
     	}  	

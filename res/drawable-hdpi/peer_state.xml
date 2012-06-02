@@ -11,9 +11,12 @@ xmlns:android="http://schemas.android.com/apk/res/android">
     android:drawable="@android:drawable/presence_away"
     android:maxLevel="2" />
 <item
-    android:drawable="@android:drawable/presence_offline"
+    android:drawable="@android:drawable/presence_away"
     android:maxLevel="3" />
 <item
-    android:drawable="@android:drawable/presence_busy"
+    android:drawable="@android:drawable/presence_offline"
     android:maxLevel="4" />
+<item
+    android:drawable="@android:drawable/presence_busy"
+    android:maxLevel="5" />
 </level-list>

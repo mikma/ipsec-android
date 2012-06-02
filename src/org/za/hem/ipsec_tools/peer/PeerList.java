@@ -120,7 +120,8 @@ public class PeerList extends ArrayList<Peer> {
 		mListener = listener;
 	}
 
-	public Peer findForRemote(final InetSocketAddress sa) {
+	public Peer findForRemote(final InetSocketAddress sa,
+				  boolean isUp) {
     	InetAddress addr = sa.getAddress();
     	Iterator<Peer> iter = iterator();
     	
@@ -128,8 +129,12 @@ public class PeerList extends ArrayList<Peer> {
     		Peer peer = iter.next();
     		if (peer == null)
     			continue;
-    		if (!peer.isEnabled())
-    			continue;
+		Log.i("ipsec-tools", "findForRemote " + peer + " " + peer.getStatus() + " " + peer.isEnabled());
+		if (isUp) {
+		    if (!peer.isConnected()) continue;
+		} else {
+		    if (!peer.isEnabled()) continue;
+		}
 			InetAddress peerAddr = peer.getRemoteAddr();
     		if (peerAddr != null && peerAddr.equals(addr))
     			return peer;
@@ -194,7 +199,7 @@ public class PeerList extends ArrayList<Peer> {
 	
     public void edit(Context context, final PeerID id) {
     	Peer peer = mPeers.get(id.intValue());
-       	if (peer.isConnected()) {
+       	if (peer.canEdit()) {
     		AlertDialog.Builder builder = new AlertDialog.Builder(context);
     		builder.setIcon(android.R.drawable.ic_dialog_alert);
     		builder.setTitle(peer.getName());
@@ -285,10 +290,11 @@ public class PeerList extends ArrayList<Peer> {
     	Peer peer = get(id);
     	Boolean isRacoonRunning = mBoundService.isRacoonRunning();
     	Log.i("ipsec-tools", "togglePeer " + id + " " + peer);
-    	if (isRacoonRunning && peer.canDisconnect())
+    	if (isRacoonRunning && peer.canDisconnect()) {
     		disconnectAndDisable(id);
-    	else if (isRacoonRunning && peer.canConnect())
+	} else if (isRacoonRunning && peer.canConnect()) {
     		enableAndConnect(id);
+	}
     }
 
     /**
@@ -321,11 +327,11 @@ public class PeerList extends ArrayList<Peer> {
 		setKeyOs.close();
 		if (mBoundService != null)
 			mBoundService.runSetKey();
-		if (peer.isEnabled()) {
-			peer.setStatus(Peer.STATUS_DISCONNECTED);
-		} else {
-			peer.setStatus(Peer.STATUS_DISABLED);
-		}
+		// if (peer.isEnabled()) {
+		// 	peer.setStatus(Peer.STATUS_DISCONNECTED);
+		// } else {
+		// 	peer.setStatus(Peer.STATUS_DISABLED);
+		// }
 		if (mBoundService != null)
 			mBoundService.reloadConf();
 	}
