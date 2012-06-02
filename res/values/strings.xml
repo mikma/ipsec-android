@@ -27,10 +27,10 @@
     <string name="main_label">Hello2<u>th<ignore>e</ignore>re</u>, <i>you</i> <b>Activity</b>!</string>
     <string name="set_preferences">Preferences</string>
     <string name="start">Start</string>
-    <string name="native_service_started">Native Service Started</string>
-    <string name="native_service_label">Native Service</string>
-    <string name="native_service_connected">Native Service Connected</string>
-    <string name="native_service_disconnected">Native Service Disconnected</string>
+    <string name="native_service_started">IPsec VPN running</string>
+    <string name="native_service_label">IPsec VPN</string>
+    <string name="native_service_connected">IPsec VPN connected</string>
+    <string name="native_service_disconnected">IPsec VPN disconnected</string>
     <string name="stop">Stop</string>
     <string name="connect_peer">Connect to peer</string>
     <string name="disconnect_peer">Disconnect peer</string>
