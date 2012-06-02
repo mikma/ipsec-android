@@ -1,3 +1,6 @@
+INKSCAPE_FLAGS := --export-background-opacity=0
+
+
 FILES := external/openssl/libs/armeabi/libcrypto.so \
 	external/openssl/libs/armeabi/libssl.so \
 	external/ipsec-tools/libs/armeabi/libipsec.so \
@@ -25,7 +28,14 @@ build-ipsec-tools:
 install: build
 	zip -j assets/ipsec-tools.zip $(FILES)
 
+play-icon:
+	inkscape icon.svg --export-png=play-icon.png -w512 -h512 --export-background-opacity=0
+
 icons:
-	inkscape notification.svg --export-png=res/drawable-ldpi/notification.png -d 67
-	inkscape notification.svg --export-png=res/drawable-mdpi/notification.png -d 90
-	inkscape notification.svg --export-png=res/drawable-hdpi/notification.png -d 135
+	inkscape icon.svg --export-png=res/drawable-ldpi/icon.png -d 67 $(INKSCAPE_FLAGS)
+	inkscape icon.svg --export-png=res/drawable-mdpi/icon.png -d 90 $(INKSCAPE_FLAGS)
+	inkscape icon.svg --export-png=res/drawable-hdpi/icon.png -d 135 $(INKSCAPE_FLAGS)
+
+	inkscape notification.svg --export-png=res/drawable-ldpi/notification.png -d 67 
+	inkscape notification.svg --export-png=res/drawable-mdpi/notification.png -d 90 $(INKSCAPE_FLAGS)
+	inkscape notification.svg --export-png=res/drawable-hdpi/notification.png -d 135 $(INKSCAPE_FLAGS)
