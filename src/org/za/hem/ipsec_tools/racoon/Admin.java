@@ -133,6 +133,7 @@ public class Admin {
 		return cmd.getErrno();
 	}
 	
+	// TODO handle null cmd or use exceptions
 	public int vpnDisconnect(InetAddress vpnGateway)  {
 		Log.i("ipsec-tools", "vpn-disconnect " + vpnGateway);
 		Command cmd = call(Command.buildVpnDisconnect(vpnGateway));

@@ -1,16 +1,17 @@
 * Flush setkey SAs for changed peers.
 
+* Use secure storage for private keys.
+
+* Support for "virtual" IP addresses.
+
+* Detect IP address changes
+
+* Include no connected peers in notification
+
 
 Policy handling
 ---------------
 
-Startup: Build all peer configs, Flush all SPDs
+Startup: Build all peer configs, Flush all SPDs and SADs
 
-Before editing: Delete peer config, Delete SPD for peer
-
-After editing: Build peer config, Add SPD for peer
-
-
-Don't add if disabled.
-
-
+Disconnect: Delete SPD for peer, Disconnect peer, Delete SAD for peer, Disable Peer
