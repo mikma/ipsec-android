@@ -1,5 +1,3 @@
-* Rename racoon binary to appname.racoon or racoon.appname
-
 * Flush setkey SAs for changed peers.
 
 

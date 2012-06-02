@@ -26,7 +26,10 @@ build-ipsec-tools:
 	OPENSSL_INC=$(PWD)/external/openssl/include OPENSSL_LIB=$(PWD)/external/openssl/libs/armeabi ndk-build -C external/ipsec-tools
 
 install: build
-	zip -j assets/ipsec-tools.zip $(FILES)
+	test -e bin/ipsec-tools || mkdir bin/ipsec-tools
+	cp $(FILES) bin/ipsec-tools
+	mv bin/ipsec-tools/racoon bin/ipsec-tools/racoon.mikma
+	zip -j assets/ipsec-tools.zip bin/ipsec-tools/*
 
 play-icon:
 	inkscape icon.svg --export-png=play-icon.png -w512 -h512 --export-background-opacity=0
