@@ -153,10 +153,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 			throw new RuntimeException(e);
 		}
         
-        if (DEBUG) {
-        	//doBindService();
-        	startService();
-        }
+	startService();
     }
     
     protected void startService() {
