@@ -62,5 +62,6 @@
     <string name="psk">Pre shared key (PSK)</string>
     <string name="cert_file">Certificate file</string>
     <string name="key_file">Private key file</string>
+    <string name="save_examples">Save examples</string>
 </resources>
 

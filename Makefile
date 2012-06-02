@@ -9,7 +9,12 @@ FILES := external/openssl/libs/armeabi/libcrypto.so \
 	external/ipsec-tools/libs/armeabi/racoonctl \
 	external/ipsec-tools/libs/armeabi/setkey
 
-all: build install
+all: build install examples
+
+examples:
+	$(MAKE) -C example-config
+	cp -a example-config/psk/policy.zip assets/example-psk.zip
+	cp -a example-config/cert/policy.zip assets/example-cert.zip
 
 clean: clean-rec
 

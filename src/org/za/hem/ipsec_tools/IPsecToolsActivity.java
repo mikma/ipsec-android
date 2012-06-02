@@ -1,5 +1,6 @@
 package org.za.hem.ipsec_tools;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -14,6 +15,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -29,6 +31,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -44,6 +47,8 @@ import org.za.hem.ipsec_tools.peer.PeerPreferences;
 import org.za.hem.ipsec_tools.peer.StatePreference;
 import org.za.hem.ipsec_tools.service.ConfigManager;
 import org.za.hem.ipsec_tools.service.NativeService;
+
+import com.lamerman.FileDialog;
 
 /*
  * Register
@@ -68,6 +73,14 @@ public class IPsecToolsActivity extends PreferenceActivity
 			"racoonctl.sh",
 			NativeService.SETKEY_EXEC_NAME,
  	};
+
+	final private String examples[] = {
+		"example-psk.zip",
+		"example-cert.zip",
+ 	};
+
+	static final int REQUEST_SAVE_EXAMPLES = 1;
+
     // FIXME debugging
 	private final boolean DEBUG = true;
 
@@ -407,6 +420,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    case R.id.stop_service:
 	        mBoundService.stopRacoon();
 	        return true;
+	    case R.id.save_examples:
+		    return handleSaveExamples();
 	    // case R.id.preferences:
 	    // 	    Intent settingsActivity = new Intent(getBaseContext(),
 	    // 						 Preferences.class);
@@ -596,6 +611,39 @@ public class IPsecToolsActivity extends PreferenceActivity
 			Log.i("ipsec-tools", "not bound");
 	}
 	
+	private boolean handleSaveExamples() {
+		final String startPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		Intent intent =
+			new Intent(this, FileDialog.class);
+		intent.putExtra(FileDialog.START_PATH, startPath);
+		intent.putExtra(FileDialog.ALLOW_DIRECTORY, true);
+		this.startActivityForResult(intent, REQUEST_SAVE_EXAMPLES);
+		return true;
+	}
+
+	private void saveExamples(final Intent data) {
+		String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
+		File dir = new File(filePath);
+		for (int i=0; i < examples.length; i++) {
+			mNative.putFile(dir, examples[i]);
+		}
+	}
+
+	@Override
+	protected void onActivityResult (int requestCode, int resultCode,
+					 final Intent data) {
+		if (resultCode == Activity.RESULT_OK) {
+			switch (requestCode) {
+			case REQUEST_SAVE_EXAMPLES:
+				saveExamples(data);
+				break;
+			}
+		} else if (resultCode == Activity.RESULT_CANCELED) {
+			Logger.getLogger(IPsecToolsActivity.class.getName()).log(
+				Level.WARNING, "file not selected");
+		}
+	}
+
     private void output(final String str) {
     	int duration = Toast.LENGTH_SHORT;
 

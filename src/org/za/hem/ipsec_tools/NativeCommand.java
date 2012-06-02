@@ -32,11 +32,11 @@ public class NativeCommand {
 
 	
 	/**
-     * Copy binary file from assets into bin directory.
-     */
-    public void putBinary(String fileName) {
+	 * Copy file from assets into specified directory.
+	 */
+	public void putFile(File dir, String fileName, int mode) {
     	try {
-    		File file = new File(mBinDir, fileName);
+    		File file = new File(dir, fileName);
     		InputStream input = mContext.getAssets().open(fileName);
     		int read;
     		byte[] buffer = new byte[4096];
@@ -47,12 +47,25 @@ public class NativeCommand {
     		}
     		input.close();
     		output.close();
-    		chmod(file, 711);
+		if (mode >= 0) {
+			chmod(file, mode);
+		}
     	} catch (IOException e) {
     		throw new RuntimeException(e);
     	}
     }
     
+	public void putFile(File dir, String fileName) {
+		putFile(dir, fileName, -1);
+	}
+
+    /**
+     * Copy binary file from assets into bin directory.
+     */
+    public void putBinary(String fileName) {
+	    putFile(mBinDir, fileName, 711);
+    }
+
     /**
      * Copy binary file from ZIP assets into bin directory.
      */
