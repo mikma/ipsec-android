@@ -447,7 +447,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 	
 	private void showNotification(Peer peer, int id) {
         CharSequence text = getString(id) + " " + peer.getName();
-        Notification notification = new Notification(R.drawable.icon, text,
+        Notification notification = new Notification(R.drawable.notification,
+						     text,
                 System.currentTimeMillis());
         notification.flags |= Notification.FLAG_AUTO_CANCEL; 
         	

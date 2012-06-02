@@ -24,3 +24,8 @@ build-ipsec-tools:
 
 install: build
 	zip -j assets/ipsec-tools.zip $(FILES)
+
+icons:
+	inkscape notification.svg --export-png=res/drawable-ldpi/notification.png -d 67
+	inkscape notification.svg --export-png=res/drawable-mdpi/notification.png -d 90
+	inkscape notification.svg --export-png=res/drawable-hdpi/notification.png -d 135

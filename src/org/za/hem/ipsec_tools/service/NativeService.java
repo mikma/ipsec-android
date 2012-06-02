@@ -395,7 +395,8 @@ public class NativeService extends Service {
         CharSequence text = getText(R.string.native_service_started);
 
         // Set the icon, scrolling text and timestamp
-        Notification notification = new Notification(R.drawable.icon, text,
+        Notification notification = new Notification(R.drawable.notification,
+						     text,
                 System.currentTimeMillis());
         notification.flags |= Notification.FLAG_ONGOING_EVENT; 
         	
