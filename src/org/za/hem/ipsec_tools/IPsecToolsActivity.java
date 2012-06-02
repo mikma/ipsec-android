@@ -468,8 +468,10 @@ public class IPsecToolsActivity extends PreferenceActivity
 	
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
     	public void onReceive(Context context, Intent intent) {
+	    boolean isSynthetic = intent.getBooleanExtra("synthetic", false);
             Log.i("ipsec-tools", "broadcast received: " + intent);
-    		String action = intent.getAction();
+	    Log.i("ipsec-tools", "Intent: isSynthetic:" + isSynthetic);
+	    String action = intent.getAction();
     		
     		if (action.equals(NativeService.ACTION_SERVICE_READY)) {
     			if (mBoundService != null)
@@ -492,7 +494,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     		}
   
     		int notifyType = -1;
-    		boolean isSynthetic = intent.getBooleanExtra("synthetic", false);
     		
     		if (action.equals(NativeService.ACTION_PHASE1_UP)) {
     			notifyType = R.string.notify_peer_up;
@@ -510,7 +511,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 					mBoundService.restoreDns();
 				}
     		}
-    		if (!isSynthetic && notifyType >= 0) {
+    		if (!isSynthetic && notifyType >= 0 && !hasWindowFocus()) {
     			showNotification(peer, notifyType);
     		}
     	}  	
