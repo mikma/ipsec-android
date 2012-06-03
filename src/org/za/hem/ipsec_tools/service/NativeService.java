@@ -442,6 +442,9 @@ public class NativeService extends Service {
 
 			// TODO check getExternalStorageState()
 			File ipsecDir = new File(Environment.getExternalStorageDirectory(), "ipsec");
+			if (!ipsecDir.exists()) {
+			    ipsecDir.mkdir();
+			}
 			process = new ProcessBuilder()
     		.command(new File(binDir, "racoon.sh").getAbsolutePath(),
     				"-v",
@@ -476,13 +479,17 @@ public class NativeService extends Service {
     			}
     		}
     		
+		if (!socketFile.exists() || !pidFile.exists()) {
+    			throw new RuntimeException("Failed to start racoon, check racoon.log");
+		}
+
     		// Read PID
     		BufferedReader pidReader =
     				new BufferedReader(new FileReader(pidFile), 128);
     		String pidStr = pidReader.readLine();
     		pidReader.close();
     		if (pidStr == null)
-    			throw new RuntimeException("Failed to start racoon");
+    			throw new RuntimeException("Failed to start racoon, check racoon.log");
     		mPid = Integer.parseInt(pidStr);
     		Log.i("ipsec-tools", "racoon pid '" + mPid + "'");
 
