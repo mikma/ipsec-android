@@ -137,7 +137,7 @@ public class Command {
 			Log.i("ipsec-tools", "Read dataLen:" + dataLen + " p:" + p);
 			
 			if ((res = is.read(dataBuf, p, dataLen - p)) < 0) {
-				throw new RuntimeException("read");
+				throw new IOException("EOF not expected");
 			}
 			
 			p = p + res;

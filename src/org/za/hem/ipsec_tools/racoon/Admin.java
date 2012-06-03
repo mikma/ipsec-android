@@ -67,7 +67,6 @@ public class Admin {
 							}
 						}
 					} catch (IOException e) {
-						//throw new RuntimeException(e);
 						Log.i("ipsec-tools", "Admin com socket EOF " + e);
 						//mCom.close();
 						return;
