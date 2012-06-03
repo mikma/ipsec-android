@@ -1,5 +1,7 @@
+assets/example-*.zip
 assets/ipsec-tools.zip
 bin/
+example-config/*/policy.zip
 external/tarballs/
 gen/
 local.properties
