@@ -83,6 +83,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 
     // FIXME debugging
 	private final boolean DEBUG = true;
+	private final boolean RACOON_STARTUP = false;
 
 	private boolean mIsBound; /** True if bound. */
 	private NotificationManager mNM;
@@ -572,8 +573,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        
 	        if (mBoundService.isRacoonRunning())
 	        	mPeers.dumpIsakmpSA();
-		else
-		    mBoundService.startRacoon();
+	        else if ( RACOON_STARTUP )
+	            mBoundService.startRacoon();
 
 	        // Tell the user about this for our demo.
 //	        Toast.makeText(Binding.this, R.string.native_service_connected,
