@@ -4,12 +4,8 @@
     <!-- Simple strings. -->
     <string name="app_name">IPsec Tools</string>
     <string name="set_preferences">Preferences</string>
-    <string name="start">Start</string>
     <string name="native_service_started">IPsec VPN running</string>
     <string name="native_service_label">IPsec VPN</string>
-    <string name="native_service_connected">IPsec VPN connected</string>
-    <string name="native_service_disconnected">IPsec VPN disconnected</string>
-    <string name="stop">Stop</string>
     <string name="connect_peer">Connect to peer</string>
     <string name="disconnect_peer">Disconnect peer</string>
     <string name="edit_peer">Edit peer</string>
@@ -23,18 +19,14 @@
     <string name="notify_peer_down">IPsec VPN peer down</string>
     <string name="title_delete_peer">Delete peer</string>
     <string name="msg_delete_peer">The peer \&quot;%1$s\&quot; will be deleted.</string>
-    <string name="preferences">Settings</string>
-    <string name="enabled">Enabled</string>
     <string name="msg_disconnect_first">You must disconnect first.</string>
     <string name="msg_fill_in_name">Please, fill in a name.</string>
     <string name="add_ipsec_vpn">Add IPsec VPN</string>
     <string name="ipsec_vpns">IPsec VPNs</string>
     <string name="ipsec_vpn_peer">IPsec VPN Peer</string>
     <string name="unknown_host_name">Unknown host name \&quot;%1$s\&quot;.</string>
-    <string name="progress_peer">Processing...</string>
     <string name="about">About</string>
     <string name="about_title">About %s</string>
-    <string name="ok">Ok</string>
     <string name="dns1">DNS Server 1</string>
     <string name="dns2">DNS Server 2</string>
     <string name="psk">Pre shared key (PSK)</string>
