@@ -40,7 +40,7 @@ install: build
 	zip -j assets/ipsec-tools.zip bin/ipsec-tools/*
 
 play-icon:
-	inkscape icon.svg --export-png=play-icon.png -w512 -h512 --export-background-opacity=0
+	inkscape icon.svg --export-png=play/icon.png -w512 -h512 --export-background-opacity=0
 
 icons:
 	inkscape icon.svg --export-png=res/drawable-ldpi/icon.png -d 67 $(INKSCAPE_FLAGS)
