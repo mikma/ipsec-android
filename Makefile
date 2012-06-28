@@ -24,11 +24,13 @@ clean-rec:
 
 build: build-openssl build-ipsec-tools
 
+build-openssl: MAKE = ndk-build $(MAKEFLAGS)
 build-openssl:
-	ndk-build -C external/openssl
+	$(MAKE) -C external/openssl
 
+build-ipsec-tools: MAKE=ndk-build $(MAKEFLAGS)
 build-ipsec-tools:
-	OPENSSL_INC=$(PWD)/external/openssl/include OPENSSL_LIB=$(PWD)/external/openssl/libs/armeabi ndk-build -C external/ipsec-tools
+	OPENSSL_INC=$(PWD)/external/openssl/include OPENSSL_LIB=$(PWD)/external/openssl/libs/armeabi $(MAKE) -C external/ipsec-tools
 
 install: build
 	test -e bin || mkdir bin
