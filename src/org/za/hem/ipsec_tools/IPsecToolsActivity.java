@@ -164,6 +164,7 @@ public class IPsecToolsActivity extends PreferenceActivity
     		id = id.next();
         }
 		
+        mPeers.disableAll();
         try {
 			mCM.build(mPeers, true);
 		} catch (IOException e) {

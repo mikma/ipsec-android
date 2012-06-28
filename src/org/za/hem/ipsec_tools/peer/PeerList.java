@@ -356,4 +356,13 @@ public class PeerList extends ArrayList<Peer> {
 		NativeCommand.system(new File(binDir, NativeService.SETKEY_EXEC_NAME).getAbsolutePath() +
 				" -FP");
 	}
+	
+	public void disableAll() {
+	    Iterator <Peer> i = mPeers.iterator();
+	    
+	    while (i.hasNext()) {
+	        Peer peer = i.next();
+	        peer.setEnabled(false);
+	    }
+	}
 }
