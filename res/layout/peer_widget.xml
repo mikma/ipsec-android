@@ -8,6 +8,7 @@ android:layout_height="fill_parent">
 <ImageView
     android:id="@+id/icon"
     android:src="@drawable/peer_state"
+    android:contentDescription="@string/peer_state"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginLeft="6dip"

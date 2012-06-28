@@ -9,7 +9,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.za.hem.ipsec_tools.IPsecToolsActivity;
 import org.za.hem.ipsec_tools.NativeCommand;
 import org.za.hem.ipsec_tools.R;
 import org.za.hem.ipsec_tools.service.ConfigManager;

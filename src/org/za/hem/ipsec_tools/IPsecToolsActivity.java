@@ -81,8 +81,6 @@ public class IPsecToolsActivity extends PreferenceActivity
 
 	static final int REQUEST_SAVE_EXAMPLES = 1;
 
-    // FIXME debugging
-	private final boolean DEBUG = true;
 	private final boolean RACOON_STARTUP = false;
 
 	private boolean mIsBound; /** True if bound. */
@@ -98,7 +96,6 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private PeerList mPeers;
 	private PeerID selectedID;
 	private Peer selectedPeer;
-	private PeerID mEditID;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -106,7 +103,6 @@ public class IPsecToolsActivity extends PreferenceActivity
     	
     	selectedID = null;
     	selectedPeer = null;
-    	mEditID = null;
 
         mNative = new NativeCommand(this);
     	mCM = new ConfigManager(this, mNative);
@@ -365,7 +361,6 @@ public class IPsecToolsActivity extends PreferenceActivity
 			try {
 				mPeers.updateConfig(selectedID, ConfigManager.Action.DELETE);
 				mPeers.edit(this, selectedID);
-				mEditID = selectedID;
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}

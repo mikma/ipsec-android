@@ -33,5 +33,6 @@
     <string name="cert_file">Certificate file</string>
     <string name="key_file">Private key file</string>
     <string name="save_examples">Save examples</string>
+    <string name="peer_state">Peer State</string>
 </resources>
 
