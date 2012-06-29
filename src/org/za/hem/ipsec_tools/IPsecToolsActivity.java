@@ -168,22 +168,19 @@ public class IPsecToolsActivity extends PreferenceActivity
     		id = id.next();
         }
 		
-        mPeers.disableAll();
-        try {
-			mCM.build(mPeers, true);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-        
-	startService();
+        startService();
+
     }
     
     protected void startService() {
     	if (mBoundService != null)
     		return;
-    	if (!NativeService.isServiceRunning(this))
+    	if (!NativeService.isServiceRunning(this)) {
     		startService(new Intent(IPsecToolsActivity.this, 
     				NativeService.class));
+
+    	}
+    	
     	doBindService();
     }
     
@@ -569,8 +566,17 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        
 	        if (mBoundService.isRacoonRunning())
 	        	mPeers.dumpIsakmpSA();
-	        else if ( RACOON_STARTUP )
-	            mBoundService.startRacoon();
+	        else {
+	            mPeers.disableAll();
+	            try {
+	                mCM.build(mPeers, true);
+	            } catch (IOException e) {
+	                throw new RuntimeException(e);
+	            }
+
+	            if ( RACOON_STARTUP )  
+	                mBoundService.startRacoon();
+	        }
 
 	        // Tell the user about this for our demo.
 //	        Toast.makeText(Binding.this, R.string.native_service_connected,
