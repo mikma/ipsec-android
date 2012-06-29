@@ -408,7 +408,8 @@ public class PeerList extends ArrayList<Peer> {
 	    
 	    while (i.hasNext()) {
 	        Peer peer = i.next();
-	        peer.setEnabled(false);
+	        if ( peer != null )
+	            peer.setEnabled(false);
 	    }
 	}
 }
