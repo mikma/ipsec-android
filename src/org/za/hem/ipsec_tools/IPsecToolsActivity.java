@@ -16,6 +16,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -96,6 +97,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private PeerList mPeers;
 	private PeerID selectedID;
 	private Peer selectedPeer;
+	private Handler mGuiHandler;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -104,6 +106,8 @@ public class IPsecToolsActivity extends PreferenceActivity
     	selectedID = null;
     	selectedPeer = null;
 
+    	mGuiHandler = new Handler();
+    	
         mNative = new NativeCommand(this);
     	mCM = new ConfigManager(this, mNative);
 
@@ -142,7 +146,7 @@ public class IPsecToolsActivity extends PreferenceActivity
         SharedPreferences sharedPreferences =
         	getPreferenceScreen().getSharedPreferences();
         int count = sharedPreferences.getInt(COUNT_PREFERENCE,0);
-        mPeers = new PeerList(getApplicationContext(), mCM, count);
+        mPeers = new PeerList(mGuiHandler, getApplicationContext(), mCM, count);
         mPeers.setOnPeerChangeListener(this);
         
     	Log.i("ipsec-tools", "Count: " + count);
@@ -157,7 +161,7 @@ public class IPsecToolsActivity extends PreferenceActivity
         		peerPref.setWidgetLayoutResource(R.layout.peer_widget);
             	Log.i("ipsec-tools", "Add peerPref: " + key);
         		peersPref.addPreference(peerPref);
-        		mPeers.add(new Peer(this, id, peerPref));
+        		mPeers.add(new Peer(mGuiHandler, this, id, peerPref));
         	} else {
         		mPeers.add(null);
         	}
@@ -359,12 +363,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 			mPeers.disconnectAndDisable(selectedID);
 			return true;
 		case R.id.edit_peer:
-			try {
-				mPeers.updateConfig(selectedID, ConfigManager.Action.DELETE);
-				mPeers.edit(this, selectedID);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+		    mPeers.updateConfig(selectedID, ConfigManager.Action.DELETE);
+		    mPeers.edit(this, selectedID);
 
 			return true;
 		case R.id.delete_peer:
@@ -401,7 +401,7 @@ public class IPsecToolsActivity extends PreferenceActivity
 
 	@Override
 	public boolean onPrepareOptionsMenu (Menu menu) {
-		boolean isRacoonRunning = mBoundService.isRacoonRunning();
+		boolean isRacoonRunning = mBoundService != null && mBoundService.isRacoonRunning();
 	    menu.findItem(R.id.start_service).setVisible(!isRacoonRunning);
 	    menu.findItem(R.id.stop_service).setVisible(isRacoonRunning);
 	    return true;

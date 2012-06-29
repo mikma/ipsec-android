@@ -19,6 +19,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
@@ -35,8 +36,13 @@ public class PeerList extends ArrayList<Peer> {
 	public static final int HANDLER_VPN_CONNECT = 1;
 	public static final int HANDLER_VPN_DISCONNECT = 2;
 	public static final int HANDLER_DUMP_ISAKMP_SA = 3;
-	
-	/**
+    public static final int HANDLER_ENABLE_AND_CONNECT = 4;
+    public static final int HANDLER_DISCONNECT_AND_DISABLE = 5;
+    public static final int HANDLER_UPDATE_CONFIG = 6;
+
+    public static final String HANDLER_KEY_ACTION = "action";
+
+    /**
 	 * Serial for Serializable 
 	 */
 	private static final long serialVersionUID = -3584858864706289236L;
@@ -48,9 +54,11 @@ public class PeerList extends ArrayList<Peer> {
 	private NativeService mBoundService;
 	private Context mContext;
 	private ConfigManager mConfigManager;
+	private Handler mGuiHandler;
 	
-	public PeerList(Context context, ConfigManager configManager, int capacity) {
+	public PeerList(Handler guiHandler, Context context, ConfigManager configManager, int capacity) {
 		super(capacity);
+		mGuiHandler = guiHandler;
 		mContext = context;
 		mConfigManager = configManager;
 		mBoundService = null;
@@ -77,6 +85,19 @@ public class PeerList extends ArrayList<Peer> {
 				case HANDLER_DUMP_ISAKMP_SA:
 				    mBoundService.dumpIsakmpSA();
 				    break;
+				case HANDLER_ENABLE_AND_CONNECT:
+				    doEnableAndConnect((PeerID)msg.obj);
+				    break;
+				case HANDLER_DISCONNECT_AND_DISABLE:
+				    doDisconnectAndDisable((PeerID)msg.obj);
+				    break;
+				case HANDLER_UPDATE_CONFIG:
+				    try {
+				        doUpdateConfig((PeerID)msg.obj,
+				                (Action)msg.getData().getSerializable(HANDLER_KEY_ACTION));
+				    } catch (IOException e) {
+				        e.printStackTrace();
+				    }
 				}	
 			}
 		};		
@@ -153,7 +174,7 @@ public class PeerList extends ArrayList<Peer> {
 
     	Log.i("ipsec-tools", "New id " + empty);
         PeerID newId = new PeerID(empty);
-    	Peer peer = new Peer(context, newId, null);
+    	Peer peer = new Peer(mGuiHandler, context, newId, null);
     	if (empty >= mPeers.size())
     		mPeers.add(peer);
     	else
@@ -239,15 +260,23 @@ public class PeerList extends ArrayList<Peer> {
     // TODO add return value
     public void enableAndConnect(PeerID id)
     {
-    	try {
-    		Peer peer = get(id);
-    		if (!peer.isEnabled()) {
+        Message msg = mHandler.obtainMessage(HANDLER_ENABLE_AND_CONNECT);
+        msg.obj = id;
+        msg.sendToTarget();
+    }
+    
+    
+   protected void doEnableAndConnect(PeerID id)
+   {
+       try {	
+           Peer peer = get(id);
+            if (!peer.isEnabled()) {
     			Log.i("ipsec-tools", "Enable " + id);
     			peer.setEnabled(true);
-    			updateConfig(id, ConfigManager.Action.ADD);
+    			doUpdateConfig(id, ConfigManager.Action.ADD);
     		}
-		else
-		    Log.i("ipsec-tools", "Already enabled " + id);
+    		else
+    		    Log.i("ipsec-tools", "Already enabled " + id);
     		connect(id);
     	} catch (IOException e) {
     		// TODO display error
@@ -272,6 +301,12 @@ public class PeerList extends ArrayList<Peer> {
     }
     
     public void disconnectAndDisable(final PeerID id) {
+        Message msg = mHandler.obtainMessage(HANDLER_DISCONNECT_AND_DISABLE);
+        msg.obj = id;
+        msg.sendToTarget();
+    }
+    
+    private void doDisconnectAndDisable(final PeerID id) {
     	Peer peer = get(id);
     	deleteSPD(peer);
     	disconnect(peer);
@@ -279,7 +314,7 @@ public class PeerList extends ArrayList<Peer> {
 	peer.setEnabled(false);
     	try {
     		// TODO Remove at disconnect
-    		updateConfig(id, ConfigManager.Action.DELETE);
+    		doUpdateConfig(id, ConfigManager.Action.DELETE);
     	} catch (IOException e) {
     		// TODO handle error
     	}
@@ -311,7 +346,18 @@ public class PeerList extends ArrayList<Peer> {
     }
 
     // TODO add return value
-	public void updateConfig(PeerID id, Action action) throws IOException
+    public void updateConfig(PeerID id, Action action)
+    {
+        Bundle data = new Bundle();
+        Message msg = mHandler.obtainMessage(HANDLER_UPDATE_CONFIG);
+        data.putSerializable(HANDLER_KEY_ACTION, action);
+        msg.obj = id;
+        msg.setData(data);
+        msg.sendToTarget();
+    }
+    
+    
+	public void doUpdateConfig(PeerID id, Action action) throws IOException
 	{
 		mConfigManager.build(this, false);
 		Peer peer = get(id);

@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.os.Handler;
 import android.preference.Preference;
 import android.util.Log;
 
@@ -63,9 +64,11 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	private PeerID mID;
 	private StatePreference mPref;
 	private SharedPreferences mShared;
+	private Handler mGuiHandler;
 	private int mStatus;
 
-	public Peer(Context context, PeerID id, StatePreference pref) {
+	public Peer(Handler guiHandler, Context context, PeerID id, StatePreference pref) {
+	    mGuiHandler = guiHandler;
 		mID = id;
 		mPref = pref;
 		mShared = context.getSharedPreferences(
@@ -180,15 +183,19 @@ public class Peer implements OnSharedPreferenceChangeListener {
 		return mStatus;
 	}
 
-	public void setStatus(int status) {
-		if (mStatus != status && status < STATUS_NUM) {
-			mStatus = status;
-			if (mPref != null) {
-				mPref.setIconLevel(mStatus);
-				mPref.setSummary(STATUS_SUMMARY[mStatus]);
-			}
-			Log.i("ipsec-tools", "setStatus " + getName() + " "+ mStatus);
-		}
+	public void setStatus(final int status) {
+	    mGuiHandler.post(new Runnable() {
+	        public void run() { 
+	            if (mStatus != status && status < STATUS_NUM) {
+	                mStatus = status;
+	                if (mPref != null) {
+	                    mPref.setIconLevel(mStatus);
+	                    mPref.setSummary(STATUS_SUMMARY[mStatus]);
+	                }
+	                Log.i("ipsec-tools", "setStatus " + getName() + " "+ mStatus);
+	            }
+	        }
+	    });
 	}
 
 	/** Called when Phase 1 goes up */
@@ -230,7 +237,11 @@ public class Peer implements OnSharedPreferenceChangeListener {
 	}
 	
 	protected void updatePreferenceName() {
-		getPreference().setTitle(getName());		
+	    mGuiHandler.post(new Runnable() {
+	        public void run() { 
+	            getPreference().setTitle(getName());
+	        }
+	    });
 	}
 	
 	public String toString() {
