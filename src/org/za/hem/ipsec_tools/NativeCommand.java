@@ -12,8 +12,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
+
+import org.za.hem.ipsec_tools.service.NativeService;
 
 public class NativeCommand {
 	private File mBinDir;
@@ -136,6 +139,32 @@ public class NativeCommand {
 		}
 
 		return false;
+	}
+
+	public boolean checkZipBinaries(String zipName) throws IOException {
+		String[] list;
+		String path;
+
+		path = Build.CPU_ABI;
+		list = mContext.getAssets().list(path);
+		if (list == null || list.length == 0) {
+			path = Build.CPU_ABI2;
+			list = mContext.getAssets().list(path);
+			if (list == null || list.length == 0)
+				return false;
+		}
+
+		String pathName = path + "/" + zipName;
+
+		if (areModifiedZipBinaries(pathName)) {
+			// Kill any old racoon instances before trying to write
+			NativeCommand.system("killall "
+					     + NativeService.RACOON_BIN_NAME);
+			// TODO add a few seconds delay to allow racoon to exit
+			putZipBinaries(pathName);
+		}
+
+		return true;
 	}
 
     /**

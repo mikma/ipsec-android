@@ -117,16 +117,10 @@ public class IPsecToolsActivity extends PreferenceActivity
         	mNative.putBinary(binaries[i]);
         }
         try {
-		if (mNative.areModifiedZipBinaries(ZIP_FILE)) {
-			// Kill any old racoon instances before trying to write
-			NativeCommand.system("killall "
-					     + NativeService.RACOON_BIN_NAME);
-			// TODO add a few seconds delay to allow racoon to exit
-			mNative.putZipBinaries(ZIP_FILE);
-		}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}        
+		mNative.checkZipBinaries(ZIP_FILE);
+	} catch (IOException e) {
+		throw new RuntimeException(e);
+	}        
         
 		Preference addPref = findPreference(ADD_PREFERENCE);
 		addPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {

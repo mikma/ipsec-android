@@ -1,13 +1,16 @@
 INKSCAPE_FLAGS := --export-background-opacity=0
 
+DIR_SSL := external/openssl/libs
+DIR_IPSEC := external/ipsec-tools/libs
 
-FILES := external/openssl/libs/armeabi/libcrypto.so \
-	external/openssl/libs/armeabi/libssl.so \
-	external/ipsec-tools/libs/armeabi/libipsec.so \
-	external/ipsec-tools/libs/armeabi/libracoonlib.so \
-	external/ipsec-tools/libs/armeabi/racoon \
-	external/ipsec-tools/libs/armeabi/racoonctl \
-	external/ipsec-tools/libs/armeabi/setkey
+FILES_SSL := libcrypto.so \
+	libssl.so
+
+FILES_IPSEC := libipsec.so \
+	libracoonlib.so \
+	racoon \
+	racoonctl \
+	setkey
 
 all: build install examples
 
@@ -30,14 +33,23 @@ build-openssl:
 
 build-ipsec-tools: MAKE=ndk-build $(MAKEFLAGS)
 build-ipsec-tools:
-	OPENSSL_INC=$(PWD)/external/openssl/include OPENSSL_LIB=$(PWD)/external/openssl/libs/armeabi $(MAKE) -C external/ipsec-tools
+	OPENSSL_INC=$(PWD)/external/openssl/include OPENSSL_LIB=$(PWD)/external/openssl/libs $(MAKE) -C external/ipsec-tools
 
 install: build
 	test -e bin || mkdir bin
 	test -e bin/ipsec-tools || mkdir bin/ipsec-tools
-	cp $(FILES) bin/ipsec-tools
-	mv bin/ipsec-tools/racoon bin/ipsec-tools/racoon.mikma
-	zip -j assets/ipsec-tools.zip bin/ipsec-tools/*
+	test -e bin/armeabi || mkdir bin/armeabi
+	test -e bin/x86 || mkdir bin/x86
+	test -e assets/armeabi || mkdir assets/armeabi
+	test -e assets/x86 || mkdir assets/x86
+	for i in $(FILES_SSL); do cp $(DIR_SSL)/armeabi/$$i bin/armeabi; done
+	for i in $(FILES_SSL); do cp $(DIR_SSL)/x86/$$i bin/x86; done
+	for i in $(FILES_IPSEC); do cp $(DIR_IPSEC)/armeabi/$$i bin/armeabi; done
+	for i in $(FILES_IPSEC); do cp $(DIR_IPSEC)/x86/$$i bin/x86; done
+	mv bin/armeabi/racoon bin/armeabi/racoon.mikma
+	mv bin/x86/racoon bin/x86/racoon.mikma
+	zip -j assets/armeabi/ipsec-tools.zip bin/armeabi/*
+	zip -j assets/x86/ipsec-tools.zip bin/x86/*
 
 play-icon:
 	inkscape icon.svg --export-png=play/icon.png -w512 -h512 --export-background-opacity=0

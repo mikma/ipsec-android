@@ -1,5 +1,6 @@
+assets/armeabi
+assets/x86
 assets/example-*.zip
-assets/ipsec-tools.zip
 bin/
 example-config/*/policy.zip
 external/tarballs/
