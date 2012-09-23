@@ -34,5 +34,6 @@
     <string name="key_file">Private key file</string>
     <string name="save_examples">Save examples</string>
     <string name="peer_state">Peer State</string>
+    <string name="ok">OK</string>
 </resources>
 
