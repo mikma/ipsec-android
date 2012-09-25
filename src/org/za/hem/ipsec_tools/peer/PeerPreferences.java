@@ -19,6 +19,8 @@ import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
@@ -58,10 +60,16 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	static final int REQUEST_KEY = 3;
 	
 	private PeerID mID;
+	private Handler mHandler;
+	private HandlerThread mHandlerThread;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		mHandlerThread  = new HandlerThread("PeerPreferences");
+		mHandlerThread.start();
+		mHandler = new Handler(mHandlerThread.getLooper()) {};
 
 		mID = new PeerID(getIntent().getIntExtra(EXTRA_ID, -1));
 		
@@ -76,7 +84,33 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		Preference remoteAddrPref = findPreference(REMOTE_ADDR_PREFERENCE);
 		remoteAddrPref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			public boolean onPreferenceChange (Preference preference, Object newValue) {
-		        SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
+				return onRemoteAddrChange(preference, newValue);
+			}
+		});
+	}
+	
+	private void stopHandler() {
+		if (mHandler == null)
+			return;
+		mHandler.getLooper().quit();
+		try {
+			mHandlerThread.join(1000);
+		} catch (InterruptedException e) {
+		}
+		mHandlerThread = null;
+		mHandler = null;
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		stopHandler();
+	}
+		
+	protected boolean onRemoteAddrChange(final Preference preference, final Object newValue) {
+	    mHandler.post(new Runnable() {
+	        public void run() {
+	            SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
     			String addr = (String)newValue;
 	    		try {
 					InetAddress ip = InetAddress.getByName(addr);
@@ -93,11 +127,10 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 					builder.setMessage(msg);
 					builder.setPositiveButton(android.R.string.ok, null);
 					builder.show();
-					return false;
-		    	}
-				return true;
-			}
-		});
+				}
+	        }
+	    });
+	    return true;
 	}
 
 	private void setFilePathListener(String pref, final int requestCode) {
