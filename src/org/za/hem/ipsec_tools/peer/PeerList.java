@@ -104,7 +104,9 @@ public class PeerList extends ArrayList<Peer> {
 	}
 	
 	private void stopHandler() {
-        mHandler.getLooper().quit();
+		if (mHandler == null)
+			return;
+		mHandler.getLooper().quit();
 		try {
 			mHandlerThread.join(1000);
 		} catch (InterruptedException e) {
