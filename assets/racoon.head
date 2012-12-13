@@ -9,6 +9,6 @@ listen {
 }
 
 path pre_shared_key "${bindir}/psk.txt"; 
-path certificate "${extdir}/vpn/certificates";
+path certificate "${certdir}";
 path scripts "${bindir}/scripts";
 path pidfile "${bindir}/racoon.pid";

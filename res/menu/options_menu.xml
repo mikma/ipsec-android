@@ -9,6 +9,8 @@
     <!-- <item android:id="@+id/preferences"
           android:title="@string/preferences"
           android:icon="@android:drawable/ic_menu_preferences" /> -->
+    <item android:id="@+id/import_cert"
+          android:title="@string/import_cert" />
     <item android:id="@+id/save_examples"
           android:title="@string/save_examples"
           android:icon="@android:drawable/ic_menu_save" />

@@ -2,6 +2,7 @@ package org.za.hem.ipsec_tools;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -22,30 +23,54 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceGroup;
+import android.util.Base64;
+import android.util.Base64OutputStream;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.net.InetSocketAddress;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.w3c.dom.Text;
 import org.za.hem.ipsec_tools.peer.OnPeerChangeListener;
 import org.za.hem.ipsec_tools.peer.Peer;
 import org.za.hem.ipsec_tools.peer.PeerID;
 import org.za.hem.ipsec_tools.peer.PeerList;
 import org.za.hem.ipsec_tools.peer.PeerPreferences;
 import org.za.hem.ipsec_tools.peer.StatePreference;
+import org.za.hem.ipsec_tools.service.CertManager;
 import org.za.hem.ipsec_tools.service.ConfigManager;
 import org.za.hem.ipsec_tools.service.NativeService;
 
@@ -82,6 +107,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 
 	static final int REQUEST_SAVE_EXAMPLES = 1;
 
+	static final int DIALOG_CERT_PASSWORD = 1;
+
 	private final boolean RACOON_STARTUP = false;
 
 	private boolean mIsBound; /** True if bound. */
@@ -94,10 +121,13 @@ public class IPsecToolsActivity extends PreferenceActivity
 	private static final String COUNT_PREFERENCE = "countPref";
 	private static final String COPYRIGHT_FILE = "COPYRIGHT";
 	private static final String ZIP_FILE = "ipsec-tools.zip";
+
+	private static final String P12_FILE_NAME = "p12_file_name";
 	private PeerList mPeers;
 	private PeerID selectedID;
 	private Peer selectedPeer;
 	private Handler mGuiHandler;
+	private CertManager mCertManager;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -109,7 +139,13 @@ public class IPsecToolsActivity extends PreferenceActivity
     	mGuiHandler = new Handler();
     	
         mNative = new NativeCommand(this);
-    	mCM = new ConfigManager(this, mNative);
+        try {
+            mCertManager = new CertManager(this);
+        } catch(Exception e) {
+            // TODO
+            throw new RuntimeException(e);
+        }
+        mCM = new ConfigManager(this, mNative, mCertManager);
 
 		addPreferencesFromResource(R.xml.preferences);
 
@@ -410,6 +446,8 @@ public class IPsecToolsActivity extends PreferenceActivity
 	        return true;
 	    case R.id.save_examples:
 		    return handleSaveExamples();
+	    case R.id.import_cert:
+	        return handleImportCert();
 	    // case R.id.preferences:
 	    // 	    Intent settingsActivity = new Intent(getBaseContext(),
 	    // 						 Preferences.class);
@@ -608,6 +646,88 @@ public class IPsecToolsActivity extends PreferenceActivity
 			Log.i("ipsec-tools", "not bound");
 	}
 	
+	@Override
+	public Dialog onCreateDialog(int id, Bundle savedInstanceState) {
+	    switch(id) {
+	    case DIALOG_CERT_PASSWORD:
+	        return onCreateCertPasswordDialog(savedInstanceState);
+	    default:
+	        return super.onCreateDialog(id, savedInstanceState);
+	    }
+	}
+
+	private Dialog onCreateCertPasswordDialog(Bundle savedInstanceState) {
+	    Activity activity = this;
+	    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+	    LayoutInflater inflater = activity.getLayoutInflater();
+
+	    // Inflate and set the layout for the dialog
+	    // Pass null as the parent view because its going in the dialog layout
+	    View view = inflater.inflate(R.layout.cert_password, null);
+	    final EditText password = (EditText)view.findViewById(R.id.password);
+
+	    final String p12FileName = savedInstanceState.getString(P12_FILE_NAME);
+	    TextView title = (TextView)view.findViewById(R.id.title);
+	    title.setText(p12FileName);
+
+	    builder.setView(view)
+	    // Add action buttons
+	           .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+	               @Override
+	               public void onClick(DialogInterface dialog, int id) {
+	                   // Import certificate
+	                   try {
+	                       InputStream is = new BufferedInputStream(new FileInputStream(p12FileName));
+	                       mCertManager.load(is,
+                                      password.getText().toString().toCharArray());
+	                       // TODO remove cert?
+	                       is.close();
+                       } catch (CertificateException e) {
+                           throw new RuntimeException(e);
+                       } catch (NoSuchAlgorithmException e) {
+                           throw new RuntimeException(e);
+	                   } catch (KeyStoreException e) {
+	                       throw new RuntimeException(e);
+                       } catch (IOException e) {
+                           throw new RuntimeException(e);
+	                   }
+	               }
+	           })
+	           .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+	               public void onClick(DialogInterface dialog, int id) {
+	               }
+	           });
+	    return builder.create();
+	}
+
+    private boolean handleImportCert() {
+        final File storagePath = Environment.getExternalStorageDirectory();
+        File[] p12Files = storagePath.listFiles(new FilenameFilter(){
+            @Override
+            public boolean accept(File dir, String fileName) {
+                if (!fileName.endsWith(CertManager.P12_POSTFIX))
+                    return false;
+                File file = new File(dir, fileName);
+                return file.canRead();
+            }});
+
+        if (p12Files.length == 0) {
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(this, R.string.no_certs, duration);
+            toast.show();
+            return false;
+        }
+
+        for (int i = 0; i < p12Files.length; i++) {
+            Bundle bundle = new Bundle();
+            bundle.putString(P12_FILE_NAME, p12Files[i].toString());
+
+            showDialog(DIALOG_CERT_PASSWORD, bundle);
+        }
+
+        return true;
+    }
+
 	private boolean handleSaveExamples() {
 		final String startPath = Environment.getExternalStorageDirectory().getAbsolutePath();
 		Intent intent =

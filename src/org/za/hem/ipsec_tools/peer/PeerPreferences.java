@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import java.util.Map;
 
 import org.za.hem.ipsec_tools.R;
+import org.za.hem.ipsec_tools.service.CertManager;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -45,6 +46,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	public static final String EXTRA_ID = "org.za.hem.ipsec_tools.ID";
 	
 	static final String TEMPLATE_PREFERENCE = "templatePref";
+	static final String CERT_ALIAS_PREFERENCE = "certAliasPref";
 	static final String CERT_PREFERENCE = "certPref";
 	static final String KEY_PREFERENCE = "keyPref";
 	static final String NAME_PREFERENCE = "namePref";
@@ -58,7 +60,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	static final int REQUEST_TEMPLATE = 1;
 	static final int REQUEST_CERT = 2;
 	static final int REQUEST_KEY = 3;
-	
+
 	private PeerID mID;
 	private Handler mHandler;
 	private HandlerThread mHandlerThread;
@@ -87,6 +89,18 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 				return onRemoteAddrChange(preference, newValue);
 			}
 		});
+
+		try {
+		    ListPreference certAliasPref = (ListPreference)findPreference(CERT_ALIAS_PREFERENCE);
+		    Context context = getApplicationContext();
+		    CertManager certs = new CertManager(context);
+		    CharSequence[] aliases = certs.getAliases();
+		    // TODO add empty value activating old cert/key settings
+		    certAliasPref.setEntries(aliases);
+		    certAliasPref.setEntryValues(aliases);
+		} catch (Exception e) {
+		    throw new RuntimeException(e);
+		}
 	}
 	
 	private void stopHandler() {

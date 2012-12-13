@@ -21,6 +21,9 @@
                 <Preference
 				android:title="@string/template_file"
 				android:key="templatePref" />
+                <ListPreference
+				android:title="@string/cert_alias"
+				android:key="certAliasPref" />
                 <Preference
 				android:title="@string/cert_file"
 				android:key="certPref" />

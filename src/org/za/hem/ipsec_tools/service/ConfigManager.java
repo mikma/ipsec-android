@@ -41,10 +41,14 @@ public class ConfigManager {
 	public static final String SETKEY_HEAD = "setkey.head";
 	public static final String PIDFILE = "racoon.pid";
 	
+	public static final String BINDIR = "bin";
+	public static final String CERTDIR = "certs";
+
 	public enum Action {NONE, ADD, DELETE, UPDATE};
 	
 	// Variables usable in config files
 	private static final String VAR_BINDIR = "bindir";
+	private static final String VAR_CERTDIR = "certdir";
 	private static final String VAR_EXTDIR = "extdir";
 	private static final String VAR_REMOTE_ADDR = "remote_addr";
 	private static final String VAR_LOCAL_ADDR = "local_addr";
@@ -61,17 +65,22 @@ public class ConfigManager {
 	private Context mContext;
 	private NativeCommand mNative;
 	private File mBinDir;
+	private File mCertDir;
+	private CertManager mCertManager;
 	
-	public ConfigManager(Context context, NativeCommand nativeCmd) {
-		mBinDir = context.getDir("bin", Context.MODE_PRIVATE);
+	public ConfigManager(Context context, NativeCommand nativeCmd, CertManager certManager) {
+		mBinDir = context.getDir(BINDIR, Context.MODE_PRIVATE);
+		mCertDir = context.getDir(CERTDIR, Context.MODE_PRIVATE);
 		mVariables = new HashMap<String,String>();
 		mVariables.put(VAR_BINDIR, mBinDir.getAbsolutePath());
+		mVariables.put(VAR_CERTDIR, mCertDir.getAbsolutePath());
 		mVariables.put(VAR_EXTDIR, Environment.getExternalStorageDirectory().getAbsolutePath());
 		mVariables.put(VAR_UID, "" + Process.myUid());
 		mVariables.put(VAR_GID, "" + Process.myUid());
 		mPat = Pattern.compile(PATTERN);
 		mContext = context;
 		mNative = nativeCmd;
+		mCertManager = certManager;
 	}
 	
 	protected File getPeerConfigFile(Peer peer) {
@@ -88,13 +97,20 @@ public class ConfigManager {
 	 */
 	private void writePeerConfig(Action action, Peer peer, Writer racoonOs,
 				     Writer setkeyOs, Writer pskOs) throws IOException {
+	    String certPrefix = CertManager.CERT_PREFIX + peer.getPeerID().intValue();
+	    String certAlias = peer.getCertAlias();
 		InetAddress addr = peer.getRemoteAddr();
 		if (addr != null)
 			mVariables.put(VAR_REMOTE_ADDR, addr.getHostAddress());
 		mVariables.put(VAR_LOCAL_ADDR, peer.getLocalAddr().getHostAddress());
 		mVariables.put(VAR_NAME, peer.getName());
-		mVariables.put(VAR_CERT, peer.getCert());
-		mVariables.put(VAR_KEY, peer.getKey());
+		if (certAlias == null || certAlias == "") {
+		    mVariables.put(VAR_CERT, peer.getCert());
+		    mVariables.put(VAR_KEY, peer.getKey());
+		} else {
+		    mVariables.put(VAR_CERT, certPrefix + CertManager.CERT_POSTFIX);
+		    mVariables.put(VAR_KEY, certPrefix + CertManager.KEY_POSTFIX);
+		}
 		mVariables.put(VAR_ACTION, actionToString(action));
 		File tmpl = peer.getTemplateFile();
 		if (tmpl == null)
@@ -108,6 +124,7 @@ public class ConfigManager {
 			pskOs.write("# Peer " + peer.getName() + "\n");
 			pskOs.write(mVariables.get(VAR_REMOTE_ADDR) + " " + peer.getPsk() + "\n");
 		}
+		mCertManager.writeCert(mCertDir, certPrefix, certAlias);
 	}
 	
 	private static String actionToString(Action action) {

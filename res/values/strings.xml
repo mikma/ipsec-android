@@ -35,5 +35,9 @@
     <string name="save_examples">Save examples</string>
     <string name="peer_state">Peer State</string>
     <string name="ok">OK</string>
+    <string name="no_certs">No certificates found</string>
+    <string name="import_cert">Import certificate</string>
+    <string name="password">Password</string>
+    <string name="cert_alias">Certificate Alias</string>
 </resources>
 
