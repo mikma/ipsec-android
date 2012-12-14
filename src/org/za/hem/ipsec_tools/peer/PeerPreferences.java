@@ -64,6 +64,8 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	private PeerID mID;
 	private Handler mHandler;
 	private HandlerThread mHandlerThread;
+	private Preference mCertFilePref;
+	private Preference mKeyFilePref;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +85,9 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		setFilePathListener(CERT_PREFERENCE, REQUEST_CERT);
 		setFilePathListener(KEY_PREFERENCE, REQUEST_KEY);
 
+		mCertFilePref = findPreference(CERT_PREFERENCE);
+		mKeyFilePref = findPreference(KEY_PREFERENCE);
+
 		Preference remoteAddrPref = findPreference(REMOTE_ADDR_PREFERENCE);
 		remoteAddrPref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			public boolean onPreferenceChange (Preference preference, Object newValue) {
@@ -95,12 +100,43 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		    Context context = getApplicationContext();
 		    CertManager certs = new CertManager(context);
 		    CharSequence[] aliases = certs.getAliases();
-		    // TODO add empty value activating old cert/key settings
-		    certAliasPref.setEntries(aliases);
-		    certAliasPref.setEntryValues(aliases);
+		    int len = aliases.length;
+		    CharSequence[] aliasesEntries = new CharSequence[len + 1];
+		    CharSequence[] aliasesValues = new CharSequence[len + 1];
+		    System.arraycopy(aliases, 0, aliasesEntries, 0, len);
+		    System.arraycopy(aliases, 0, aliasesValues, 0, len);
+		    aliasesEntries[len] = context.getResources().getString(R.string.cert_old_style);
+		    aliasesValues[len] = "";
+		    certAliasPref.setEntries(aliasesEntries);
+		    certAliasPref.setEntryValues(aliasesValues);
+
+		    SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
+		    String certAlias = sharedPreferences.getString(CERT_ALIAS_PREFERENCE, null);
+		    if (certAlias == null) {
+		        Editor editor = sharedPreferences.edit();
+		        editor.putString(CERT_ALIAS_PREFERENCE, "");
+		        editor.commit();
+		    }
+		    updateCertStyle(certAlias);
+
+		    certAliasPref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+		        @Override
+		        public boolean onPreferenceChange(Preference preference, Object newValue) {
+		            String certAlias = (String)newValue;
+		            updateCertStyle(certAlias);
+		            return true;
+		        }
+		    });
 		} catch (Exception e) {
 		    throw new RuntimeException(e);
 		}
+	}
+
+	/** Disable old settings when the new cert key store setting is used. */
+	private void updateCertStyle(String certAlias) {
+	    boolean oldStyleCert = (certAlias == null || certAlias == "");
+	    mCertFilePref.setEnabled(oldStyleCert);
+	    mKeyFilePref.setEnabled(oldStyleCert);
 	}
 	
 	private void stopHandler() {
@@ -281,7 +317,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 			pref.setSummary(val.toString());
 		} else if (pref instanceof CheckBoxPreference) {
 		} else if (pref instanceof ListPreference) {
-			pref.setSummary("List " + val);
+			pref.setSummary(val.toString());
 		}
     }
 	
