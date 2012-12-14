@@ -1,7 +1,5 @@
 * Flush setkey SAs for changed peers.
 
-* Use secure storage for private keys.
-
 * Support for "virtual" IP addresses.
 
 * Detect IP address changes

@@ -39,5 +39,6 @@
     <string name="import_cert">Import certificate</string>
     <string name="password">Password</string>
     <string name="cert_alias">Certificate Alias</string>
+    <string name="use_certificate_file_and_key_file">Use Certificate file and Private key file settings</string>
 </resources>
 

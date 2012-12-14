@@ -105,7 +105,7 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		    CharSequence[] aliasesValues = new CharSequence[len + 1];
 		    System.arraycopy(aliases, 0, aliasesEntries, 0, len);
 		    System.arraycopy(aliases, 0, aliasesValues, 0, len);
-		    aliasesEntries[len] = context.getResources().getString(R.string.cert_old_style);
+		    aliasesEntries[len] = context.getResources().getString(R.string.use_certificate_file_and_key_file);
 		    aliasesValues[len] = "";
 		    certAliasPref.setEntries(aliasesEntries);
 		    certAliasPref.setEntryValues(aliasesValues);
