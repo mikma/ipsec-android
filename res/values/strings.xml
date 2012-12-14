@@ -40,5 +40,8 @@
     <string name="password">Password</string>
     <string name="cert_alias">Certificate Alias</string>
     <string name="use_certificate_file_and_key_file">Use Certificate file and Private key file settings</string>
+    <string name="cert_files">Certificate  and private key files (.pem+.key)</string>
+    <string name="cert_key_store">Cerificate Key Store</string>
+    <string name="auth_type">Authentication/Certificate type</string>
 </resources>
 

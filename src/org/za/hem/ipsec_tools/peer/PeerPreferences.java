@@ -27,6 +27,8 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
+import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -56,6 +58,13 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	static final String DNS1_PREFERENCE = "dns1Pref";
 	static final String DNS2_PREFERENCE = "dns2Pref";
 	static final String PSK_PREFERENCE = "pskPref";
+	static final String AUTH_TYPE_PREFERENCE = "authTypePref";
+	static final String AUTH_TYPE_CAT_PREFERENCE = "authTypeCatPref";
+
+	// Auth type values (sync with @array/auth_type_values)
+	static final String AUTH_TYPE_PSK = "psk";
+	static final String AUTH_TYPE_CERT_FILES = "cert_files";
+	static final String AUTH_TYPE_CERT_KEY_STORE = "cert_key_store";
 	
 	static final int REQUEST_TEMPLATE = 1;
 	static final int REQUEST_CERT = 2;
@@ -64,6 +73,9 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	private PeerID mID;
 	private Handler mHandler;
 	private HandlerThread mHandlerThread;
+	private PreferenceCategory mAuthTypeCatPref;
+	private Preference mPskPref;
+	private ListPreference mCertAliasPref;
 	private Preference mCertFilePref;
 	private Preference mKeyFilePref;
 	
@@ -85,8 +97,11 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		setFilePathListener(CERT_PREFERENCE, REQUEST_CERT);
 		setFilePathListener(KEY_PREFERENCE, REQUEST_KEY);
 
+		mAuthTypeCatPref = (PreferenceCategory)findPreference(AUTH_TYPE_CAT_PREFERENCE);
+		mCertAliasPref = (ListPreference)findPreference(CERT_ALIAS_PREFERENCE);
 		mCertFilePref = findPreference(CERT_PREFERENCE);
 		mKeyFilePref = findPreference(KEY_PREFERENCE);
+		mPskPref = findPreference(PSK_PREFERENCE);
 
 		Preference remoteAddrPref = findPreference(REMOTE_ADDR_PREFERENCE);
 		remoteAddrPref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
@@ -94,12 +109,12 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 				return onRemoteAddrChange(preference, newValue);
 			}
 		});
-
+		
 		try {
-		    ListPreference certAliasPref = (ListPreference)findPreference(CERT_ALIAS_PREFERENCE);
 		    Context context = getApplicationContext();
 		    CertManager certs = new CertManager(context);
 		    CharSequence[] aliases = certs.getAliases();
+/*
 		    int len = aliases.length;
 		    CharSequence[] aliasesEntries = new CharSequence[len + 1];
 		    CharSequence[] aliasesValues = new CharSequence[len + 1];
@@ -107,36 +122,55 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 		    System.arraycopy(aliases, 0, aliasesValues, 0, len);
 		    aliasesEntries[len] = context.getResources().getString(R.string.use_certificate_file_and_key_file);
 		    aliasesValues[len] = "";
-		    certAliasPref.setEntries(aliasesEntries);
-		    certAliasPref.setEntryValues(aliasesValues);
-
-		    SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
-		    String certAlias = sharedPreferences.getString(CERT_ALIAS_PREFERENCE, null);
-		    if (certAlias == null) {
-		        Editor editor = sharedPreferences.edit();
-		        editor.putString(CERT_ALIAS_PREFERENCE, "");
-		        editor.commit();
-		    }
-		    updateCertStyle(certAlias);
-
-		    certAliasPref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-		        @Override
-		        public boolean onPreferenceChange(Preference preference, Object newValue) {
-		            String certAlias = (String)newValue;
-		            updateCertStyle(certAlias);
-		            return true;
-		        }
-		    });
+		    mCertAliasPref.setEntries(aliasesEntries);
+		    mCertAliasPref.setEntryValues(aliasesValues);
+		    */
+		    mCertAliasPref.setEntries(aliases);
+		    mCertAliasPref.setEntryValues(aliases);
 		} catch (Exception e) {
 		    throw new RuntimeException(e);
 		}
+
+        ListPreference authTypePref = (ListPreference)findPreference(AUTH_TYPE_PREFERENCE);
+        authTypePref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                updateAuthType((String)newValue);
+                return true;
+            }
+        });
+
+        SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
+        String authType = sharedPreferences.getString(AUTH_TYPE_PREFERENCE, null);
+        if (authType == null) {
+            if (sharedPreferences.getString(CERT_PREFERENCE, null) != null &&
+                    sharedPreferences.getString(KEY_PREFERENCE, null) != null) {
+                authType = AUTH_TYPE_CERT_FILES;
+            } else if (sharedPreferences.getString(PSK_PREFERENCE, null) != null) {
+                authType = AUTH_TYPE_PSK;
+            } else {
+                authType = AUTH_TYPE_CERT_KEY_STORE;
+            }
+
+            Editor editor = sharedPreferences.edit();
+            editor.putString(AUTH_TYPE_PREFERENCE, authType);
+            editor.commit();
+        }
+        updateAuthType(authType);
 	}
 
-	/** Disable old settings when the new cert key store setting is used. */
-	private void updateCertStyle(String certAlias) {
-	    boolean oldStyleCert = (certAlias == null || certAlias == "");
-	    mCertFilePref.setEnabled(oldStyleCert);
-	    mKeyFilePref.setEnabled(oldStyleCert);
+	private void updateAuthType(String authType) {
+	    if (mAuthTypeCatPref == null)
+	        return;
+        mAuthTypeCatPref.removeAll();
+        if (authType.equals(AUTH_TYPE_PSK)) {
+            mAuthTypeCatPref.addPreference(mPskPref);
+        } else if (authType.equals(AUTH_TYPE_CERT_FILES)) {
+            mAuthTypeCatPref.addPreference(mCertFilePref);
+            mAuthTypeCatPref.addPreference(mKeyFilePref);
+        } else if (authType.equals(AUTH_TYPE_CERT_KEY_STORE)) {
+            mAuthTypeCatPref.addPreference(mCertAliasPref);
+        }
 	}
 	
 	private void stopHandler() {
@@ -292,12 +326,16 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
 	}
     
     private void UpdateSummary(Preference pref, String key, Object val) {
+        if (pref == null || key == null) {
+            Log.i("PeerPreferences", "Pref: " + pref + " key: " + key);
+            return;
+        }
         SharedPreferences sharedPreferences = getPreferenceScreen()
     	.getSharedPreferences();
 
     	if (key.equals(TEMPLATE_PREFERENCE) ||
-	    key.equals(CERT_PREFERENCE) ||
-	    key.equals(KEY_PREFERENCE)) {
+    	        key.equals(CERT_PREFERENCE) ||
+    	        key.equals(KEY_PREFERENCE)) {
     		pref.setSummary(val.toString());
     	} else if (key.equals(REMOTE_ADDR_PREFERENCE)) {
     		String host = (String)val;
@@ -306,18 +344,19 @@ public class PeerPreferences extends PreferenceActivity implements OnSharedPrefe
     			pref.setSummary(host + "/" + ip);
     		else
     			pref.setSummary(host);
-	} else if (key.equals(PSK_PREFERENCE)) {
-		String psk = (String)val;
-		if (psk.length() <= 0) {
-			pref.setSummary("");
-		} else {
-			pref.setSummary("********");
-		}
+    	} else if (key.equals(PSK_PREFERENCE)) {
+    	    String psk = (String)val;
+    	    if (psk.length() <= 0) {
+    			pref.setSummary("");
+    		} else {
+    			pref.setSummary("********");
+    		}
     	} else if (pref instanceof EditTextPreference) {
 			pref.setSummary(val.toString());
 		} else if (pref instanceof CheckBoxPreference) {
 		} else if (pref instanceof ListPreference) {
-			pref.setSummary(val.toString());
+		    ListPreference listPref = (ListPreference)pref;
+			pref.setSummary(listPref.getEntry());
 		}
     }
 	

@@ -1,0 +1,13 @@
+
+    <resources>
+        <string-array name="auth_type_values">
+            <item >cert_key_store</item>
+            <item >cert_files</item>
+            <item >psk</item>
+        </string-array>
+        <string-array name="auth_type_entries">
+            <item >@string/cert_key_store</item>
+            <item >@string/cert_files</item>
+            <item >@string/psk</item>
+        </string-array>
+    </resources>

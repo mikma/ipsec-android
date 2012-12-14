@@ -14,21 +14,30 @@
                 <EditTextPreference
                 		android:title="@string/dns2"
                 		android:key="dns2Pref" />
- 		<EditTextPreference
-        		        android:title="@string/psk"
-                		android:key="pskPref"
-				android:password="true" />
                 <Preference
 				android:title="@string/template_file"
 				android:key="templatePref" />
                 <ListPreference
-				android:title="@string/cert_alias"
-				android:key="certAliasPref" />
-                <Preference
-				android:title="@string/cert_file"
-				android:key="certPref" />
-                <Preference
-				android:title="@string/key_file"
-				android:key="keyPref" />
+					android:title="@string/auth_type"
+					android:key="authTypePref"
+					android:entries="@array/auth_type_entries"
+					android:entryValues="@array/auth_type_values"/>
         </PreferenceCategory>
+		<PreferenceCategory
+			android:title="@string/auth_type"
+        	android:key="authTypeCatPref">
+				<EditTextPreference
+	  		        android:title="@string/psk"
+	          		android:key="pskPref"
+					android:password="true" />
+				<ListPreference
+					android:title="@string/cert_alias"
+					android:key="certAliasPref" />
+				<Preference
+					android:title="@string/cert_file"
+					android:key="certPref" />
+				<Preference
+					android:title="@string/key_file"
+					android:key="keyPref" />
+		</PreferenceCategory>
 </PreferenceScreen>
