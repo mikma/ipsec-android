@@ -666,9 +666,9 @@ public class IPsecToolsActivity extends PreferenceActivity
 	    View view = inflater.inflate(R.layout.cert_password, null);
 	    final EditText password = (EditText)view.findViewById(R.id.password);
 
-	    final String p12FileName = savedInstanceState.getString(P12_FILE_NAME);
+	    final File p12FileName = new File(savedInstanceState.getString(P12_FILE_NAME));
 	    TextView title = (TextView)view.findViewById(R.id.title);
-	    title.setText(p12FileName);
+	    title.setText(p12FileName.getName());
 
 	    builder.setView(view)
 	    // Add action buttons
